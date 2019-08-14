@@ -1,0 +1,51 @@
+{
+  "name": "intake24-tasks",
+  "version": "1.0.0",
+  "description": "Intake24 Tasks Service",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --exec babel-node src/index.js",
+    "clean": "rimraf dist",
+    "build": "./node_modules/.bin/babel src --out-dir dist",
+    "production": "npm run clean && npm run build",
+    "prod": "npm run production",
+    "serve": "node dist/index.js"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
+  },
+  "author": "Lukas Hroch",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "dotenv": "^8.0.0",
+    "fast-csv": "^3.4.0",
+    "fecha": "^3.0.3",
+    "mssql": "^5.1.0",
+    "node-cron": "^2.0.3",
+    "rimraf": "^2.7.0",
+    "sequelize": "^5.14.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.5.5",
+    "@babel/core": "^7.5.5",
+    "@babel/node": "^7.5.5",
+    "@babel/plugin-transform-async-to-generator": "^7.5.0",
+    "@babel/plugin-transform-runtime": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "@babel/runtime": "^7.5.5",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-config-prettier": "^6.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-prettier": "^3.1.0",
+    "eslint-plugin-react": "^7.14.3",
+    "husky": "^3.0.3",
+    "nodemon": "^1.19.1",
+    "prettier": "^1.18.2",
+    "pretty-quick": "^1.11.1"
+  }
+}
