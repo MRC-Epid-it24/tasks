@@ -90,13 +90,13 @@ export default {
     } catch (err) {
       throw new Error(`dataExport failed with: ${err.message}'`);
     }
-  },
+  }
 
-  async usersUpload(surveyName) {
+  /* async usersUpload(surveyName) {
     try {
       const surveyInfo = await this.getSurveyInfo(surveyName);
     } catch (err) {
       throw new Error(`userUpload failed with: ${err.message}'`);
     }
-  }
+  } */
 };
