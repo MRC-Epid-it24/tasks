@@ -1,0 +1,14 @@
+image: node:latest
+
+stages:
+  - build
+
+cache:
+  paths:
+    - node_modules/
+
+install_build:
+  stage: build
+  script:
+    - npm install
+    - npm run prod
