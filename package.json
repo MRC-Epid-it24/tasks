@@ -9,7 +9,8 @@
     "build": "./node_modules/.bin/babel src --out-dir dist",
     "production": "npm run clean && npm run build",
     "prod": "npm run production",
-    "serve": "node dist/index.js"
+    "serve": "node dist/index.js",
+    "lint": "./node_modules/.bin/eslint src/"
   },
   "husky": {
     "hooks": {
