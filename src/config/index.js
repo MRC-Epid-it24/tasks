@@ -13,13 +13,9 @@ export default {
   },
   tasks: [
     {
-      name: 'YR12_DATA_EXPORT',
-      cron: '*/15 * * * * *',
+      name: 'EXPORT_SURVEY_DATA',
+      cron: '*/1 * * * *',
       params: ['test_survey']
-    },
-    {
-      name: 'YR12_USER_IMPORT',
-      cron: '48 13 * * *'
     }
   ]
 };
