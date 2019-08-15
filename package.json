@@ -2,7 +2,17 @@
   "name": "intake24-tasks",
   "version": "1.0.0",
   "description": "Intake24 Tasks Service",
+  "license": "MIT",
+  "private": true,
+  "author": "Lukas Hroch",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.mrc-epid.cam.ac.uk/lh616/intake24-tasks.git"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
   "scripts": {
     "dev": "nodemon --exec babel-node src/index.js",
     "clean": "rimraf dist",
@@ -17,8 +27,6 @@
       "pre-commit": "pretty-quick --staged"
     }
   },
-  "author": "Lukas Hroch",
-  "license": "MIT",
   "dependencies": {
     "axios": "^0.19.0",
     "dotenv": "^8.0.0",
