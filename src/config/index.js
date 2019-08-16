@@ -14,7 +14,7 @@ export default {
   tasks: [
     {
       name: 'EXPORT_SURVEY_DATA',
-      cron: '*/1 * * * *',
+      cron: '0 8,20 * * *',
       params: ['test_survey']
     }
   ]
