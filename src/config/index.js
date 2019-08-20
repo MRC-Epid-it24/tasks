@@ -1,7 +1,6 @@
 export default {
-  url: process.env.IT24_API_URL || '',
-
-  auth: {
+  it24: {
+    url: process.env.IT24_API_URL || '',
     username: process.env.IT24_USERNAME || '',
     password: process.env.IT24_PASSWORD || ''
   },
@@ -14,7 +13,12 @@ export default {
   tasks: [
     {
       name: 'EXPORT_SURVEY_DATA',
-      cron: '0 8,20 * * *',
+      cron: '*/30 * * * * *',
+      params: ['test_survey']
+    },
+    {
+      name: 'UPLOAD_SURVEY_RESPONDENTS',
+      cron: '*/30 * * * * *',
       params: ['test_survey']
     }
   ]

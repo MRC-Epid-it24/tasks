@@ -1,15 +1,7 @@
-import api from '../services/apiService';
-import store from '../services/storageService';
+import EXPORT_SURVEY_DATA from './ExportSurveyData';
+import UPLOAD_SURVEY_RESPONDENTS from './UploadSurveyRespondents';
 
 export default {
-  EXPORT_SURVEY_DATA: async surveyName => {
-    try {
-      await api.login();
-      const file = await api.dataExport(surveyName);
-      await store.processFile(file);
-      console.log(`Task EXPORT_SURVEY_DATA processed.`);
-    } catch (err) {
-      console.error(`Task EXPORT_SURVEY_DATA failed: ${err}`);
-    }
-  }
+  EXPORT_SURVEY_DATA,
+  UPLOAD_SURVEY_RESPONDENTS
 };

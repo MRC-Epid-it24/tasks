@@ -1,10 +1,11 @@
 import axios from 'axios';
 import fecha from 'fecha';
+import FormData from 'form-data';
 import fs from 'fs';
 import path from 'path';
 import config from '../config';
 
-const { auth } = config;
+const { it24 } = config;
 
 export default {
   accessToken: '',
@@ -12,9 +13,9 @@ export default {
 
   async getRefreshToken() {
     try {
-      const res = await axios.post(`${config.url}/signin`, {
-        email: auth.username,
-        password: auth.password
+      const res = await axios.post(`${it24.url}/signin`, {
+        email: it24.username,
+        password: it24.password
       });
       this.refreshToken = res.data.refreshToken;
       return this.refreshToken;
@@ -26,7 +27,7 @@ export default {
   async getAccessToken() {
     try {
       const res = await axios.post(
-        `${config.url}/refresh`,
+        `${it24.url}/refresh`,
         {},
         {
           headers: {
@@ -35,7 +36,7 @@ export default {
         }
       );
       this.accessToken = res.data.accessToken;
-      return res.data.accessToken;
+      return this.accessToken;
     } catch (err) {
       throw new Error(`getAccessToken failed with: ${err.message}'`);
     }
@@ -48,7 +49,7 @@ export default {
 
   async getSurveyInfo(surveyId) {
     try {
-      const res = await axios.get(`${config.url}/surveys/${surveyId}`, {
+      const res = await axios.get(`${it24.url}/surveys/${surveyId}`, {
         headers: {
           'X-Auth-Token': this.accessToken
         }
@@ -59,10 +60,10 @@ export default {
     }
   },
 
-  async dataExport(surveyName, format = 'v1') {
+  async exportData(surveyName, format = 'v1') {
     try {
       const surveyInfo = await this.getSurveyInfo(surveyName);
-      const res = await axios.get(`${config.url}/data-export/${surveyInfo.id}/submissions/csv`, {
+      const res = await axios.get(`${it24.url}/data-export/${surveyInfo.id}/submissions/csv`, {
         params: {
           dateFrom: surveyInfo.startDate,
           dateTo: surveyInfo.endDate,
@@ -88,15 +89,28 @@ export default {
       fs.appendFileSync(filepath, res.data);
       return filepath;
     } catch (err) {
-      throw new Error(`dataExport failed with: ${err.message}'`);
+      throw new Error(`exportData failed with: ${err.message}'`);
     }
-  }
+  },
 
-  /* async usersUpload(surveyName) {
+  async uploadSurveyRespondents(surveyName, file) {
     try {
       const surveyInfo = await this.getSurveyInfo(surveyName);
+      const formData = new FormData();
+      formData.append('file', fs.createReadStream(path.resolve(file)));
+      await axios.post(
+        `${it24.url}/surveys/${surveyInfo.id}/users/respondents/upload-csv`,
+        formData,
+        {
+          headers: {
+            'X-Auth-Token': this.accessToken,
+            // eslint-disable-next-line no-underscore-dangle
+            'Content-Type': `multipart/form-data; boundary=${formData._boundary}`
+          }
+        }
+      );
     } catch (err) {
-      throw new Error(`userUpload failed with: ${err.message}'`);
+      throw new Error(`uploadSurveyRespondents failed with: ${err}'`);
     }
-  } */
+  }
 };
