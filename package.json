@@ -32,9 +32,11 @@
     "dotenv": "^8.1.0",
     "fast-csv": "^3.4.0",
     "fecha": "^3.0.3",
-    "form-data": "^2.5.0",
+    "form-data": "^2.5.1",
+    "json2csv": "^4.5.2",
     "mssql": "^5.1.0",
     "node-cron": "^2.0.3",
+    "pg": "^7.12.1",
     "rimraf": "^3.0.0"
   },
   "devDependencies": {
@@ -45,15 +47,15 @@
     "@babel/plugin-transform-runtime": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
     "@babel/runtime": "^7.5.5",
-    "eslint": "^6.2.0",
+    "eslint": "^6.3.0",
     "eslint-config-airbnb": "^18.0.1",
-    "eslint-config-prettier": "^6.0.0",
+    "eslint-config-prettier": "^6.2.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-prettier": "^3.1.0",
     "eslint-plugin-react": "^7.14.3",
-    "husky": "^3.0.4",
-    "nodemon": "^1.19.1",
+    "husky": "^3.0.5",
+    "nodemon": "^1.19.2",
     "prettier": "^1.18.2",
     "pretty-quick": "^1.11.1"
   }

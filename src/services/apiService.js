@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import config from '../config';
 
-const { it24 } = config;
+const { it24 } = config.api;
 
 export default {
   accessToken: '',
@@ -47,7 +47,7 @@ export default {
     await this.getAccessToken();
   },
 
-  async getSurveyInfo(surveyId) {
+  async getSurvey(surveyId) {
     try {
       const res = await axios.get(`${it24.url}/surveys/${surveyId}`, {
         headers: {
@@ -56,13 +56,13 @@ export default {
       });
       return res.data;
     } catch (err) {
-      throw new Error(`getSurveyInfo failed with: ${err.message}'`);
+      throw new Error(`getSurvey failed with: ${err.message}'`);
     }
   },
 
-  async exportData(surveyName, format = 'v1') {
+  async exportSurveyData(surveyName, format = 'v1') {
     try {
-      const surveyInfo = await this.getSurveyInfo(surveyName);
+      const surveyInfo = await this.getSurvey(surveyName);
       const res = await axios.get(`${it24.url}/data-export/${surveyInfo.id}/submissions/csv`, {
         params: {
           dateFrom: surveyInfo.startDate,
@@ -81,21 +81,19 @@ export default {
       )}.csv`;
 
       const dir = path.resolve('tmp');
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir);
-      }
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 
       const filepath = path.resolve('tmp', file);
       fs.appendFileSync(filepath, res.data);
       return filepath;
     } catch (err) {
-      throw new Error(`exportData failed with: ${err.message}'`);
+      throw new Error(`exportSurveyData failed with: ${err.message}'`);
     }
   },
 
   async uploadSurveyRespondents(surveyName, file) {
     try {
-      const surveyInfo = await this.getSurveyInfo(surveyName);
+      const surveyInfo = await this.getSurvey(surveyName);
       const formData = new FormData();
       formData.append('file', fs.createReadStream(path.resolve(file)));
       await axios.post(
@@ -110,7 +108,7 @@ export default {
         }
       );
     } catch (err) {
-      throw new Error(`uploadSurveyRespondents failed with: ${err}'`);
+      throw new Error(`uploadSurveyRespondents failed with: ${err.message}'`);
     }
   }
 };
