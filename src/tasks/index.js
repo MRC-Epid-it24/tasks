@@ -1,7 +1,7 @@
 import EXPORT_SURVEY_DATA from './ExportSurveyData';
-import UPLOAD_SURVEY_RESPONDENTS from './UploadSurveyRespondents';
+import UPLOAD_DISPLAY_NAMES from './UploadDisplayNames';
 
 export default {
   EXPORT_SURVEY_DATA,
-  UPLOAD_SURVEY_RESPONDENTS
+  UPLOAD_DISPLAY_NAMES
 };

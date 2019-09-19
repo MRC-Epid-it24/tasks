@@ -24,7 +24,7 @@ export default {
       params: ['test_survey']
     },
     {
-      name: 'UPLOAD_SURVEY_RESPONDENTS',
+      name: 'UPLOAD_DISPLAY_NAMES',
       cron: '*/30 * * * * *',
       params: ['test_survey']
     }

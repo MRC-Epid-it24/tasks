@@ -1,12 +1,11 @@
 import fecha from 'fecha';
-import fs from 'fs';
-import path from 'path';
 import mssql from 'mssql';
 import { Pool } from 'pg';
 import { parseAsync } from 'json2csv';
 import config from '../config';
 import schema from '../config/schema';
 import api from '../services/apiService';
+import tmp from '../services/tmpService';
 import asyncForEach from '../util/asyncForEach';
 
 const { db } = config;
@@ -17,7 +16,8 @@ export default class {
     this.count = 0;
     this.data = {
       it24: [],
-      epid: []
+      epid: [],
+      filtered: []
     };
     this.file = null;
     this.pool = {
@@ -109,22 +109,6 @@ export default class {
   }
 
   /**
-   * Filter display names to get the ones needing an update
-   *
-   * @return void
-   */
-  filterResults() {
-    const task = this;
-
-    this.data.epid = this.data.epid.filter(function(item) {
-      const it24record = task.data.it24.find(
-        row => item['user name'] === row.user_name && item.name !== row.name
-      );
-      return it24record !== undefined;
-    });
-  }
-
-  /**
    * Update display name in Intake24 database
    *
    * @return void
@@ -149,7 +133,21 @@ export default class {
       }
     });
 
-    console.log(this.count ? `Records updated: ${this.count}` : `No records to updated.`);
+    console.log(this.count ? `Records updated: ${this.count}` : `No records to update.`);
+  }
+
+  /**
+   * Filter display names to get the ones needing an update
+   *
+   * @return void
+   */
+  filterResults() {
+    this.data.filtered = this.data.epid.filter(
+      item =>
+        this.data.it24.find(
+          row => item['user name'] === row.user_name && item.name !== row.name
+        ) !== undefined
+    );
   }
 
   /**
@@ -158,22 +156,18 @@ export default class {
    * @return void
    */
   async saveToCSV() {
-    if (!this.data.length) {
+    if (!this.data.filtered.length) {
       console.log(`No records to update, skipping...`);
       return;
     }
 
-    const csv = await parseAsync(this.data, { fields: ['user name', 'password', 'name'] });
+    const csv = await parseAsync(this.data.filtered, { fields: ['user name', 'password', 'name'] });
 
-    const file = `Intake24-display-name-${this.surveyName}_${fecha.format(
+    const filename = `Intake24-display-name-${this.surveyName}_${fecha.format(
       new Date(),
       'YYYY-MM-DD-hh-mm-ss'
     )}.csv`;
 
-    const dir = path.resolve('tmp');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
-
-    this.file = path.resolve('tmp', file);
-    fs.appendFileSync(this.file, csv);
+    this.file = tmp.save(filename, csv);
   }
 }

@@ -4,6 +4,7 @@ import FormData from 'form-data';
 import fs from 'fs';
 import path from 'path';
 import config from '../config';
+import tmp from './tmpService';
 
 const { it24 } = config.api;
 
@@ -75,17 +76,13 @@ export default {
         }
       });
 
-      const file = `Intake24-export-${surveyInfo.id}_${fecha.format(
+      const filename = `Intake24-export-${surveyInfo.id}_${fecha.format(
         new Date(),
         'YYYY-MM-DD-hh-mm-ss'
       )}.csv`;
 
-      const dir = path.resolve('tmp');
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir);
-
-      const filepath = path.resolve('tmp', file);
-      fs.appendFileSync(filepath, res.data);
-      return filepath;
+      const file = tmp.save(filename, res.data);
+      return file;
     } catch (err) {
       throw new Error(`exportSurveyData failed with: ${err.message}'`);
     }
