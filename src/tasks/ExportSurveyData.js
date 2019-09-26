@@ -26,7 +26,7 @@ export default class {
   async run() {
     await api.login();
     this.filename = await api.exportSurveyData(this.surveyName);
-    await this.processSurveyData();
+    await this.processSurveyData(500);
   }
 
   /**
@@ -79,8 +79,7 @@ export default class {
         }
       })
       .on('end', () => {
-        if (this.data.length) this.storeToDB().then(() => this.triggerLog());
-        else this.triggerLog();
+        this.storeToDB().then(() => this.triggerLog());
 
         fs.unlink(this.filename, err => {
           if (err) console.error(err);
@@ -102,6 +101,9 @@ export default class {
       this.headers = this.data.shift();
       this.count -= 1;
     }
+
+    if (!this.data.length) return;
+
     const table = new sql.Table(schema.tables.importData);
     // table.create = true;
     // schema.fields.forEach(field => table.columns.add(field.id, field.type, field.opt));
