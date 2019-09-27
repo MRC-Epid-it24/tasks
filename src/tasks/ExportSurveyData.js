@@ -67,28 +67,35 @@ export default class {
     await this.initDB();
     await this.deleteOldData();
 
-    const stream = fs.createReadStream(this.filename).pipe(csv.parse({ headers: false }));
-    stream
-      .on('data', row => {
-        this.data.push(row);
-        this.count += 1;
+    return new Promise((resolve, reject) => {
+      const stream = fs.createReadStream(this.filename).pipe(csv.parse({ headers: false }));
+      stream
+        .on('data', row => {
+          this.data.push(row);
+          this.count += 1;
 
-        if (chunk > 0 && this.data.length === chunk) {
-          stream.pause();
-          this.storeToDB().then(() => stream.resume());
-        }
-      })
-      .on('end', () => {
-        this.storeToDB().then(() => this.triggerLog());
-
-        fs.unlink(this.filename, err => {
-          if (err) console.error(err);
+          if (chunk > 0 && this.data.length === chunk) {
+            stream.pause();
+            this.storeToDB()
+              .then(() => stream.resume())
+              .catch(err => reject(err));
+          }
+        })
+        .on('end', () => {
+          this.storeToDB(true)
+            .then(() => {
+              fs.unlink(this.filename, err => {
+                if (err) console.error(err);
+              });
+              resolve({ status: 'success' });
+            })
+            .catch(err => reject(err));
+        })
+        .on('error', err => {
+          this.closeDB();
+          reject(err);
         });
-      })
-      .on('error', err => {
-        console.error(err);
-        this.closeDB();
-      });
+    });
   }
 
   /**
@@ -96,7 +103,7 @@ export default class {
    *
    * @return void
    */
-  async storeToDB() {
+  async storeToDB(end = false) {
     if (!this.headers.length) {
       this.headers = this.data.shift();
       this.count -= 1;
@@ -113,6 +120,8 @@ export default class {
     const request = this.pool.request();
     await request.bulk(table);
     this.data = [];
+
+    if (end) await this.triggerLog();
   }
 
   /**
@@ -137,7 +146,7 @@ export default class {
       ImportMessage: message
     });
     await ps.unprepare();
-    this.closeDB();
+    await this.closeDB();
     console.log(message);
   }
 }
