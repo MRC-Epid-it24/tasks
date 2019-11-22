@@ -61,7 +61,7 @@ export default {
     }
   },
 
-  async exportSurveyData(surveyName, format = 'v1') {
+  async exportSurveyData(surveyName, format = 'v2') {
     try {
       const surveyInfo = await this.getSurvey(surveyName);
       const res = await axios.get(`${it24.url}/data-export/${surveyInfo.id}/submissions/csv`, {
