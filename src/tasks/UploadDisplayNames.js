@@ -11,8 +11,8 @@ import asyncForEach from '../util/asyncForEach';
 const { db } = config;
 
 export default class {
-  constructor(surveyName) {
-    this.surveyName = surveyName;
+  constructor(params) {
+    this.survey = params.survey;
     this.count = 0;
     this.data = {
       it24: [],
@@ -39,7 +39,7 @@ export default class {
     // Do not use Intake24 API for update now
     // IT24 Bug: when API used, autoincrement gets bumped with each update
     /* if (this.file && fs.existsSync(this.file)) {
-      await api.uploadSurveyRespondents(this.surveyName, this.file);
+      await api.uploadSurveyRespondents(this.survey, this.file);
       fs.unlinkSync(this.file);
     } */
 
@@ -102,7 +102,7 @@ export default class {
       `SELECT users.id, users.name, alias.user_name FROM users
         JOIN user_survey_aliases alias ON users.id = alias.user_id
         WHERE alias.survey_id = $1`,
-      [this.surveyName]
+      [this.survey]
     );
 
     this.data.it24 = res.rows;
@@ -163,7 +163,7 @@ export default class {
 
     const csv = await parseAsync(this.data.filtered, { fields: ['user name', 'password', 'name'] });
 
-    const filename = `Intake24-display-name-${this.surveyName}_${fecha.format(
+    const filename = `Intake24-display-name-${this.survey}_${fecha.format(
       new Date(),
       'YYYY-MM-DD-hh-mm-ss'
     )}.csv`;

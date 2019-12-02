@@ -9,8 +9,8 @@ import api from '../services/apiService';
 const epidDB = config.db.epid;
 
 export default class {
-  constructor(surveyName) {
-    this.surveyName = surveyName;
+  constructor(params) {
+    this.params = params;
     this.headers = [];
     this.data = [];
     this.count = 0;
@@ -25,7 +25,7 @@ export default class {
    */
   async run() {
     await api.login();
-    this.filename = await api.exportSurveyData(this.surveyName);
+    this.filename = await api.exportSurveyData(this.params.survey, this.params.version);
     await this.processSurveyData(500);
   }
 
