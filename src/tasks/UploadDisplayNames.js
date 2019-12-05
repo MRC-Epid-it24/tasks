@@ -5,6 +5,7 @@ import { parseAsync } from 'json2csv';
 import config from '../config';
 import schema from '../config/schema';
 import api from '../services/apiService';
+import logger from '../services/logger';
 import tmp from '../services/tmpService';
 import asyncForEach from '../util/asyncForEach';
 
@@ -115,7 +116,7 @@ export default class {
    */
   async updateDisplayNames() {
     if (!this.data.epid.length) {
-      console.log(`No EPID data. Skipping...`);
+      logger.info(`No EPID data. Skipping...`);
       return;
     }
 
@@ -133,7 +134,7 @@ export default class {
       }
     });
 
-    console.log(this.count ? `Records updated: ${this.count}` : `No records to update.`);
+    logger.info(this.count ? `Records updated: ${this.count}` : `No records to update.`);
   }
 
   /**
@@ -157,7 +158,7 @@ export default class {
    */
   async saveToCSV() {
     if (!this.data.filtered.length) {
-      console.log(`No records to update, skipping...`);
+      logger.info(`No records to update, skipping...`);
       return;
     }
 

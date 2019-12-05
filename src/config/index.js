@@ -14,7 +14,9 @@ export default {
       user: process.env.EPID_DB_USERNAME,
       password: process.env.EPID_DB_PASSWORD,
       server: process.env.EPID_DB_SERVER,
-      database: process.env.EPID_DB_DATABASE
+      database: process.env.EPID_DB_DATABASE,
+      requestTimeout: 5 * 60 * 1000,
+      options: { cancelTimeout: 5 * 60 * 1000 }
     }
   },
   tasks: [

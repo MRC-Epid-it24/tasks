@@ -5,6 +5,7 @@ import sql from 'mssql';
 import config from '../config';
 import schema from '../config/schema';
 import api from '../services/apiService';
+import logger from '../services/logger';
 
 const epidDB = config.db.epid;
 
@@ -85,7 +86,7 @@ export default class {
           this.storeToDB(true)
             .then(() => {
               fs.unlink(this.filename, err => {
-                if (err) console.error(err);
+                if (err) logger.info(err);
               });
               resolve({ status: 'success' });
             })
@@ -147,6 +148,6 @@ export default class {
     });
     await ps.unprepare();
     await this.closeDB();
-    console.log(message);
+    logger.info(message);
   }
 }
