@@ -1,4 +1,8 @@
 export default {
-  logs: process.env.FS_LOGS_DIR || 'logs',
-  tmp: process.env.FS_TMP_DIR || 'tmp'
+  logs: {
+    dir: process.env.FS_LOGS_DIR || 'logs'
+  },
+  tmp: {
+    dir: process.env.FS_TMP_DIR || 'tmp'
+  }
 };

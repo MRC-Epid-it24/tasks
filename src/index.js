@@ -8,7 +8,7 @@ config.tasks.forEach(task => {
   cron.schedule(task.cron, () => {
     logger.info(`Task ${task.name} started.`);
 
-    new tasks[task.name](task.params)
+    new tasks[task.name](task)
       .run()
       .then(() => {
         logger.info(`Task ${task.name} successfully processed.`);

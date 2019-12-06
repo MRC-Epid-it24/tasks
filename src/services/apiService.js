@@ -4,9 +4,10 @@ import FormData from 'form-data';
 import fs from 'fs';
 import path from 'path';
 import config from '../config';
-import tmp from './tmpService';
+import storage from './storage';
 
 const { it24 } = config.api;
+axios.defaults.baseURL = it24.url;
 
 export default {
   accessToken: '',
@@ -14,10 +15,7 @@ export default {
 
   async getRefreshToken() {
     try {
-      const res = await axios.post(`${it24.url}/signin`, {
-        email: it24.username,
-        password: it24.password
-      });
+      const res = await axios.post('signin', { email: it24.username, password: it24.password });
       this.refreshToken = res.data.refreshToken;
       return this.refreshToken;
     } catch (err) {
@@ -28,7 +26,7 @@ export default {
   async getAccessToken() {
     try {
       const res = await axios.post(
-        `${it24.url}/refresh`,
+        'refresh',
         {},
         {
           headers: {
@@ -50,7 +48,7 @@ export default {
 
   async getSurvey(surveyId) {
     try {
-      const res = await axios.get(`${it24.url}/surveys/${surveyId}`, {
+      const res = await axios.get(`surveys/${surveyId}`, {
         headers: {
           'X-Auth-Token': this.accessToken
         }
@@ -64,7 +62,7 @@ export default {
   async exportSurveyData(surveyName, format = 'v2') {
     try {
       const surveyInfo = await this.getSurvey(surveyName);
-      const res = await axios.get(`${it24.url}/data-export/${surveyInfo.id}/submissions/csv`, {
+      const res = await axios.get(`data-export/${surveyInfo.id}/submissions/csv`, {
         params: {
           dateFrom: surveyInfo.startDate,
           dateTo: surveyInfo.endDate,
@@ -81,7 +79,7 @@ export default {
         'YYYY-MM-DD-hh-mm-ss'
       )}.csv`;
 
-      const file = tmp.save(filename, res.data);
+      const file = storage.save(filename, res.data);
       return file;
     } catch (err) {
       throw new Error(`exportSurveyData failed with: ${err.message}'`);

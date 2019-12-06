@@ -3,14 +3,14 @@ import csv from 'fast-csv';
 import path from 'path';
 import sql from 'mssql';
 import config from '../config';
-import schema from '../config/schema';
 import api from '../services/apiService';
 import logger from '../services/logger';
 
-const epidDB = config.db.epid;
+const { schema } = config;
 
 export default class {
-  constructor(params) {
+  constructor({ name, params }) {
+    this.name = name;
     this.params = params;
     this.headers = [];
     this.data = [];
@@ -36,7 +36,7 @@ export default class {
    * @return void
    */
   async initDB() {
-    this.pool = new sql.ConnectionPool(epidDB);
+    this.pool = new sql.ConnectionPool({ ...config.db.epid, ...config.mssql });
     await this.pool.connect();
   }
 
@@ -67,6 +67,7 @@ export default class {
   async processSurveyData(chunk = 0) {
     await this.initDB();
     await this.deleteOldData();
+    logger.info(`Task ${this.name}: Starting data import.`);
 
     return new Promise((resolve, reject) => {
       const stream = fs.createReadStream(this.filename).pipe(csv.parse({ headers: false }));
@@ -122,7 +123,10 @@ export default class {
     await request.bulk(table);
     this.data = [];
 
-    if (end) await this.triggerLog();
+    if (end) {
+      logger.info(`Task ${this.name}: Data import finished, triggering procedures.`);
+      await this.triggerLog();
+    }
   }
 
   /**

@@ -3,16 +3,16 @@ import mssql from 'mssql';
 import { Pool } from 'pg';
 import { parseAsync } from 'json2csv';
 import config from '../config';
-import schema from '../config/schema';
 import api from '../services/apiService';
 import logger from '../services/logger';
-import tmp from '../services/tmpService';
+import storage from '../services/storage';
 import asyncForEach from '../util/asyncForEach';
 
-const { db } = config;
+const { db, schema } = config;
 
 export default class {
-  constructor(params) {
+  constructor({ name, params }) {
+    this.name = name;
     this.survey = params.survey;
     this.count = 0;
     this.data = {
@@ -55,8 +55,7 @@ export default class {
    * @return void
    */
   async initDB() {
-    const { user, password, server, database } = db.epid;
-    this.pool.epid = new mssql.ConnectionPool({ user, password, server, database });
+    this.pool.epid = new mssql.ConnectionPool({ ...db.epid, ...config.mssql });
     await this.pool.epid.connect();
 
     const { connectionString } = db.it24;
@@ -116,7 +115,7 @@ export default class {
    */
   async updateDisplayNames() {
     if (!this.data.epid.length) {
-      logger.info(`No EPID data. Skipping...`);
+      logger.info(`Task ${this.name}: No EPID data. Skipping...`);
       return;
     }
 
@@ -134,7 +133,11 @@ export default class {
       }
     });
 
-    logger.info(this.count ? `Records updated: ${this.count}` : `No records to update.`);
+    logger.info(
+      this.count
+        ? `Task ${this.name}: Records updated: ${this.count}`
+        : `Task ${this.name}: No records to update.`
+    );
   }
 
   /**
@@ -158,7 +161,7 @@ export default class {
    */
   async saveToCSV() {
     if (!this.data.filtered.length) {
-      logger.info(`No records to update, skipping...`);
+      logger.info(`Task ${this.name}: No records to update, skipping...`);
       return;
     }
 
@@ -169,6 +172,6 @@ export default class {
       'YYYY-MM-DD-hh-mm-ss'
     )}.csv`;
 
-    this.file = tmp.save(filename, csv);
+    this.file = storage.save(filename, csv);
   }
 }

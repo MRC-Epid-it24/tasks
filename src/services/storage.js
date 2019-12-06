@@ -1,16 +1,23 @@
 import fs from 'fs';
 import path from 'path';
+import config from '../config/filesystem';
 
-export default {
+class Storage {
+  constructor() {
+    this.cwd = config.tmp.dir;
+    this.dir = this.tap();
+  }
+
   /**
    * Verify that temporary directory exists
    *
-   * @return void
+   * @return String
    */
-  checkDir() {
-    const dir = path.resolve('tmp');
+  tap(...segments) {
+    const dir = path.resolve(this.cwd, ...segments);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir);
-  },
+    return dir;
+  }
 
   /**
    * Save data to file at temporary location
@@ -21,11 +28,11 @@ export default {
    * @return String
    */
   save(filename, data) {
-    this.checkDir();
-
-    const file = path.resolve('tmp', filename);
+    const file = path.resolve(this.cwd, filename);
     fs.appendFileSync(file, data);
 
     return file;
   }
-};
+}
+
+export default new Storage();
