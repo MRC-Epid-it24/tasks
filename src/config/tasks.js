@@ -1,7 +1,7 @@
 export default [
   {
     name: 'EXPORT_SURVEY_DATA',
-    cron: '*/30 * * * * *',
+    cron: '* * * * *',
     params: {
       survey: 'demo',
       version: 'v2'
@@ -9,7 +9,7 @@ export default [
   },
   {
     name: 'UPLOAD_DISPLAY_NAMES',
-    cron: '*/30 * * * * *',
+    cron: '* * * * *',
     params: {
       survey: 'demo'
     }

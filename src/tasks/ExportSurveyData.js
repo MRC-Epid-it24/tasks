@@ -1,9 +1,10 @@
+/* eslint-disable no-await-in-loop */
 import fs from 'fs';
 import csv from 'fast-csv';
 import path from 'path';
 import sql from 'mssql';
 import config from '../config';
-import api from '../services/apiService';
+import api from '../services/intake24API';
 import logger from '../services/logger';
 
 const { schema } = config;
@@ -12,10 +13,13 @@ export default class {
   constructor({ name, params }) {
     this.name = name;
     this.params = params;
+    this.surveyInfo = null;
+
     this.headers = [];
     this.data = [];
     this.count = 0;
-    this.filename = '';
+    this.filename = null;
+
     this.pool = null;
   }
 
@@ -25,13 +29,76 @@ export default class {
    * @return void
    */
   async run() {
-    await api.login();
-    this.filename = await api.exportSurveyData(this.params.survey, this.params.version);
-    await this.processSurveyData(500);
+    await this.fetchIntake24Data();
+    if (this.filename) await this.processSurveyData(500);
   }
 
   /**
-   * Open database connection pool
+   * Get parameters for data export
+   *
+   * @return Object
+   */
+  getExportDataParams() {
+    return {
+      dateFrom: this.surveyInfo.startDate,
+      dateTo: this.surveyInfo.endDate,
+      forceBOM: '1',
+      format: this.params.version
+    };
+  }
+
+  /**
+   * Export data from Intake24 instance
+   *
+   * @return void
+   */
+  async fetchIntake24Data() {
+    const sleep = ms => {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    };
+
+    const { survey } = this.params;
+    await api.login();
+    this.surveyInfo = await api.getSurvey(survey);
+    const taskId = await api.asyncExportSurveyData(survey, this.getExportDataParams());
+
+    let inProgress = true;
+
+    while (inProgress) {
+      const activeTasks = await api.getActiveTasks(survey);
+      const task = activeTasks.find(item => item.id === taskId);
+
+      const [status, value] = Object.entries(task.status)[0];
+      switch (status) {
+        case 'Pending':
+          logger.info(`Task ${this.name}: DataExport (Task ${taskId}) is pending.`);
+          break;
+        case 'InProgress':
+          logger.info(
+            `Task ${this.name}: DataExport (Task ${taskId}) is in progress (${Math.ceil(
+              value.progress * 100
+            )}%).`
+          );
+          break;
+        case 'DownloadUrlAvailable':
+          inProgress = false;
+          this.filename = await api.getExportFile(survey, value.url);
+          logger.info(`Task ${this.name}: DataExport from Intake24 is done.`);
+          break;
+        default:
+          inProgress = false;
+          logger.warn(
+            `Task ${this.name}: DataExport (Task ${taskId}) with invalid status (${status}).`
+          );
+          break;
+      }
+
+      if (inProgress) await sleep(2000);
+    }
+  }
+
+  /**
+   * Open DB connection pool
    *
    * @return void
    */
@@ -41,7 +108,7 @@ export default class {
   }
 
   /**
-   * Close database connection pool
+   * Close DB connection pool
    *
    * @return void
    */
@@ -50,23 +117,23 @@ export default class {
   }
 
   /**
-   * Delete old survey data
+   * Clear old survey data
    *
    * @return void
    */
-  async deleteOldData() {
+  async clearOldSurveyData() {
     await this.pool.request().query(`DELETE FROM ${schema.tables.importData}`);
   }
 
   /**
-   * Read the file and process the data
+   * Read the data-export file and stream the data into the DB
    *
    * @param int chunk
    * @return void
    */
   async processSurveyData(chunk = 0) {
     await this.initDB();
-    await this.deleteOldData();
+    await this.clearOldSurveyData();
     logger.info(`Task ${this.name}: Starting data import.`);
 
     return new Promise((resolve, reject) => {
@@ -74,7 +141,7 @@ export default class {
       stream
         .on('data', row => {
           this.data.push(row);
-          this.count += 1;
+          this.count++;
 
           if (chunk > 0 && this.data.length === chunk) {
             stream.pause();
@@ -108,7 +175,7 @@ export default class {
   async storeToDB(end = false) {
     if (!this.headers.length) {
       this.headers = this.data.shift();
-      this.count -= 1;
+      this.count--;
     }
 
     if (!this.data.length) return;

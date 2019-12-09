@@ -3,7 +3,6 @@ import mssql from 'mssql';
 import { Pool } from 'pg';
 import { parseAsync } from 'json2csv';
 import config from '../config';
-import api from '../services/apiService';
 import logger from '../services/logger';
 import storage from '../services/storage';
 import asyncForEach from '../util/asyncForEach';
@@ -33,7 +32,6 @@ export default class {
    * @return void
    */
   async run() {
-    await api.login();
     await this.initDB();
     await this.getDisplayNames();
 
