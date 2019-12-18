@@ -1,5 +1,5 @@
 import fs from 'fs';
-import csv from 'fast-csv';
+import * as csv from 'fast-csv';
 import sql from 'mssql';
 import config from '../config';
 import logger from '../services/logger';

@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import fs from 'fs';
-import csv from 'fast-csv';
+import * as csv from 'fast-csv';
 import path from 'path';
 import sql from 'mssql';
 import config from '../config';
