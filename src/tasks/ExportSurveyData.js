@@ -39,8 +39,15 @@ export default class {
    * @return Object
    */
   getExportDataParams() {
+    // Pull last 7-days data
+    let startDate = new Date();
+    startDate.setDate(startDate.getDate() - 7);
+    startDate.setHours(0, 0, 0, 0);
+
+    if (startDate > this.surveyInfo.endDate) startDate = this.surveyInfo.endDate;
+
     return {
-      dateFrom: this.surveyInfo.startDate,
+      dateFrom: startDate,
       dateTo: this.surveyInfo.endDate,
       forceBOM: '1',
       format: this.params.version
@@ -80,10 +87,19 @@ export default class {
             )}%).`
           );
           break;
+        case 'DownloadUrlPending':
+          logger.info(
+            `Task ${this.name}: DataExport (Task ${taskId}) is preparing URL for download.`
+          );
+          break;
         case 'DownloadUrlAvailable':
           inProgress = false;
           this.filename = await api.getExportFile(survey, value.url);
           logger.info(`Task ${this.name}: DataExport from Intake24 is done.`);
+          break;
+        case 'Failed':
+          inProgress = false;
+          logger.error(`Task ${this.name}: DataExport (Task ${taskId}) has failed.`);
           break;
         default:
           inProgress = false;
