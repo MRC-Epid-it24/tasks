@@ -188,13 +188,17 @@ export default class {
    *
    * @return void
    */
-  async storeToDB(end = false) {
+  async storeToDB(eof = false) {
     if (!this.headers.length) {
       this.headers = this.data.shift();
       this.count--;
     }
 
-    if (!this.data.length) return;
+    if (!this.data.length) {
+      logger.info(`Task ${this.name}: Data import finished, triggering procedures.`);
+      await this.triggerLog();
+      return;
+    }
 
     const table = new sql.Table(schema.tables.importData);
     // table.create = true;
@@ -206,7 +210,7 @@ export default class {
     await request.bulk(table);
     this.data = [];
 
-    if (end) {
+    if (eof) {
       logger.info(`Task ${this.name}: Data import finished, triggering procedures.`);
       await this.triggerLog();
     }
