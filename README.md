@@ -6,11 +6,15 @@ Interface between Intake24 API and Clinical DB (CRON-like node.js service)
 
 Download local project dependencies
 
-    npm install
+```sh
+npm install
+```
 
 Copy `.env.example` to `.env` file
 
-    cp .env.example .env
+```sh
+cp .env.example .env
+```
 
 Edit `.env` file and set up main configuration variables
 
@@ -28,7 +32,7 @@ Currently implemented tasks are:
 
 - EXPORT_SURVEY_DATA - exports intake24 survey data and imports data into specific database
 
-```
+```js
 {
     name: 'EXPORT_SURVEY_DATA',
     cron: '* * * * *',
@@ -41,7 +45,7 @@ Currently implemented tasks are:
 
 - UPLOAD_DISPLAY_NAMES - First (display) name synchronisation into intake24
 
-```
+```js
 {
     name: 'UPLOAD_DISPLAY_NAMES',
     cron: '* * * * *',
@@ -57,17 +61,23 @@ Currently implemented tasks are:
 
 Start a server with hot-reloading
 
-    npm run dev
+```sh
+npm run dev
+```
 
 ### 3.2. Production environment
 
 Build node.js application
 
-    npm run prod
+```sh
+npm run prod
+```
 
 Launch node.js application
 
-    npm run serve
+```sh
+npm run serve
+```
 
 Optional
 

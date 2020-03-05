@@ -34,6 +34,34 @@ export default class {
   }
 
   /**
+   * Open DB connection pool
+   *
+   * @return void
+   */
+  async initDB() {
+    this.pool = new sql.ConnectionPool({ ...config.db.epid, ...config.mssql });
+    await this.pool.connect();
+  }
+
+  /**
+   * Close DB connection pool
+   *
+   * @return void
+   */
+  async closeDB() {
+    await this.pool.close();
+  }
+
+  /**
+   * Clear old survey data
+   *
+   * @return void
+   */
+  async clearOldSurveyData() {
+    await this.pool.request().query(`DELETE FROM ${schema.tables.importData}`);
+  }
+
+  /**
    * Get parameters for data export
    *
    * @return Object
@@ -114,34 +142,6 @@ export default class {
   }
 
   /**
-   * Open DB connection pool
-   *
-   * @return void
-   */
-  async initDB() {
-    this.pool = new sql.ConnectionPool({ ...config.db.epid, ...config.mssql });
-    await this.pool.connect();
-  }
-
-  /**
-   * Close DB connection pool
-   *
-   * @return void
-   */
-  async closeDB() {
-    await this.pool.close();
-  }
-
-  /**
-   * Clear old survey data
-   *
-   * @return void
-   */
-  async clearOldSurveyData() {
-    await this.pool.request().query(`DELETE FROM ${schema.tables.importData}`);
-  }
-
-  /**
    * Read the data-export file and stream the data into the DB
    *
    * @param int chunk
@@ -203,7 +203,11 @@ export default class {
     const table = new sql.Table(schema.tables.importData);
     // table.create = true;
     // schema.fields.forEach(field => table.columns.add(field.id, field.type, field.opt));
-    this.headers.forEach(column => table.columns.add(column, sql.VarChar(500), { nullable: true }));
+    this.headers.forEach(column =>
+      table.columns.add(column, column === 'Survey ID' ? sql.UniqueIdentifier : sql.VarChar(500), {
+        nullable: true
+      })
+    );
     this.data.forEach(data => table.rows.add(...data));
 
     const request = this.pool.request();
