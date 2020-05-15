@@ -11,5 +11,5 @@ export default {
   filesystem,
   mssql,
   schema,
-  tasks
+  tasks,
 };

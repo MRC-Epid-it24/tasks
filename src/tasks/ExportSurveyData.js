@@ -78,7 +78,7 @@ export default class {
       dateFrom: startDate,
       dateTo: this.surveyInfo.endDate,
       forceBOM: '1',
-      format: this.params.version
+      format: this.params.version,
     };
   }
 
@@ -88,8 +88,8 @@ export default class {
    * @return void
    */
   async fetchIntake24Data() {
-    const sleep = ms => {
-      return new Promise(resolve => setTimeout(resolve, ms));
+    const sleep = (ms) => {
+      return new Promise((resolve) => setTimeout(resolve, ms));
     };
 
     const { survey } = this.params;
@@ -101,7 +101,7 @@ export default class {
 
     while (inProgress) {
       const activeTasks = await api.getActiveTasks(survey);
-      const task = activeTasks.find(item => item.id === taskId);
+      const task = activeTasks.find((item) => item.id === taskId);
 
       const [status, value] = Object.entries(task.status)[0];
       switch (status) {
@@ -155,7 +155,7 @@ export default class {
     return new Promise((resolve, reject) => {
       const stream = fs.createReadStream(this.filename).pipe(csv.parse({ headers: false }));
       stream
-        .on('data', row => {
+        .on('data', (row) => {
           this.data.push(row);
           this.count++;
 
@@ -163,20 +163,20 @@ export default class {
             stream.pause();
             this.storeToDB()
               .then(() => stream.resume())
-              .catch(err => reject(err));
+              .catch((err) => reject(err));
           }
         })
         .on('end', () => {
           this.storeToDB(true)
             .then(() => {
-              fs.unlink(this.filename, err => {
+              fs.unlink(this.filename, (err) => {
                 if (err) logger.info(err);
               });
               resolve({ status: 'success' });
             })
-            .catch(err => reject(err));
+            .catch((err) => reject(err));
         })
-        .on('error', err => {
+        .on('error', (err) => {
           this.closeDB();
           reject(err);
         });
@@ -203,12 +203,12 @@ export default class {
     const table = new sql.Table(schema.tables.importData);
     // table.create = true;
     // schema.fields.forEach(field => table.columns.add(field.id, field.type, field.opt));
-    this.headers.forEach(column =>
+    this.headers.forEach((column) =>
       table.columns.add(column, column === 'Survey ID' ? sql.UniqueIdentifier : sql.VarChar(500), {
-        nullable: true
+        nullable: true,
       })
     );
-    this.data.forEach(data => table.rows.add(...data));
+    this.data.forEach((data) => table.rows.add(...data));
 
     const request = this.pool.request();
     await request.bulk(table);
@@ -239,7 +239,7 @@ export default class {
       ImportType: 'Intake24AutoStep1',
       ImportFileName: path.basename(this.filename),
       ImportStatus: 'Completed',
-      ImportMessage: message
+      ImportMessage: message,
     });
     await ps.unprepare();
     await this.closeDB();

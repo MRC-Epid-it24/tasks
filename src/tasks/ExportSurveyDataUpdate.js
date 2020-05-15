@@ -31,7 +31,7 @@ class ExportSurveyDataUpdate extends ExportSurveyData {
     return new Promise((resolve, reject) => {
       const stream = fs.createReadStream(this.filename).pipe(csv.parse({ headers: false }));
       stream
-        .on('data', row => {
+        .on('data', (row) => {
           const pause =
             chunk > 0 && this.data.length > chunk && row[0] !== this.data[this.data.length - 1][0];
 
@@ -41,7 +41,7 @@ class ExportSurveyDataUpdate extends ExportSurveyData {
 
             this.storeToDB()
               .then(() => stream.resume())
-              .catch(err => reject(err));
+              .catch((err) => reject(err));
           } else {
             this.data.push(row);
             this.count++;
@@ -50,14 +50,14 @@ class ExportSurveyDataUpdate extends ExportSurveyData {
         .on('end', () => {
           this.storeToDB(true)
             .then(() => {
-              fs.unlink(this.filename, err => {
+              fs.unlink(this.filename, (err) => {
                 if (err) logger.info(err);
               });
               resolve({ status: 'success' });
             })
-            .catch(err => reject(err));
+            .catch((err) => reject(err));
         })
-        .on('error', err => {
+        .on('error', (err) => {
           this.closeDB();
           reject(err);
         });
@@ -77,7 +77,7 @@ class ExportSurveyDataUpdate extends ExportSurveyData {
 
     if (!this.data.length) return;
 
-    const uuids = this.data.map(item => item[0]);
+    const uuids = this.data.map((item) => item[0]);
     let localData = await this.pool
       .request()
       .query(
@@ -86,18 +86,18 @@ class ExportSurveyDataUpdate extends ExportSurveyData {
         )}')`
       );
 
-    localData = localData.recordset.map(item => item['Survey ID']);
+    localData = localData.recordset.map((item) => item['Survey ID']);
 
-    this.data = this.data.filter(item => !localData.includes(item[0]));
+    this.data = this.data.filter((item) => !localData.includes(item[0]));
 
     if (this.data.length) {
       const table = new sql.Table(schema.tables.importData);
       // table.create = true;
       // schema.fields.forEach(field => table.columns.add(field.id, field.type, field.opt));
-      this.headers.forEach(column =>
+      this.headers.forEach((column) =>
         table.columns.add(column, sql.VarChar(500), { nullable: true })
       );
-      this.data.forEach(data => table.rows.add(...data));
+      this.data.forEach((data) => table.rows.add(...data));
 
       const request = this.pool.request();
       await request.bulk(table);

@@ -4,14 +4,14 @@ export default [
     cron: '* * * * *',
     params: {
       survey: 'demo',
-      version: 'v2'
-    }
+      version: 'v2',
+    },
   },
   {
     name: 'UPLOAD_DISPLAY_NAMES',
     cron: '* * * * *',
     params: {
-      survey: 'demo'
-    }
-  }
+      survey: 'demo',
+    },
+  },
 ];

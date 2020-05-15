@@ -4,7 +4,7 @@ export default {
   tables: {
     importData: 'tblIntake24Import',
     importLog: 'tblImportLogAuto',
-    displayNames: 'vwIntake24DisplayName'
+    displayNames: 'vwIntake24DisplayName',
   },
 
   fields: [
@@ -15,19 +15,19 @@ export default {
       id: 'submission_time',
       name: 'Submission time',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'time_to_complete',
       name: 'Time to complete',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'cooking_oil_used',
       name: 'Cooking oil used',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     { id: 'diet', name: 'Diet', type: sql.VarChar(500), opt: { nullable: true } },
     { id: 'supplements', name: 'Supplements', type: sql.VarChar(500), opt: { nullable: true } },
@@ -36,7 +36,7 @@ export default {
       id: 'reason_for_unusual_food_amount',
       name: 'Reason for unusual food amount',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     { id: 'proxy', name: 'Proxy', type: sql.VarChar(500), opt: { nullable: true } },
     { id: 'proxy_issues', name: 'Proxy Issues', type: sql.VarChar(500), opt: { nullable: true } },
@@ -49,49 +49,49 @@ export default {
       id: 'intake_24_food_code',
       name: 'Intake24 food code',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'description_en',
       name: 'Description (en)',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'description_local',
       name: 'Description (local)',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'nutrient_table_name',
       name: 'Nutrient table name',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'nutrient_table_code',
       name: 'Nutrient table code',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'food_group_code',
       name: 'Food group code',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'food_group_en',
       name: 'Food group (en)',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'food_group_local',
       name: 'Food group (local)',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     { id: 'ready_meal', name: 'Ready meal', type: sql.VarChar(500), opt: { nullable: true } },
     { id: 'brand', name: 'Brand', type: sql.VarChar(500), opt: { nullable: true } },
@@ -99,61 +99,61 @@ export default {
       id: 'as_served_weight_factor',
       name: 'As served weight factor',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'serving_size_g_ml',
       name: 'Serving size (g/ml)',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'serving_image',
       name: 'Serving image',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'leftovers_g_ml',
       name: 'Leftovers (g/ml)',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'leftovers_image',
       name: 'Leftovers image',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'portion_size_g_ml',
       name: 'Portion size (g/ml)',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'reasonable_amount',
       name: 'Reasonable amount',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'missing_food_description',
       name: 'Missing food description',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'missing_food_portion_size',
       name: 'Missing food portion size',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'missing_food_leftovers',
       name: 'Missing food leftovers',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     { id: 'energy_kcal', name: 'Energy (kcal)', type: sql.VarChar(500), opt: { nullable: true } },
     { id: 'fat', name: 'Fat', type: sql.VarChar(500), opt: { nullable: true } },
@@ -165,20 +165,20 @@ export default {
       id: 'non_milk_extrinsic_sugars',
       name: 'Non-milk extrinsic sugars',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     { id: 'alcohol', name: 'Alcohol', type: sql.VarChar(500), opt: { nullable: true } },
     {
       id: 'fibre_water_insoluble',
       name: 'Fibre, water-insoluble',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'fibre_water_soluble',
       name: 'Fibre, water-soluble',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     { id: 'vitamin_c', name: 'Vitamin C', type: sql.VarChar(500), opt: { nullable: true } },
     { id: 'calcium', name: 'Calcium', type: sql.VarChar(500), opt: { nullable: true } },
@@ -187,19 +187,19 @@ export default {
       id: 'alpha_carotene',
       name: 'Alpha-carotene',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'beta_cryptoxanthin',
       name: 'Beta cryptoxanthin',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'beta_carotene',
       name: 'Beta-carotene',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     { id: 'biotin', name: 'Biotin', type: sql.VarChar(500), opt: { nullable: true } },
     { id: 'chloride', name: 'Chloride', type: sql.VarChar(500), opt: { nullable: true } },
@@ -213,7 +213,7 @@ export default {
       id: 'englyst_fibre',
       name: 'Englyst fibre',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     { id: 'folate', name: 'Folate', type: sql.VarChar(500), opt: { nullable: true } },
     { id: 'fructose', name: 'Fructose', type: sql.VarChar(500), opt: { nullable: true } },
@@ -223,7 +223,7 @@ export default {
       id: 'intrinsic_and_milk_sugars',
       name: 'Intrinsic and milk sugars',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     { id: 'iodine', name: 'Iodine', type: sql.VarChar(500), opt: { nullable: true } },
     { id: 'lactose', name: 'Lactose', type: sql.VarChar(500), opt: { nullable: true } },
@@ -235,31 +235,31 @@ export default {
       id: 'niacin_equivalent',
       name: 'Niacin equivalent',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'nitrogen_conversion_factor',
       name: 'Nitrogen conversion factor',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'non_haem_iron',
       name: 'Non-haem iron',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'other_sugars_uk',
       name: 'Other sugars (UK)',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'pantothenic_acid',
       name: 'Pantothenic acid',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     { id: 'phosphorus', name: 'Phosphorus', type: sql.VarChar(500), opt: { nullable: true } },
     { id: 'potassium', name: 'Potassium', type: sql.VarChar(500), opt: { nullable: true } },
@@ -271,7 +271,7 @@ export default {
       id: 'southgate_fibre',
       name: 'Southgate fibre',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     { id: 'starch', name: 'Starch', type: sql.VarChar(500), opt: { nullable: true } },
     { id: 'sucrose', name: 'Sucrose', type: sql.VarChar(500), opt: { nullable: true } },
@@ -280,20 +280,20 @@ export default {
       id: 'total_carotene',
       name: 'Total carotene',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     {
       id: 'total_nitrogen',
       name: 'Total nitrogen',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     { id: 'trans_fa', name: 'Trans FA', type: sql.VarChar(500), opt: { nullable: true } },
     {
       id: 'tryptophan_60',
       name: 'Tryptophan/60',
       type: sql.VarChar(500),
-      opt: { nullable: true }
+      opt: { nullable: true },
     },
     { id: 'vitamin_a', name: 'Vitamin A', type: sql.VarChar(500), opt: { nullable: true } },
     { id: 'vitamin_b_12', name: 'Vitamin B12', type: sql.VarChar(500), opt: { nullable: true } },
@@ -306,7 +306,7 @@ export default {
       id: 'co₂_emissions',
       name: 'CO₂ emissions',
       type: sql.VarChar(500),
-      opt: { nullable: true }
-    }
-  ]
+      opt: { nullable: true },
+    },
+  ],
 };

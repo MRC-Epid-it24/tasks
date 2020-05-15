@@ -4,7 +4,7 @@ import config from './config';
 import tasks from './tasks';
 import logger from './services/logger';
 
-config.tasks.forEach(task => {
+config.tasks.forEach((task) => {
   cron.schedule(task.cron, () => {
     logger.info(`Task ${task.name} started.`);
 
@@ -13,7 +13,7 @@ config.tasks.forEach(task => {
       .then(() => {
         logger.info(`Task ${task.name} successfully processed.`);
       })
-      .catch(err => {
+      .catch((err) => {
         logger.error(`Task ${task.name} failed with: ${err.message}`);
         logger.error(err.stack);
       });

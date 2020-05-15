@@ -40,8 +40,8 @@ export default {
         {},
         {
           headers: {
-            'X-Auth-Token': this.refreshToken
-          }
+            'X-Auth-Token': this.refreshToken,
+          },
         }
       );
       this.accessToken = res.data.accessToken;
@@ -71,8 +71,8 @@ export default {
     try {
       const { data } = await axios.get(`surveys/${surveyId}`, {
         headers: {
-          'X-Auth-Token': this.accessToken
-        }
+          'X-Auth-Token': this.accessToken,
+        },
       });
       return data;
     } catch (err) {
@@ -92,8 +92,8 @@ export default {
       const res = await axios.get(`data-export/${surveyId}/submissions/csv`, {
         params,
         headers: {
-          'X-Auth-Token': this.accessToken
-        }
+          'X-Auth-Token': this.accessToken,
+        },
       });
 
       const filename = `Intake24-export-${surveyId}_${fecha.format(
@@ -123,8 +123,8 @@ export default {
         {
           params,
           headers: {
-            'X-Auth-Token': this.accessToken
-          }
+            'X-Auth-Token': this.accessToken,
+          },
         }
       );
 
@@ -144,8 +144,8 @@ export default {
     try {
       const res = await axios.get(`data-export/${surveyId}/submissions/async/status`, {
         headers: {
-          'X-Auth-Token': this.accessToken
-        }
+          'X-Auth-Token': this.accessToken,
+        },
       });
 
       return res.data.activeTasks;
@@ -165,8 +165,8 @@ export default {
     try {
       const res = await axios.get(url, {
         headers: {
-          'X-Auth-Token': this.accessToken
-        }
+          'X-Auth-Token': this.accessToken,
+        },
       });
 
       const filename = `Intake24-export-${surveyId}_${fecha.format(
@@ -193,12 +193,12 @@ export default {
           headers: {
             'X-Auth-Token': this.accessToken,
             // eslint-disable-next-line no-underscore-dangle
-            'Content-Type': `multipart/form-data; boundary=${formData._boundary}`
-          }
+            'Content-Type': `multipart/form-data; boundary=${formData._boundary}`,
+          },
         }
       );
     } catch (err) {
       throw new Error(`IT24 API uploadSurveyRespondents failed with: ${err.message}`);
     }
-  }
+  },
 };

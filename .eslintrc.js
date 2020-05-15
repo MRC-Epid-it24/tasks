@@ -4,24 +4,24 @@ module.exports = {
     browser: false,
     commonjs: true,
     es6: true,
-    node: true
+    node: true,
   },
   parserOptions: {
     parser: 'babel-eslint',
     sourceType: 'module',
-    ecmaVersion: 2018
+    ecmaVersion: 2018,
   },
   settings: {
     'import/resolver': {
-      'babel-module': {}
-    }
+      'babel-module': {},
+    },
   },
-  extends: ['airbnb', 'plugin:prettier/recommended'],
+  extends: ['airbnb-base', 'plugin:prettier/recommended'],
   plugins: ['prettier'],
   rules: {
     'prettier/prettier': 'error',
     'no-console': 'warn',
     'no-debugger': 'warn',
-    'no-plusplus': 'off'
-  }
+    'no-plusplus': 'off',
+  },
 };

@@ -17,12 +17,12 @@ export default class {
     this.data = {
       it24: [],
       epid: [],
-      filtered: []
+      filtered: [],
     };
     this.file = null;
     this.pool = {
       epid: null,
-      it24: null
+      it24: null,
     };
   }
 
@@ -117,16 +117,16 @@ export default class {
       return;
     }
 
-    await asyncForEach(this.data.epid, async item => {
+    await asyncForEach(this.data.epid, async (item) => {
       const it24record = this.data.it24.find(
-        row => item['user name'] === row.user_name && item.name !== row.name
+        (row) => item['user name'] === row.user_name && item.name !== row.name
       );
 
       if (it24record !== undefined) {
         this.count += 1;
         await this.pool.it24.query(`UPDATE users SET name = $1 WHERE id = $2`, [
           item.name,
-          it24record.id
+          it24record.id,
         ]);
       }
     });
@@ -145,9 +145,9 @@ export default class {
    */
   filterResults() {
     this.data.filtered = this.data.epid.filter(
-      item =>
+      (item) =>
         this.data.it24.find(
-          row => item['user name'] === row.user_name && item.name !== row.name
+          (row) => item['user name'] === row.user_name && item.name !== row.name
         ) !== undefined
     );
   }

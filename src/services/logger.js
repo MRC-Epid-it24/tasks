@@ -16,7 +16,7 @@ const logger = createLogger({
   level: 'info',
   format: format.combine(
     format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss'
+      format: 'YYYY-MM-DD HH:mm:ss',
     }),
     logFormat
   ),
@@ -26,7 +26,7 @@ const logger = createLogger({
       filename: 'application-%DATE%.log',
       datePattern: 'YYYY-MM-DD',
       maxSize: '10m',
-      maxFiles: '30d'
+      maxFiles: '30d',
     }),
     new transports.DailyRotateFile({
       level: 'error',
@@ -34,20 +34,20 @@ const logger = createLogger({
       filename: 'error-%DATE%.log',
       datePattern: 'YYYY-MM-DD',
       maxSize: '10m',
-      maxFiles: '30d'
+      maxFiles: '30d',
     }),
     new transports.Console({
       level: 'debug',
       format: format.combine(
         format.colorize(),
         format.timestamp({
-          format: 'YYYY-MM-DD HH:mm:ss'
+          format: 'YYYY-MM-DD HH:mm:ss',
         }),
         logFormat
-      )
-    })
+      ),
+    }),
   ],
-  exitOnError: false
+  exitOnError: false,
 });
 
 export default logger;
