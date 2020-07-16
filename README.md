@@ -76,7 +76,7 @@ npm run prod
 Launch node.js application
 
 ```sh
-npm run serve
+npm run start
 ```
 
 Optional

@@ -3,6 +3,10 @@ import path from 'path';
 import config from '../config/filesystem';
 
 class Storage {
+  public cwd: string;
+
+  public dir: string;
+
   constructor() {
     this.cwd = config.tmp.dir;
     this.dir = this.tap();
@@ -13,7 +17,7 @@ class Storage {
    *
    * @return String
    */
-  tap(...segments) {
+  tap(...segments: string[]) {
     const dir = path.resolve(this.cwd, ...segments);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir);
     return dir;
@@ -27,7 +31,7 @@ class Storage {
    *
    * @return String
    */
-  save(filename, data) {
+  save(filename: string, data: string) {
     const file = path.resolve(this.cwd, filename);
     fs.appendFileSync(file, data);
 

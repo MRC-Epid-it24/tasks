@@ -1,3 +1,5 @@
+import { TaskDefinition } from '@/tasks/Task';
+
 export default [
   {
     name: 'EXPORT_SURVEY_DATA',
@@ -7,11 +9,11 @@ export default [
       version: 'v2',
     },
   },
-  {
+  /* {
     name: 'UPLOAD_DISPLAY_NAMES',
     cron: '* * * * *',
     params: {
       survey: 'demo',
     },
-  },
-];
+  }, */
+] as TaskDefinition[];

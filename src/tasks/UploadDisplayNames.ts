@@ -1,29 +1,55 @@
 import fecha from 'fecha';
-import mssql from 'mssql';
-import { Pool } from 'pg';
 import { parseAsync } from 'json2csv';
-import config from '../config';
+import schema from '../config/schema';
+import { mssql, pg } from '../services/db';
 import logger from '../services/logger';
 import storage from '../services/storage';
-import asyncForEach from '../util/asyncForEach';
+import { Task, TaskDefinition, TaskParameters } from './Task';
 
-const { db, schema } = config;
+export type Results = {
+  it24: IT24Result[];
+  epid: EpidResult[];
+  filtered: EpidResult[];
+};
 
-export default class {
-  constructor({ name, params }) {
+export type EpidResult = {
+  'user name': string;
+  name: string;
+};
+
+export type IT24Result = {
+  id: number;
+  name: string;
+  // eslint-disable-next-line camelcase
+  user_name: string;
+};
+
+export default class ExportSurveyData implements Task {
+  public name: string;
+
+  public params: TaskParameters;
+
+  public survey: string;
+
+  public data: Results;
+
+  public count: number;
+
+  public file: string | null;
+
+  constructor({ name, params }: TaskDefinition) {
     this.name = name;
-    this.survey = params.survey;
+    this.params = params;
+
+    this.survey = this.params.survey;
     this.count = 0;
     this.data = {
       it24: [],
       epid: [],
       filtered: [],
     };
+
     this.file = null;
-    this.pool = {
-      epid: null,
-      it24: null,
-    };
   }
 
   /**
@@ -31,8 +57,7 @@ export default class {
    *
    * @return void
    */
-  async run() {
-    await this.initDB();
+  async run(): Promise<void> {
     await this.getDisplayNames();
 
     // Do not use Intake24 API for update now
@@ -44,30 +69,6 @@ export default class {
 
     await this.getIT24DisplayNames();
     await this.updateDisplayNames();
-    await this.closeDB();
-  }
-
-  /**
-   * Open database connection pool
-   *
-   * @return void
-   */
-  async initDB() {
-    this.pool.epid = new mssql.ConnectionPool({ ...db.epid, ...config.mssql });
-    await this.pool.epid.connect();
-
-    const { connectionString } = db.it24;
-    this.pool.it24 = new Pool({ connectionString });
-  }
-
-  /**
-   * Close database connection pool
-   *
-   * @return void
-   */
-  async closeDB() {
-    await this.pool.epid.close();
-    await this.pool.it24.end();
   }
 
   /**
@@ -75,8 +76,8 @@ export default class {
    *
    * @return void
    */
-  async getDisplayNames() {
-    const res = await this.pool.epid.request().query(
+  async getDisplayNames(): Promise<void> {
+    const res = await mssql.request().query<EpidResult>(
       `SELECT Intake24ID as 'user name', DisplayName as 'name'
           FROM ${schema.tables.displayNames} WHERE DisplayName IS NOT NULL`
     );
@@ -95,8 +96,8 @@ export default class {
    *
    * @return void
    */
-  async getIT24DisplayNames() {
-    const res = await this.pool.it24.query(
+  async getIT24DisplayNames(): Promise<void> {
+    const res = await pg.query<IT24Result>(
       `SELECT users.id, users.name, alias.user_name FROM users
         JOIN user_survey_aliases alias ON users.id = alias.user_id
         WHERE alias.survey_id = $1`,
@@ -111,25 +112,22 @@ export default class {
    *
    * @return void
    */
-  async updateDisplayNames() {
+  async updateDisplayNames(): Promise<void> {
     if (!this.data.epid.length) {
       logger.info(`Task ${this.name}: No EPID data. Skipping...`);
       return;
     }
 
-    await asyncForEach(this.data.epid, async (item) => {
+    for (const item of this.data.epid) {
       const it24record = this.data.it24.find(
         (row) => item['user name'] === row.user_name && item.name !== row.name
       );
 
       if (it24record !== undefined) {
         this.count += 1;
-        await this.pool.it24.query(`UPDATE users SET name = $1 WHERE id = $2`, [
-          item.name,
-          it24record.id,
-        ]);
+        await pg.query(`UPDATE users SET name = $1 WHERE id = $2`, [item.name, it24record.id]);
       }
-    });
+    }
 
     logger.info(
       this.count
@@ -143,7 +141,7 @@ export default class {
    *
    * @return void
    */
-  filterResults() {
+  filterResults(): void {
     this.data.filtered = this.data.epid.filter(
       (item) =>
         this.data.it24.find(
@@ -157,7 +155,7 @@ export default class {
    *
    * @return void
    */
-  async saveToCSV() {
+  async saveToCSV(): Promise<void> {
     if (!this.data.filtered.length) {
       logger.info(`Task ${this.name}: No records to update, skipping...`);
       return;

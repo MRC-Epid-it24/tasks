@@ -1,72 +1,68 @@
-/* eslint-disable no-await-in-loop */
 import fs from 'fs';
 import * as csv from 'fast-csv';
 import path from 'path';
 import sql from 'mssql';
 import config from '../config';
-import api from '../services/intake24API';
+import { mssql } from '../services/db';
+import api, { SurveyInfo, ExportSurveyDataParams } from '../services/intake24API';
 import logger from '../services/logger';
+import { Task, TaskDefinition, TaskParameters } from './Task';
 
 const { schema } = config;
 
-export default class {
-  constructor({ name, params }) {
+export default class ExportSurveyData implements Task {
+  public name: string;
+
+  public params: TaskParameters;
+
+  public surveyInfo!: SurveyInfo;
+
+  public headers: any[];
+
+  public data: any[];
+
+  public count: number;
+
+  public filename!: string;
+
+  constructor({ name, params }: TaskDefinition) {
     this.name = name;
     this.params = params;
-    this.surveyInfo = null;
 
     this.headers = [];
     this.data = [];
     this.count = 0;
-    this.filename = null;
-
-    this.pool = null;
   }
 
   /**
    * Run the job
    *
-   * @return void
+   * @returns {Promise<void>}
+   * @memberof ExportSurveyData
    */
-  async run() {
+  async run(): Promise<void> {
     await this.fetchIntake24Data();
     if (this.filename) await this.processSurveyData(500);
   }
 
   /**
-   * Open DB connection pool
-   *
-   * @return void
-   */
-  async initDB() {
-    this.pool = new sql.ConnectionPool({ ...config.db.epid, ...config.mssql });
-    await this.pool.connect();
-  }
-
-  /**
-   * Close DB connection pool
-   *
-   * @return void
-   */
-  async closeDB() {
-    await this.pool.close();
-  }
-
-  /**
    * Clear old survey data
    *
-   * @return void
+   * @static
+   * @returns {Promise<void>}
+   * @memberof ExportSurveyData
    */
-  async clearOldSurveyData() {
-    await this.pool.request().query(`DELETE FROM ${schema.tables.importData}`);
+  static async clearOldSurveyData(): Promise<void> {
+    await mssql.request().query(`DELETE FROM ${schema.tables.importData}`);
   }
 
   /**
    * Get parameters for data export
    *
-   * @return Object
+   * @returns {ExportSurveyDataParams}
+   * @memberof ExportSurveyData
    */
-  getExportDataParams() {
+  getExportDataParams(): ExportSurveyDataParams {
     // Pull last 7-days data
     let startDate = new Date();
     startDate.setDate(startDate.getDate() - 7);
@@ -85,10 +81,11 @@ export default class {
   /**
    * Export data from Intake24 instance
    *
-   * @return void
+   * @returns {Promise<void>}
+   * @memberof ExportSurveyData
    */
-  async fetchIntake24Data() {
-    const sleep = (ms) => {
+  async fetchIntake24Data(): Promise<void> {
+    const sleep = (ms: number) => {
       return new Promise((resolve) => setTimeout(resolve, ms));
     };
 
@@ -102,6 +99,10 @@ export default class {
     while (inProgress) {
       const activeTasks = await api.getActiveTasks(survey);
       const task = activeTasks.find((item) => item.id === taskId);
+      if (!task) {
+        inProgress = false;
+        return;
+      }
 
       const [status, value] = Object.entries(task.status)[0];
       switch (status) {
@@ -111,7 +112,7 @@ export default class {
         case 'InProgress':
           logger.info(
             `Task ${this.name}: DataExport (Task ${taskId}) is in progress (${Math.ceil(
-              value.progress * 100
+              (value.progress as number) * 100
             )}%).`
           );
           break;
@@ -122,7 +123,7 @@ export default class {
           break;
         case 'DownloadUrlAvailable':
           inProgress = false;
-          this.filename = await api.getExportFile(survey, value.url);
+          this.filename = await api.getExportFile(survey, value.url as string);
           logger.info(`Task ${this.name}: DataExport from Intake24 is done.`);
           break;
         case 'Failed':
@@ -144,12 +145,12 @@ export default class {
   /**
    * Read the data-export file and stream the data into the DB
    *
-   * @param int chunk
-   * @return void
+   * @param {number} [chunk=0]
+   * @returns {Promise<void>}
+   * @memberof ExportSurveyData
    */
-  async processSurveyData(chunk = 0) {
-    await this.initDB();
-    await this.clearOldSurveyData();
+  async processSurveyData(chunk = 0): Promise<void> {
+    await ExportSurveyData.clearOldSurveyData();
     logger.info(`Task ${this.name}: Starting data import.`);
 
     return new Promise((resolve, reject) => {
@@ -172,23 +173,22 @@ export default class {
               fs.unlink(this.filename, (err) => {
                 if (err) logger.info(err);
               });
-              resolve({ status: 'success' });
+              resolve();
             })
             .catch((err) => reject(err));
         })
-        .on('error', (err) => {
-          this.closeDB();
-          reject(err);
-        });
+        .on('error', (err) => reject(err));
     });
   }
 
   /**
    * Store loaded data to database
    *
-   * @return void
+   * @param {boolean} [eof=false]
+   * @returns {Promise<void>}
+   * @memberof ExportSurveyData
    */
-  async storeToDB(eof = false) {
+  async storeToDB(eof = false): Promise<void> {
     if (!this.headers.length) {
       this.headers = this.data.shift();
       this.count--;
@@ -210,7 +210,7 @@ export default class {
     );
     this.data.forEach((data) => table.rows.add(...data));
 
-    const request = this.pool.request();
+    const request = mssql.request();
     await request.bulk(table);
     this.data = [];
 
@@ -223,10 +223,11 @@ export default class {
   /**
    * Insert entry into database log to trigger further actions
    *
-   * @return void
+   * @returns {Promise<void>}
+   * @memberof ExportSurveyData
    */
-  async triggerLog() {
-    const ps = new sql.PreparedStatement(this.pool);
+  async triggerLog(): Promise<void> {
+    const ps = new sql.PreparedStatement(mssql);
     ps.input('ImportType', sql.VarChar);
     ps.input('ImportFileName', sql.VarChar);
     ps.input('ImportStatus', sql.VarChar);
@@ -242,7 +243,6 @@ export default class {
       ImportMessage: message,
     });
     await ps.unprepare();
-    await this.closeDB();
     logger.info(message);
   }
 }

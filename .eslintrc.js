@@ -7,21 +7,47 @@ module.exports = {
     node: true,
   },
   parserOptions: {
-    parser: 'babel-eslint',
+    parser: '@typescript-eslint/parser',
     sourceType: 'module',
-    ecmaVersion: 2018,
+    ecmaVersion: 2020,
   },
   settings: {
+    'import/extensions': ['.ts'],
+    'import/parsers': {
+      '@typescript-eslint/parser': ['.ts', '.tsx'],
+    },
     'import/resolver': {
-      'babel-module': {},
+      node: {
+        extensions: ['.ts'],
+      },
+      typescript: {
+        alwaysTryTypes: true,
+      },
     },
   },
-  extends: ['airbnb-base', 'plugin:prettier/recommended'],
-  plugins: ['prettier'],
+  extends: [
+    'airbnb-base',
+    'plugin:@typescript-eslint/recommended',
+    'prettier/@typescript-eslint',
+    'plugin:prettier/recommended',
+  ],
+  plugins: ['import', 'prettier', '@typescript-eslint'],
   rules: {
     'prettier/prettier': 'error',
     'no-console': 'warn',
     'no-debugger': 'warn',
     'no-plusplus': 'off',
+    'no-continue': 'off',
+    'no-await-in-loop': 'off',
+    'no-restricted-syntax': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/ban-types': 'warn',
+    'import/extensions': [
+      'error',
+      'ignorePackages',
+      {
+        ts: 'never',
+      },
+    ],
   },
 };

@@ -1,13 +1,33 @@
 import axios from 'axios';
 import fecha from 'fecha';
-import FormData from 'form-data';
-import fs from 'fs';
-import path from 'path';
 import config from '../config';
 import storage from './storage';
 
 const { it24 } = config.api;
 axios.defaults.baseURL = it24.url;
+
+export type ExportSurveyDataParams = {
+  dateFrom: Date;
+  dateTo: Date;
+  forceBOM: string;
+  format: string;
+};
+
+export type SurveyInfo = {
+  id: string;
+  startDate: Date;
+  endDate: Date;
+};
+
+export type ActiveTask = {
+  id: number;
+  createdAt: Date;
+  dateFrom: Date;
+  dateTo: Date;
+  status: ActiveTaskStatus;
+};
+
+export type ActiveTaskStatus = { [status: string]: Record<string, unknown> };
 
 export default {
   accessToken: null,
@@ -16,13 +36,15 @@ export default {
   /**
    * Sign-in to Intake24 instance
    *
-   * @return String
+   * @returns {Promise<void>}
    */
-  async getRefreshToken() {
+  async getRefreshToken(): Promise<void> {
     try {
-      const res = await axios.post('signin', { email: it24.username, password: it24.password });
-      this.refreshToken = res.data.refreshToken;
-      return this.refreshToken;
+      const {
+        data: { refreshToken },
+      } = await axios.post('signin', { email: it24.username, password: it24.password });
+
+      this.refreshToken = refreshToken;
     } catch (err) {
       throw new Error(`IT24 API getRefreshToken failed with: ${err.message}`);
     }
@@ -31,21 +53,15 @@ export default {
   /**
    * Obtain fresh access token
    *
-   * @return String
+   * @returns {Promise<void>}
    */
-  async getAccessToken() {
+  async getAccessToken(): Promise<void> {
     try {
-      const res = await axios.post(
-        'refresh',
-        {},
-        {
-          headers: {
-            'X-Auth-Token': this.refreshToken,
-          },
-        }
-      );
-      this.accessToken = res.data.accessToken;
-      return this.accessToken;
+      const {
+        data: { accessToken },
+      } = await axios.post('refresh', {}, { headers: { 'X-Auth-Token': this.refreshToken } });
+
+      this.accessToken = accessToken;
     } catch (err) {
       throw new Error(`IT24 API getAccessToken failed with: ${err.message}`);
     }
@@ -54,9 +70,9 @@ export default {
   /**
    * Log in to Intake24 and get fresh refresh & access tokens
    *
-   * @return void
+   * @returns {Promise<void>}
    */
-  async login() {
+  async login(): Promise<void> {
     await this.getRefreshToken();
     await this.getAccessToken();
   },
@@ -64,15 +80,13 @@ export default {
   /**
    * Get survey information
    *
-   * @param String surveyId
-   * @return void
+   * @param {string} surveyId
+   * @returns {Promise<SurveyInfo>}
    */
-  async getSurvey(surveyId) {
+  async getSurvey(surveyId: string): Promise<SurveyInfo> {
     try {
       const { data } = await axios.get(`surveys/${surveyId}`, {
-        headers: {
-          'X-Auth-Token': this.accessToken,
-        },
+        headers: { 'X-Auth-Token': this.accessToken },
       });
       return data;
     } catch (err) {
@@ -83,17 +97,15 @@ export default {
   /**
    * Synchronously export survey data
    *
-   * @param String surveyId
-   * @param Object params
-   * @return String
+   * @param {string} surveyId
+   * @param {ExportSurveyDataParams} params
+   * @returns {Promise<string>}
    */
-  async exportSurveyData(surveyId, params) {
+  async exportSurveyData(surveyId: string, params: ExportSurveyDataParams): Promise<string> {
     try {
-      const res = await axios.get(`data-export/${surveyId}/submissions/csv`, {
+      const { data } = await axios.get(`data-export/${surveyId}/submissions/csv`, {
         params,
-        headers: {
-          'X-Auth-Token': this.accessToken,
-        },
+        headers: { 'X-Auth-Token': this.accessToken },
       });
 
       const filename = `Intake24-export-${surveyId}_${fecha.format(
@@ -101,7 +113,7 @@ export default {
         'YYYY-MM-DD-hh-mm-ss'
       )}.csv`;
 
-      const file = storage.save(filename, res.data);
+      const file = storage.save(filename, data);
       return file;
     } catch (err) {
       throw new Error(`IT24 API exportSurveyData failed with: ${err.message}`);
@@ -111,24 +123,21 @@ export default {
   /**
    * Asynchronously export/trigger survey data
    *
-   * @param String surveyId
-   * @param Object params
-   * @return Int
+   * @param {string} surveyId
+   * @param {ExportSurveyDataParams} params
+   * @returns {Promise<number>}
    */
-  async asyncExportSurveyData(surveyId, params) {
+  async asyncExportSurveyData(surveyId: string, params: ExportSurveyDataParams): Promise<number> {
     try {
-      const res = await axios.post(
+      const {
+        data: { taskId },
+      } = await axios.post(
         `data-export/${surveyId}/submissions/async/csv`,
         {},
-        {
-          params,
-          headers: {
-            'X-Auth-Token': this.accessToken,
-          },
-        }
+        { params, headers: { 'X-Auth-Token': this.accessToken } }
       );
 
-      return res.data.taskId;
+      return taskId;
     } catch (err) {
       throw new Error(`IT24 API asyncExportSurveyData failed with: ${err.message}`);
     }
@@ -137,18 +146,18 @@ export default {
   /**
    * Query active / running tasks
    *
-   * @param String surveyId
-   * @return Array
+   * @param {string} surveyId
+   * @returns {Promise<object[]>}
    */
-  async getActiveTasks(surveyId) {
+  async getActiveTasks(surveyId: string): Promise<ActiveTask[]> {
     try {
-      const res = await axios.get(`data-export/${surveyId}/submissions/async/status`, {
-        headers: {
-          'X-Auth-Token': this.accessToken,
-        },
+      const {
+        data: { activeTasks },
+      } = await axios.get(`data-export/${surveyId}/submissions/async/status`, {
+        headers: { 'X-Auth-Token': this.accessToken },
       });
 
-      return res.data.activeTasks;
+      return activeTasks;
     } catch (err) {
       throw new Error(`IT24 API getActiveTasks failed with: ${err.message}`);
     }
@@ -157,17 +166,13 @@ export default {
   /**
    * Download prepared data-export file
    *
-   * @param String surveyId
-   * @param String url
-   * @return String
+   * @param {string} surveyId
+   * @param {string} url
+   * @returns {Promise<string>}
    */
-  async getExportFile(surveyId, url) {
+  async getExportFile(surveyId: string, url: string): Promise<string> {
     try {
-      const res = await axios.get(url, {
-        headers: {
-          'X-Auth-Token': this.accessToken,
-        },
-      });
+      const res = await axios.get(url, { headers: { 'X-Auth-Token': this.accessToken } });
 
       const filename = `Intake24-export-${surveyId}_${fecha.format(
         new Date(),
@@ -181,7 +186,7 @@ export default {
     }
   },
 
-  async uploadSurveyRespondents(surveyName, file) {
+  /* async uploadSurveyRespondents(surveyName: string, file: string) {
     try {
       const surveyInfo = await this.getSurvey(surveyName);
       const formData = new FormData();
@@ -200,5 +205,5 @@ export default {
     } catch (err) {
       throw new Error(`IT24 API uploadSurveyRespondents failed with: ${err.message}`);
     }
-  },
+  }, */
 };
