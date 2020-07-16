@@ -1,7 +1,17 @@
+import { config } from 'mssql';
+
+export interface TaskDBConfig extends config {
+  tables: {
+    data: string;
+    log: string;
+  };
+}
+
 export type TaskDefinition = {
   name: TaskType;
   cron: string;
   params: TaskParameters;
+  db?: TaskDBConfig;
 };
 
 export type TaskParameters = {

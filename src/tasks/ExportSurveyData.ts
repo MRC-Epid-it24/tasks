@@ -1,33 +1,34 @@
 import fs from 'fs';
 import * as csv from 'fast-csv';
 import path from 'path';
-import sql from 'mssql';
-import config from '../config';
-import { mssql } from '../services/db';
+import sql, { ConnectionPool } from 'mssql';
 import api, { SurveyInfo, ExportSurveyDataParams } from '../services/intake24API';
 import logger from '../services/logger';
-import { Task, TaskDefinition, TaskParameters } from './Task';
-
-const { schema } = config;
+import { Task, TaskDefinition, TaskParameters, TaskDBConfig } from './Task';
 
 export default class ExportSurveyData implements Task {
   public name: string;
 
   public params: TaskParameters;
 
+  public dbConfig?: TaskDBConfig;
+
   public surveyInfo!: SurveyInfo;
 
-  public headers: any[];
+  private headers: any[];
 
-  public data: any[];
+  private data: any[];
 
-  public count: number;
+  private count: number;
 
-  public filename!: string;
+  private filename!: string;
 
-  constructor({ name, params }: TaskDefinition) {
+  private pool!: ConnectionPool;
+
+  constructor({ name, params, db }: TaskDefinition) {
     this.name = name;
     this.params = params;
+    this.dbConfig = db;
 
     this.headers = [];
     this.data = [];
@@ -41,8 +42,36 @@ export default class ExportSurveyData implements Task {
    * @memberof ExportSurveyData
    */
   async run(): Promise<void> {
+    await this.initDB();
+
     await this.fetchIntake24Data();
     if (this.filename) await this.processSurveyData(500);
+
+    await this.closeDB();
+  }
+
+  /**
+   * Open DB connection pool
+   *
+   * @return void
+   */
+  private async initDB(): Promise<void> {
+    if (!this.dbConfig) throw Error('No database connection info provided.');
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { tables, ...rest } = this.dbConfig;
+
+    this.pool = new sql.ConnectionPool(rest);
+    await this.pool.connect();
+  }
+
+  /**
+   * Close DB connection pool
+   *
+   * @return void
+   */
+  private async closeDB(): Promise<void> {
+    await this.pool.close();
   }
 
   /**
@@ -52,8 +81,8 @@ export default class ExportSurveyData implements Task {
    * @returns {Promise<void>}
    * @memberof ExportSurveyData
    */
-  static async clearOldSurveyData(): Promise<void> {
-    await mssql.request().query(`DELETE FROM ${schema.tables.importData}`);
+  private async clearOldSurveyData(): Promise<void> {
+    await this.pool.request().query(`DELETE FROM ${this.dbConfig?.tables.data}`);
   }
 
   /**
@@ -62,7 +91,7 @@ export default class ExportSurveyData implements Task {
    * @returns {ExportSurveyDataParams}
    * @memberof ExportSurveyData
    */
-  getExportDataParams(): ExportSurveyDataParams {
+  private getExportDataParams(): ExportSurveyDataParams {
     // Pull last 7-days data
     let startDate = new Date();
     startDate.setDate(startDate.getDate() - 7);
@@ -84,7 +113,7 @@ export default class ExportSurveyData implements Task {
    * @returns {Promise<void>}
    * @memberof ExportSurveyData
    */
-  async fetchIntake24Data(): Promise<void> {
+  private async fetchIntake24Data(): Promise<void> {
     const sleep = (ms: number) => {
       return new Promise((resolve) => setTimeout(resolve, ms));
     };
@@ -149,8 +178,8 @@ export default class ExportSurveyData implements Task {
    * @returns {Promise<void>}
    * @memberof ExportSurveyData
    */
-  async processSurveyData(chunk = 0): Promise<void> {
-    await ExportSurveyData.clearOldSurveyData();
+  private async processSurveyData(chunk = 0): Promise<void> {
+    await this.clearOldSurveyData();
     logger.info(`Task ${this.name}: Starting data import.`);
 
     return new Promise((resolve, reject) => {
@@ -188,7 +217,7 @@ export default class ExportSurveyData implements Task {
    * @returns {Promise<void>}
    * @memberof ExportSurveyData
    */
-  async storeToDB(eof = false): Promise<void> {
+  private async storeToDB(eof = false): Promise<void> {
     if (!this.headers.length) {
       this.headers = this.data.shift();
       this.count--;
@@ -200,7 +229,7 @@ export default class ExportSurveyData implements Task {
       return;
     }
 
-    const table = new sql.Table(schema.tables.importData);
+    const table = new sql.Table(this.dbConfig?.tables.data);
     // table.create = true;
     // schema.fields.forEach(field => table.columns.add(field.id, field.type, field.opt));
     this.headers.forEach((column) =>
@@ -210,7 +239,7 @@ export default class ExportSurveyData implements Task {
     );
     this.data.forEach((data) => table.rows.add(...data));
 
-    const request = mssql.request();
+    const request = this.pool.request();
     await request.bulk(table);
     this.data = [];
 
@@ -226,14 +255,14 @@ export default class ExportSurveyData implements Task {
    * @returns {Promise<void>}
    * @memberof ExportSurveyData
    */
-  async triggerLog(): Promise<void> {
-    const ps = new sql.PreparedStatement(mssql);
+  private async triggerLog(): Promise<void> {
+    const ps = new sql.PreparedStatement(this.pool);
     ps.input('ImportType', sql.VarChar);
     ps.input('ImportFileName', sql.VarChar);
     ps.input('ImportStatus', sql.VarChar);
     ps.input('ImportMessage', sql.VarChar);
     await ps.prepare(
-      `INSERT INTO ${schema.tables.importLog} (ImportType, ImportFileName, ImportStatus, ImportMessage) VALUES (@ImportType, @ImportFileName, @ImportStatus, @ImportMessage)`
+      `INSERT INTO ${this.dbConfig?.tables.log} (ImportType, ImportFileName, ImportStatus, ImportMessage) VALUES (@ImportType, @ImportFileName, @ImportStatus, @ImportMessage)`
     );
     const message = `File processed: ${path.basename(this.filename)}, Rows imported: ${this.count}`;
     await ps.execute({
