@@ -58,6 +58,9 @@ export default class ExportSurveyData implements Task {
    * @return void
    */
   async run(): Promise<void> {
+    await mssql.connect();
+    await pg.connect();
+
     await this.getDisplayNames();
 
     // Do not use Intake24 API for update now
