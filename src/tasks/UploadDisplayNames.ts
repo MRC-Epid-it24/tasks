@@ -59,7 +59,6 @@ export default class ExportSurveyData implements Task {
    */
   async run(): Promise<void> {
     await mssql.connect();
-    await pg.connect();
 
     await this.getDisplayNames();
 
