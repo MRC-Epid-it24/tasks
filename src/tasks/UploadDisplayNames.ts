@@ -37,6 +37,8 @@ export default class ExportSurveyData implements Task {
 
   public file: string | null;
 
+  public message = '';
+
   constructor({ name, params }: TaskDefinition) {
     this.name = name;
     this.params = params;
@@ -55,9 +57,10 @@ export default class ExportSurveyData implements Task {
   /**
    * Run the job
    *
-   * @return void
+   * @returns {Promise<string>}
+   * @memberof ExportSurveyData
    */
-  async run(): Promise<void> {
+  async run(): Promise<string> {
     await mssql.connect();
 
     await this.getDisplayNames();
@@ -71,6 +74,10 @@ export default class ExportSurveyData implements Task {
 
     await this.getIT24DisplayNames();
     await this.updateDisplayNames();
+
+    logger.info(this.message);
+
+    return this.message;
   }
 
   /**
@@ -116,7 +123,7 @@ export default class ExportSurveyData implements Task {
    */
   async updateDisplayNames(): Promise<void> {
     if (!this.data.epid.length) {
-      logger.info(`Task ${this.name}: No EPID data. Skipping...`);
+      this.message = `Task ${this.name}: No EPID data. Skipping...`;
       return;
     }
 
@@ -131,11 +138,9 @@ export default class ExportSurveyData implements Task {
       }
     }
 
-    logger.info(
-      this.count
-        ? `Task ${this.name}: Records updated: ${this.count}`
-        : `Task ${this.name}: No records to update.`
-    );
+    this.message = this.count
+      ? `Task ${this.name}: Records updated: ${this.count}`
+      : `Task ${this.name}: No records to update.`;
   }
 
   /**

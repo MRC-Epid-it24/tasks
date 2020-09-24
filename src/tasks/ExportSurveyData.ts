@@ -11,7 +11,7 @@ export default class ExportSurveyData implements Task {
 
   public params: TaskParameters;
 
-  public dbConfig?: TaskDBConfig;
+  public dbConfig: TaskDBConfig;
 
   public surveyInfo!: SurveyInfo;
 
@@ -25,9 +25,14 @@ export default class ExportSurveyData implements Task {
 
   private pool!: ConnectionPool;
 
+  public message = '';
+
   constructor({ name, params, db }: TaskDefinition) {
     this.name = name;
     this.params = params;
+
+    if (!db) throw Error('No database connection info provided.');
+
     this.dbConfig = db;
 
     this.headers = [];
@@ -38,16 +43,20 @@ export default class ExportSurveyData implements Task {
   /**
    * Run the job
    *
-   * @returns {Promise<void>}
+   * @returns {Promise<string>}
    * @memberof ExportSurveyData
    */
-  async run(): Promise<void> {
+  async run(): Promise<string> {
     await this.initDB();
 
     await this.fetchIntake24Data();
     if (this.filename) await this.processSurveyData(500);
 
     await this.closeDB();
+
+    logger.info(this.message);
+
+    return this.message;
   }
 
   /**
@@ -56,8 +65,6 @@ export default class ExportSurveyData implements Task {
    * @return void
    */
   private async initDB(): Promise<void> {
-    if (!this.dbConfig) throw Error('No database connection info provided.');
-
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { tables, ...rest } = this.dbConfig;
 
@@ -82,7 +89,7 @@ export default class ExportSurveyData implements Task {
    * @memberof ExportSurveyData
    */
   private async clearOldSurveyData(): Promise<void> {
-    await this.pool.request().query(`DELETE FROM ${this.dbConfig?.tables.data}`);
+    await this.pool.request().query(`DELETE FROM ${this.dbConfig.tables.data}`);
   }
 
   /**
@@ -229,7 +236,7 @@ export default class ExportSurveyData implements Task {
       return;
     }
 
-    const table = new sql.Table(this.dbConfig?.tables.data);
+    const table = new sql.Table(this.dbConfig.tables.data);
     // table.create = true;
     // schema.fields.forEach(field => table.columns.add(field.id, field.type, field.opt));
     this.headers.forEach((column) =>
@@ -262,16 +269,17 @@ export default class ExportSurveyData implements Task {
     ps.input('ImportStatus', sql.VarChar);
     ps.input('ImportMessage', sql.VarChar);
     await ps.prepare(
-      `INSERT INTO ${this.dbConfig?.tables.log} (ImportType, ImportFileName, ImportStatus, ImportMessage) VALUES (@ImportType, @ImportFileName, @ImportStatus, @ImportMessage)`
+      `INSERT INTO ${this.dbConfig.tables.log} (ImportType, ImportFileName, ImportStatus, ImportMessage) VALUES (@ImportType, @ImportFileName, @ImportStatus, @ImportMessage)`
     );
-    const message = `File processed: ${path.basename(this.filename)}, Rows imported: ${this.count}`;
+
+    this.message = `File processed: ${path.basename(this.filename)}, Rows imported: ${this.count}`;
+
     await ps.execute({
       ImportType: 'Intake24AutoStep1',
       ImportFileName: path.basename(this.filename),
       ImportStatus: 'Completed',
-      ImportMessage: message,
+      ImportMessage: this.message,
     });
     await ps.unprepare();
-    logger.info(message);
   }
 }

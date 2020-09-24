@@ -12,6 +12,7 @@ export type TaskDefinition = {
   cron: string;
   params: TaskParameters;
   db?: TaskDBConfig;
+  notify?: string[];
 };
 
 export type TaskParameters = {
@@ -30,7 +31,9 @@ export interface TaskConstructor {
 export interface Task {
   readonly name: string;
 
+  message: string;
+
   params: TaskParameters;
 
-  run(): Promise<void>;
+  run(): Promise<string>;
 }

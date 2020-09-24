@@ -3,7 +3,7 @@ import { TaskDefinition } from '@/tasks/Task';
 export default [
   {
     name: 'EXPORT_SURVEY_DATA',
-    cron: '* * * * *',
+    cron: '*/30 * * * * *',
     params: {
       survey: 'demo',
       version: 'v2',
@@ -21,6 +21,7 @@ export default [
         log: '',
       },
     },
+    notify: ['test@test.com'],
   },
   /* {
     name: 'UPLOAD_DISPLAY_NAMES',
