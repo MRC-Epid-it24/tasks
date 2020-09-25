@@ -1,18 +1,12 @@
 import fs from 'fs';
 import * as csv from 'fast-csv';
+import sql from 'mssql';
 import path from 'path';
-import sql, { ConnectionPool } from 'mssql';
 import api, { SurveyInfo, ExportSurveyDataParams } from '../services/intake24API';
 import logger from '../services/logger';
-import { Task, TaskDefinition, TaskParameters, TaskDBConfig } from './Task';
+import { Task, TaskDefinition } from './Task';
 
-export default class ExportSurveyData implements Task {
-  public name: string;
-
-  public params: TaskParameters;
-
-  public dbConfig: TaskDBConfig;
-
+export default class ExportSurveyData extends Task {
   public surveyInfo!: SurveyInfo;
 
   private headers: any[];
@@ -23,17 +17,10 @@ export default class ExportSurveyData implements Task {
 
   private filename!: string;
 
-  private pool!: ConnectionPool;
-
   public message = '';
 
-  constructor({ name, params, db }: TaskDefinition) {
-    this.name = name;
-    this.params = params;
-
-    if (!db) throw Error('No database connection info provided.');
-
-    this.dbConfig = db;
+  constructor(taskDef: TaskDefinition) {
+    super(taskDef);
 
     this.headers = [];
     this.data = [];
@@ -57,28 +44,6 @@ export default class ExportSurveyData implements Task {
     logger.info(this.message);
 
     return this.message;
-  }
-
-  /**
-   * Open DB connection pool
-   *
-   * @return void
-   */
-  private async initDB(): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { tables, ...rest } = this.dbConfig;
-
-    this.pool = new sql.ConnectionPool(rest);
-    await this.pool.connect();
-  }
-
-  /**
-   * Close DB connection pool
-   *
-   * @return void
-   */
-  private async closeDB(): Promise<void> {
-    await this.pool.close();
   }
 
   /**
@@ -250,10 +215,10 @@ export default class ExportSurveyData implements Task {
     await request.bulk(table);
     this.data = [];
 
-    if (eof) {
-      logger.info(`Task ${this.name}: Data import finished, triggering procedures.`);
-      await this.triggerLog();
-    }
+    if (!eof) return;
+
+    logger.info(`Task ${this.name}: Data import finished, triggering procedures.`);
+    await this.triggerLog();
   }
 
   /**

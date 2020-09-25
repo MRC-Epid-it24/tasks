@@ -32,10 +32,31 @@ config.tasks.forEach((task) => {
       logger.error(err.stack);
     }
 
+    // Notifications
     const { notify } = task;
-    if (notify && notify.length) {
-      const subject = `${name} (${survey}) | ${result}`;
-      await mailer.sendMail({ to: notify, subject, text: message });
+    if (!notify) return;
+
+    const subject = `${name} | ${result}`;
+    const text = [
+      `Task: ${name}`,
+      `Survey: ${survey}\n`,
+      `Result: ${result}`,
+      `Message: ${message}`,
+    ].join('\n');
+
+    if (Array.isArray(notify) && notify.length) {
+      await mailer.sendMail({ to: notify, subject, text });
+      return;
+    }
+
+    if (!Array.isArray(notify)) {
+      const { success, error } = notify;
+
+      if (success && success.length && result === 'SUCCESS')
+        await mailer.sendMail({ to: success, subject, text });
+
+      if (error && error.length && result === 'ERROR')
+        await mailer.sendMail({ to: error, subject, text });
     }
   });
 });

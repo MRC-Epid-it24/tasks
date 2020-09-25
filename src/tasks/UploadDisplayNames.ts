@@ -1,10 +1,10 @@
 import fecha from 'fecha';
 import { parseAsync } from 'json2csv';
 import schema from '../config/schema';
-import { mssql, pg } from '../services/db';
+import { pg } from '../services/db';
 import logger from '../services/logger';
 import storage from '../services/storage';
-import { Task, TaskDefinition, TaskParameters } from './Task';
+import { Task, TaskDefinition } from './Task';
 
 export type Results = {
   it24: IT24Result[];
@@ -24,13 +24,7 @@ export type IT24Result = {
   user_name: string;
 };
 
-export default class ExportSurveyData implements Task {
-  public name: string;
-
-  public params: TaskParameters;
-
-  public survey: string;
-
+export default class ExportSurveyData extends Task {
   public data: Results;
 
   public count: number;
@@ -39,11 +33,9 @@ export default class ExportSurveyData implements Task {
 
   public message = '';
 
-  constructor({ name, params }: TaskDefinition) {
-    this.name = name;
-    this.params = params;
+  constructor(taskDef: TaskDefinition) {
+    super(taskDef);
 
-    this.survey = this.params.survey;
     this.count = 0;
     this.data = {
       it24: [],
@@ -61,7 +53,7 @@ export default class ExportSurveyData implements Task {
    * @memberof ExportSurveyData
    */
   async run(): Promise<string> {
-    await mssql.connect();
+    await this.initDB();
 
     await this.getDisplayNames();
 
@@ -75,6 +67,8 @@ export default class ExportSurveyData implements Task {
     await this.getIT24DisplayNames();
     await this.updateDisplayNames();
 
+    await this.closeDB();
+
     logger.info(this.message);
 
     return this.message;
@@ -86,7 +80,7 @@ export default class ExportSurveyData implements Task {
    * @return void
    */
   async getDisplayNames(): Promise<void> {
-    const res = await mssql.request().query<EpidResult>(
+    const res = await this.pool.request().query<EpidResult>(
       `SELECT Intake24ID as 'user name', DisplayName as 'name'
           FROM ${schema.tables.displayNames} WHERE DisplayName IS NOT NULL`
     );
@@ -110,7 +104,7 @@ export default class ExportSurveyData implements Task {
       `SELECT users.id, users.name, alias.user_name FROM users
         JOIN user_survey_aliases alias ON users.id = alias.user_id
         WHERE alias.survey_id = $1`,
-      [this.survey]
+      [this.params.survey]
     );
 
     this.data.it24 = res.rows;
@@ -170,7 +164,7 @@ export default class ExportSurveyData implements Task {
 
     const csv = await parseAsync(this.data.filtered, { fields: ['user name', 'password', 'name'] });
 
-    const filename = `Intake24-display-name-${this.survey}_${fecha.format(
+    const filename = `Intake24-display-name-${this.params.survey}_${fecha.format(
       new Date(),
       'YYYY-MM-DD-hh-mm-ss'
     )}.csv`;

@@ -1,11 +1,20 @@
-export default {
+import { config } from 'mssql';
+
+export type DBConfig = {
+  it24: {
+    connectionString: string;
+  };
+  epid: config;
+};
+
+const dbConfig: DBConfig = {
   it24: {
     connectionString: process.env.IT24_DB_URL || '',
   },
   epid: {
+    server: process.env.EPID_DB_SERVER || '',
     user: process.env.EPID_DB_USERNAME || '',
     password: process.env.EPID_DB_PASSWORD || '',
-    server: process.env.EPID_DB_SERVER || '',
     database: process.env.EPID_DB_DATABASE || '',
     port: parseInt(process.env.EPID_DB_PORT ?? '1433', 10),
 
@@ -15,3 +24,5 @@ export default {
     },
   },
 };
+
+export default dbConfig;
