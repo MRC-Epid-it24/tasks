@@ -19,6 +19,8 @@ export type SurveyInfo = {
   endDate: Date;
 };
 
+export type ActiveTaskStatus = { [status: string]: Record<string, unknown> };
+
 export type ActiveTask = {
   id: number;
   createdAt: Date;
@@ -26,8 +28,6 @@ export type ActiveTask = {
   dateTo: Date;
   status: ActiveTaskStatus;
 };
-
-export type ActiveTaskStatus = { [status: string]: Record<string, unknown> };
 
 export default {
   accessToken: null,
@@ -150,17 +150,12 @@ export default {
    * @returns {Promise<object[]>}
    */
   async getActiveTasks(surveyId: string): Promise<ActiveTask[]> {
-    try {
-      const {
-        data: { activeTasks },
-      } = await axios.get(`data-export/${surveyId}/submissions/async/status`, {
-        headers: { 'X-Auth-Token': this.accessToken },
-      });
-
-      return activeTasks;
-    } catch (err) {
-      throw new Error(`IT24 API getActiveTasks failed with: ${err.message}`);
-    }
+    const {
+      data: { activeTasks },
+    } = await axios.get(`data-export/${surveyId}/submissions/async/status`, {
+      headers: { 'X-Auth-Token': this.accessToken },
+    });
+    return activeTasks;
   },
 
   /**
@@ -182,7 +177,7 @@ export default {
       const file = storage.save(filename, res.data);
       return file;
     } catch (err) {
-      throw new Error(`IT24 API getActiveTasks failed with: ${err.message}`);
+      throw new Error(`IT24 API getExportFile failed with: ${err.message}`);
     }
   },
 

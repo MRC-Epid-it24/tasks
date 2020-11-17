@@ -2,6 +2,7 @@ import fs from 'fs';
 import * as csv from 'fast-csv';
 import sql from 'mssql';
 import path from 'path';
+import { AxiosError } from 'axios';
 import api, { SurveyInfo, ExportSurveyDataParams } from '../services/intake24API';
 import logger from '../services/logger';
 import { Task, TaskDefinition } from './Task';
@@ -37,6 +38,7 @@ export default class ExportSurveyData extends Task {
     await this.initDB();
 
     await this.fetchIntake24Data();
+
     if (this.filename) await this.processSurveyData(500);
 
     await this.closeDB();
@@ -96,12 +98,34 @@ export default class ExportSurveyData extends Task {
     const taskId = await api.asyncExportSurveyData(survey, this.getExportDataParams());
 
     let inProgress = true;
+    let failedAttempts = 0;
 
     while (inProgress) {
-      const activeTasks = await api.getActiveTasks(survey);
+      let activeTasks;
+      try {
+        activeTasks = await api.getActiveTasks(survey);
+      } catch (err) {
+        const { response } = err as AxiosError;
+
+        // TEMP: intake24 very sporadicaly returns with 502 gateway error (nginx or outer proxy -> to investigate)
+        if (response?.status === 502 && failedAttempts < 10) {
+          logger.warn(
+            `Task ${this.name}: IT24 API getActiveTasks responded with 502: ${err.message}`
+          );
+          failedAttempts++;
+          await sleep(2000);
+          continue;
+        }
+
+        // If any other error, stop the polling
+        inProgress = false;
+        throw new Error(`Task ${this.name}: IT24 API getActiveTasks failed with: ${err.message}`);
+      }
+
       const task = activeTasks.find((item) => item.id === taskId);
       if (!task) {
         inProgress = false;
+        logger.warn(`Task ${this.name}: DataExport task not found.`);
         return;
       }
 
@@ -129,8 +153,7 @@ export default class ExportSurveyData extends Task {
           break;
         case 'Failed':
           inProgress = false;
-          logger.error(`Task ${this.name}: DataExport (Task ${taskId}) has failed.`);
-          break;
+          throw new Error(`Task ${this.name}: DataExport (Task ${taskId}) has failed.`);
         default:
           inProgress = false;
           logger.warn(
