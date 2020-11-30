@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const nodeExternals = require('webpack-node-externals');
-const ShellPlugin = require('webpack-shell-plugin');
+const NodemonPlugin = require('nodemon-webpack-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 const { NODE_ENV = 'development' } = process.env;
@@ -41,11 +41,9 @@ module.exports = {
       },
     ],
   },
-  plugins: isDev
-    ? [
-        new ShellPlugin({
-          onBuildEnd: ['npm run development:start'],
-        }),
-      ]
-    : [],
+  plugins: [
+    new NodemonPlugin({
+      nodeArgs: ['--inspect=5858'],
+    }),
+  ],
 };
