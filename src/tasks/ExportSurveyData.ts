@@ -1,8 +1,8 @@
-import fs from 'fs';
-import * as csv from 'fast-csv';
+import { AxiosError } from 'axios';
+import fs from 'fs-extra';
+import { parse } from 'fast-csv';
 import sql from 'mssql';
 import path from 'path';
-import { AxiosError } from 'axios';
 import api, { SurveyInfo, ExportSurveyDataParams } from '../services/intake24API';
 import logger from '../services/logger';
 import { Task, TaskDefinition } from './Task';
@@ -39,7 +39,15 @@ export default class ExportSurveyData extends Task {
 
     await this.fetchIntake24Data();
 
-    if (this.filename) await this.processSurveyData(500);
+    if (!this.filename) throw new Error(`Missing file: ${this.filename}`);
+
+    await this.processSurveyData();
+
+    await this.triggerLog();
+
+    fs.unlink(this.filename, (err) => {
+      if (err) logger.error(err);
+    });
 
     await this.closeDB();
 
@@ -107,7 +115,7 @@ export default class ExportSurveyData extends Task {
       } catch (err) {
         const { response } = err as AxiosError;
 
-        // TEMP: intake24 very sporadicaly returns with 502 gateway error (nginx or outer proxy -> to investigate)
+        // TEMP: intake24 very sporadically returns with 502 gateway error (nginx or outer proxy -> to investigate)
         if (response?.status === 502 && failedAttempts < 10) {
           logger.warn(
             `Task ${this.name}: IT24 API getActiveTasks responded with 502: ${err.message}`
@@ -173,12 +181,12 @@ export default class ExportSurveyData extends Task {
    * @returns {Promise<void>}
    * @memberof ExportSurveyData
    */
-  private async processSurveyData(chunk = 0): Promise<void> {
+  private async processSurveyData(chunk = 500): Promise<void> {
     await this.clearOldSurveyData();
     logger.info(`Task ${this.name}: Starting data import.`);
 
     return new Promise((resolve, reject) => {
-      const stream = fs.createReadStream(this.filename).pipe(csv.parse({ headers: false }));
+      const stream = fs.createReadStream(this.filename).pipe(parse({ headers: false }));
       stream
         .on('data', (row) => {
           this.data.push(row);
@@ -187,19 +195,19 @@ export default class ExportSurveyData extends Task {
           if (chunk > 0 && this.data.length === chunk) {
             stream.pause();
             this.storeToDB()
-              .then(() => stream.resume())
-              .catch((err) => reject(err));
+              .then(() => {
+                if (stream.destroyed) resolve();
+                else stream.resume();
+              })
+              .catch((err) => stream.destroy(err));
           }
         })
-        .on('end', () => {
-          this.storeToDB(true)
-            .then(() => {
-              fs.unlink(this.filename, (err) => {
-                if (err) logger.info(err);
-              });
-              resolve();
-            })
-            .catch((err) => reject(err));
+        .on('end', (records: number) => {
+          if (records % chunk === 0) return;
+
+          this.storeToDB()
+            .then(() => resolve())
+            .catch((err) => stream.destroy(err));
         })
         .on('error', (err) => reject(err));
     });
@@ -212,17 +220,13 @@ export default class ExportSurveyData extends Task {
    * @returns {Promise<void>}
    * @memberof ExportSurveyData
    */
-  private async storeToDB(eof = false): Promise<void> {
+  private async storeToDB(): Promise<void> {
     if (!this.headers.length) {
       this.headers = this.data.shift();
       this.count--;
     }
 
-    if (!this.data.length) {
-      logger.info(`Task ${this.name}: Data import finished, triggering procedures.`);
-      await this.triggerLog();
-      return;
-    }
+    if (!this.data.length) return;
 
     const table = new sql.Table(this.dbConfig.tables.data);
     // table.create = true;
@@ -237,11 +241,6 @@ export default class ExportSurveyData extends Task {
     const request = this.pool.request();
     await request.bulk(table);
     this.data = [];
-
-    if (!eof) return;
-
-    logger.info(`Task ${this.name}: Data import finished, triggering procedures.`);
-    await this.triggerLog();
   }
 
   /**
@@ -251,6 +250,8 @@ export default class ExportSurveyData extends Task {
    * @memberof ExportSurveyData
    */
   private async triggerLog(): Promise<void> {
+    logger.info(`Task ${this.name}: Triggering procedures.`);
+
     const ps = new sql.PreparedStatement(this.pool);
     ps.input('ImportType', sql.VarChar);
     ps.input('ImportFileName', sql.VarChar);
