@@ -199,7 +199,10 @@ export default class ExportSurveyData extends Task {
                 if (stream.destroyed) resolve();
                 else stream.resume();
               })
-              .catch((err) => stream.destroy(err));
+              .catch((err) => {
+                stream.destroy(err);
+                reject(err);
+              });
           }
         })
         .on('end', (records: number) => {
@@ -207,7 +210,10 @@ export default class ExportSurveyData extends Task {
 
           this.storeToDB()
             .then(() => resolve())
-            .catch((err) => stream.destroy(err));
+            .catch((err) => {
+              stream.destroy(err);
+              reject(err);
+            });
         })
         .on('error', (err) => reject(err));
     });
