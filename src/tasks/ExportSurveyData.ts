@@ -238,7 +238,7 @@ export default class ExportSurveyData extends Task {
     // table.create = true;
     // schema.fields.forEach(field => table.columns.add(field.id, field.type, field.opt));
     this.headers.forEach((column) =>
-      table.columns.add(column, column === 'Survey ID' ? sql.UniqueIdentifier : sql.VarChar(500), {
+      table.columns.add(column, column === 'Survey ID' ? sql.UniqueIdentifier : sql.VarChar, {
         nullable: true,
       })
     );
