@@ -5,7 +5,8 @@ import sql from 'mssql';
 import path from 'path';
 import api, { SurveyInfo, ExportSurveyDataParams } from '../services/intake24API';
 import logger from '../services/logger';
-import { Task, TaskDefinition } from './Task';
+import type { TaskDefinition } from '.';
+import Task from './Task';
 
 export default class ExportSurveyData extends Task {
   public surveyInfo!: SurveyInfo;
@@ -35,7 +36,7 @@ export default class ExportSurveyData extends Task {
    * @memberof ExportSurveyData
    */
   async run(): Promise<string> {
-    await this.initDB();
+    await this.initMSPool();
 
     await this.fetchIntake24Data();
 
@@ -49,7 +50,7 @@ export default class ExportSurveyData extends Task {
       if (err) logger.error(err);
     });
 
-    await this.closeDB();
+    await this.closeMSPool();
 
     logger.info(this.message);
 
@@ -64,7 +65,7 @@ export default class ExportSurveyData extends Task {
    * @memberof ExportSurveyData
    */
   private async clearOldSurveyData(): Promise<void> {
-    await this.pool.request().query(`DELETE FROM ${this.dbConfig.tables.data}`);
+    await this.msPool.request().query(`DELETE FROM ${this.dbConfig.tables.data}`);
   }
 
   /**
@@ -244,7 +245,7 @@ export default class ExportSurveyData extends Task {
     );
     this.data.forEach((data) => table.rows.add(...data));
 
-    const request = this.pool.request();
+    const request = this.msPool.request();
     await request.bulk(table);
     this.data = [];
   }
@@ -258,7 +259,7 @@ export default class ExportSurveyData extends Task {
   private async triggerLog(): Promise<void> {
     logger.info(`Task ${this.name}: Triggering procedures.`);
 
-    const ps = new sql.PreparedStatement(this.pool);
+    const ps = new sql.PreparedStatement(this.msPool);
     ps.input('ImportType', sql.VarChar);
     ps.input('ImportFileName', sql.VarChar);
     ps.input('ImportStatus', sql.VarChar);

@@ -4,13 +4,8 @@ import schema from '../config/schema';
 import { pg } from '../services/db';
 import logger from '../services/logger';
 import storage from '../services/storage';
-import { Task, TaskDefinition } from './Task';
-
-export type Results = {
-  it24: IT24Result[];
-  epid: EpidResult[];
-  filtered: EpidResult[];
-};
+import type { TaskDefinition } from '.';
+import Task from './Task';
 
 export type EpidResult = {
   'user name': string;
@@ -22,6 +17,12 @@ export type IT24Result = {
   name: string;
   // eslint-disable-next-line camelcase
   user_name: string;
+};
+
+export type Results = {
+  it24: IT24Result[];
+  epid: EpidResult[];
+  filtered: EpidResult[];
 };
 
 export default class ExportSurveyData extends Task {
@@ -53,7 +54,7 @@ export default class ExportSurveyData extends Task {
    * @memberof ExportSurveyData
    */
   async run(): Promise<string> {
-    await this.initDB();
+    await this.initMSPool();
 
     await this.getDisplayNames();
 
@@ -67,7 +68,7 @@ export default class ExportSurveyData extends Task {
     await this.getIT24DisplayNames();
     await this.updateDisplayNames();
 
-    await this.closeDB();
+    await this.closeMSPool();
 
     logger.info(this.message);
 
@@ -80,7 +81,7 @@ export default class ExportSurveyData extends Task {
    * @return void
    */
   async getDisplayNames(): Promise<void> {
-    const res = await this.pool.request().query<EpidResult>(
+    const res = await this.msPool.request().query<EpidResult>(
       `SELECT Intake24ID as 'user name', DisplayName as 'name'
           FROM ${schema.tables.displayNames} WHERE DisplayName IS NOT NULL`
     );
