@@ -1,4 +1,4 @@
-import { TaskDefinition } from '@/tasks/Task';
+import type { TaskDefinition } from '@/tasks';
 
 export default [
   {

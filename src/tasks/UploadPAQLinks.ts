@@ -24,7 +24,7 @@ export type Stats = {
   removed: number;
 };
 
-export default class UploadPAQ extends Task {
+export default class UploadPAQLinks extends Task {
   protected pgClient!: PoolClient;
 
   private data: OriginalLinkData[];
