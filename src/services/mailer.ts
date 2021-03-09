@@ -34,6 +34,10 @@ class Mailer {
     this.transporter = nodemailer.createTransport(options);
   }
 
+  close() {
+    this.transporter.close();
+  }
+
   async sendMail(options: SendMailOptions): Promise<void> {
     try {
       const { from } = config;

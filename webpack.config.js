@@ -8,10 +8,13 @@ const { NODE_ENV = 'development' } = process.env;
 const isDev = NODE_ENV === 'development';
 
 module.exports = {
-  entry: path.resolve('./src/index.ts'),
+  entry: {
+    index: path.resolve('./src/index.ts'),
+    cli: path.resolve('./src/cli.ts'),
+  },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'index.js',
+    filename: '[name].js',
   },
   mode: NODE_ENV,
   target: 'node',
