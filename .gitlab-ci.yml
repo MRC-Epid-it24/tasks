@@ -4,18 +4,14 @@ stages:
   - build
   - lint
 
-cache:
-  paths:
-    - node_modules/
-
 install_build:
   stage: build
   script:
-    - npm install
+    - npm ci
     - npm run prod
 
 code_lint:
   stage: lint
   script:
-    - npm install
+    - npm ci
     - npm run lint
