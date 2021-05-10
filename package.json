@@ -2,9 +2,9 @@
   "name": "intake24-tasks",
   "version": "1.0.0",
   "description": "Intake24 Tasks Service",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "private": true,
-  "author": "Lukas Hroch",
+  "author": "MRC Epidemiology Unit, University of Cambridge",
   "main": "src/index.js",
   "repository": {
     "type": "git",
