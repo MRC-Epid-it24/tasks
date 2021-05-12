@@ -24,6 +24,8 @@ import runner from './runner';
 
 mailer.init();
 
-config.tasks.forEach((task) => {
+for (const task of config.tasks) {
+  if (!task.cron) continue;
+
   cron.schedule(task.cron, runner(task));
-});
+}

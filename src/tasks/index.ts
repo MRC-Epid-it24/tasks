@@ -39,7 +39,7 @@ export interface TaskDBConfig extends config {
 
 export type TaskDefinition = {
   name: TaskType;
-  cron: string;
+  cron: string | false;
   params: TaskParameters;
   db?: TaskDBConfig;
   notify?:
