@@ -142,7 +142,7 @@ Optional
 - Execute specific task in `tasks.json` based on index.
 
 ```sh
-npm run cli --task-index <index>
+npm run cli -- --task-index <index>
 ```
 
 ## Deployment

@@ -29,7 +29,7 @@ async function run() {
   program.name('intake24-tasks');
   program.version(pkg.version);
   program.requiredOption('--task-index <index>', 'Index of the task.').action(async (cmd) => {
-    const taskIndex = parseInt(cmd.opts().taskIndex, 10);
+    const taskIndex = parseInt(cmd.taskIndex, 10);
     if (typeof taskIndex !== 'number') throw new Error('Task index must be a number.');
 
     if (taskIndex < 0 || taskIndex >= config.tasks.length)
