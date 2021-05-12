@@ -17,8 +17,8 @@
 */
 
 import sql, { ConnectionPool } from 'mssql';
+import globalDB from '@/config/db';
 import type { TaskDefinition, TaskDBConfig, TaskParameters } from '.';
-import globalDB from '../config/db';
 
 export default abstract class Task {
   readonly name: string;

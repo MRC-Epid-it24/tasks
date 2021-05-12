@@ -19,10 +19,10 @@
 /* eslint-disable camelcase */
 import { PoolClient } from 'pg';
 import pgPromise from 'pg-promise';
+import schema from '@/config/schema';
+import { pg } from '@/services/db';
+import logger from '@/services/logger';
 import type { TaskDefinition } from '.';
-import schema from '../config/schema';
-import { pg } from '../services/db';
-import logger from '../services/logger';
 import Task from './Task';
 
 export type OriginalLinkData = {

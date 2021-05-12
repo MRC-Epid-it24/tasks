@@ -18,7 +18,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import config from '../config/filesystem';
+import fsConfig from '@/config/filesystem';
 
 class Storage {
   public cwd: string;
@@ -26,7 +26,7 @@ class Storage {
   public dir: string;
 
   constructor() {
-    this.cwd = config.tmp.dir;
+    this.cwd = fsConfig.tmp;
     this.dir = this.tap();
   }
 

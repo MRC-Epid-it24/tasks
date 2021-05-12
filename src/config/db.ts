@@ -30,11 +30,11 @@ const dbConfig: DBConfig = {
     connectionString: process.env.IT24_DB_URL || '',
   },
   epid: {
-    server: process.env.EPID_DB_SERVER || '',
-    user: process.env.EPID_DB_USERNAME || '',
-    password: process.env.EPID_DB_PASSWORD || '',
-    database: process.env.EPID_DB_DATABASE || '',
-    port: parseInt(process.env.EPID_DB_PORT ?? '1433', 10),
+    server: process.env.MSSQL_DB_SERVER || '',
+    user: process.env.MSSQL_DB_USERNAME || '',
+    password: process.env.MSSQL_DB_PASSWORD || '',
+    database: process.env.MSSQL_DB_DATABASE || '',
+    port: parseInt(process.env.MSSQL_DB_PORT ?? '1433', 10),
 
     requestTimeout: parseInt(process.env.MSSQL_REQUEST_TIMEOUT || `${60 * 1000}`, 10),
     options: {

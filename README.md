@@ -2,7 +2,7 @@
 
 Interface between Intake24 API and Clinical DB (CRON-like node.js service)
 
-## 1. Installation
+## Installation
 
 Download local project dependencies
 
@@ -10,70 +10,121 @@ Download local project dependencies
 npm install
 ```
 
-Copy `.env.example` to `.env` file
+Copy `.env-template` to `.env` file.
 
 ```sh
-cp .env.example .env
+cp .env-template .env
 ```
 
-Edit `.env` file and set up main configuration variables
+Edit `.env` file and set up main configuration variables.
 
 Any additional configuration variables (not extracted as ENV variables) can be found in `src/config` folder.
 
-## 2. Tasks setup
+## Tasks setup
 
 Service executes specific tasks based on provided CRON entry and additional task-specific variables.
 
-Task entries for execution are defined in `src/config/tasks.js` file as an array of simple JSON objects.
+Task entries for execution are defined in `tasks.json` file as an array of simple JSON objects.
 
-### 2.1. Task definition
+Copy `tasks-template.json` to `tasks.json` file
+
+```sh
+cp tasks-template.json tasks.json
+```
+
+Edit `tasks.json` file and set up task definitions as needed.
+
+## Task definitions
 
 Currently implemented tasks are:
 
-- EXPORT_SURVEY_DATA - exports intake24 survey data and imports data into specific database
+### EXPORT_SURVEY_DATA
 
-```js
+- Export Intake24 survey data and imports data into external database (MSSQL engine)
+
+```json
 {
-    name: 'EXPORT_SURVEY_DATA',
-    cron: '* * * * *',
-    params: {
-      survey: 'demo',
-      version: 'v2'
+    "name": "EXPORT_SURVEY_DATA",
+    "cron": "* * * * *",
+    "params": {
+        "survey": "demo",
+        "version": "v2"
+    },
+    "db": {
+        "database": "databaseName",
+        "tables": {
+            "data": "importDataTable",
+            "log": "importLogTable"
+        }
+    },
+    "notify": {
+        "success": [],
+        "error": []
+    }
+},
+```
+
+### UPLOAD_DISPLAY_NAMES
+
+- First (display) name synchronization from external database (MSSQL) into Intake24 instance
+
+```json
+{
+    "name": "UPLOAD_DISPLAY_NAMES",
+    "cron": "* * * * *",
+    "params": {
+        "survey": "demo"
+    },
+    "db": {
+        "database": "databaseName"
+    },
+    "notify": {
+        "success": [],
+        "error": []
+    }
+},
+```
+
+### UPLOAD_PAQ_LINKS
+
+- Upload external questionnaire URLs from external database (MSSQL) into the Intake24
+
+```json
+{
+    "name": "UPLOAD_PAQ_LINKS",
+    "cron": "* * * * *",
+    "params": {
+        "survey": "demo"
+    },
+    "db": {
+        "database": "databaseName"
+    },
+    "notify": {
+        "success": [],
+        "error": []
     }
 }
 ```
 
-- UPLOAD_DISPLAY_NAMES - First (display) name synchronisation into intake24
+## Build
 
-```js
-{
-    name: 'UPLOAD_DISPLAY_NAMES',
-    cron: '* * * * *',
-    params: {
-      survey: 'demo'
-    }
-}
-```
+### Development environment
 
-## 3. Build
-
-### 3.1. Development environment
-
-Start a server with hot-reloading
+Start server with hot-reloading
 
 ```sh
 npm run dev
 ```
 
-### 3.2. Production environment
+### Production environment
 
-Build node.js application
+Build application
 
 ```sh
 npm run prod
 ```
 
-Launch node.js application
+Launch application
 
 ```sh
 npm run start
@@ -83,3 +134,17 @@ Optional
 
 - install as service (systemd service example - `intake24-tasks.service`)
 - use node.js process manager like `pm2`
+
+## CLI
+
+### Execute task (by index)
+
+- Execute specific task in `tasks.json` based on index.
+
+```sh
+npm run cli --task-index <index>
+```
+
+## Deployment
+
+Ansible role is provided as part of [intake24 deployment repository](https://github.com/MRC-Epid-it24/deployment)

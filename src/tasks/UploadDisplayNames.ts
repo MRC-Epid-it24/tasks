@@ -18,10 +18,10 @@
 
 import fecha from 'fecha';
 import { parseAsync } from 'json2csv';
-import schema from '../config/schema';
-import { pg } from '../services/db';
-import logger from '../services/logger';
-import storage from '../services/storage';
+import schema from '@/config/schema';
+import { pg } from '@/services/db';
+import logger from '@/services/logger';
+import storage from '@/services/storage';
 import type { TaskDefinition } from '.';
 import Task from './Task';
 

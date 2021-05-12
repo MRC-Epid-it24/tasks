@@ -4,5 +4,7 @@
 /dist
 /logs
 /tmp
-!.env.example
 .env*
+!.env-template
+tasks.json
+!tasks-template.json

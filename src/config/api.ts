@@ -16,10 +16,20 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-export default {
+export type ApiConfig = {
+  it24: {
+    url: string;
+    username: string;
+    password: string;
+  };
+};
+
+const apiConfig: ApiConfig = {
   it24: {
     url: process.env.IT24_API_URL || '',
     username: process.env.IT24_API_USERNAME || '',
     password: process.env.IT24_API_PASSWORD || '',
   },
 };
+
+export default apiConfig;

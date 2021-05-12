@@ -18,7 +18,7 @@
 
 import axios from 'axios';
 import fecha from 'fecha';
-import config from '../config';
+import config from '@/config';
 import storage from './storage';
 
 const { it24 } = config.api;

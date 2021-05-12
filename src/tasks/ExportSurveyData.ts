@@ -21,8 +21,8 @@ import fs from 'fs-extra';
 import { parse } from 'fast-csv';
 import sql from 'mssql';
 import path from 'path';
-import api, { SurveyInfo, ExportSurveyDataParams } from '../services/intake24API';
-import logger from '../services/logger';
+import api, { SurveyInfo, ExportSurveyDataParams } from '@/services/intake24API';
+import logger from '@/services/logger';
 import type { TaskDefinition } from '.';
 import Task from './Task';
 
