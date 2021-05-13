@@ -48,7 +48,8 @@ Currently implemented tasks are:
     "cron": "* * * * *",
     "params": {
         "survey": "demo",
-        "version": "v2"
+        "exportOffset": 7,
+        "exportVersion": "v2"
     },
     "db": {
         "database": "databaseName",

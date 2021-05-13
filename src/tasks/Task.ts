@@ -48,7 +48,6 @@ export default abstract class Task {
    * @return void
    */
   protected async initMSPool(): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { tables, ...rest } = this.dbConfig;
 
     this.msPool = new sql.ConnectionPool(rest);

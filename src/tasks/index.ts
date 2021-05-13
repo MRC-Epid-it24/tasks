@@ -27,7 +27,8 @@ export type TaskType = keyof typeof tasks;
 
 export type TaskParameters = {
   survey: string;
-  version: string;
+  exportOffset?: number | null;
+  exportVersion?: string;
 };
 
 export interface TaskDBConfig extends config {

@@ -34,8 +34,9 @@ module.exports = {
     'no-continue': 'off',
     'no-await-in-loop': 'off',
     'no-restricted-syntax': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/ban-types': 'warn',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-unused-vars': ['warn', { ignoreRestSiblings: true }],
     'import/extensions': [
       'error',
       'ignorePackages',

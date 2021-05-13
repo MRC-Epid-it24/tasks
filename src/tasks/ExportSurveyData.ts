@@ -93,19 +93,22 @@ export default class ExportSurveyData extends Task {
    * @memberof ExportSurveyData
    */
   private getExportDataParams(): ExportSurveyDataParams {
-    // Pull last 7-days data
-    let startDate = new Date();
-    startDate.setDate(startDate.getDate() - 7);
-    startDate.setHours(0, 0, 0, 0);
+    const { exportOffset, exportVersion } = this.params;
+    const { startDate, endDate: dateTo } = this.surveyInfo;
 
-    if (startDate > this.surveyInfo.endDate) startDate = this.surveyInfo.endDate;
+    let dateFrom: Date;
 
-    return {
-      dateFrom: startDate,
-      dateTo: this.surveyInfo.endDate,
-      forceBOM: '1',
-      format: this.params.version,
-    };
+    if (exportOffset) {
+      dateFrom = new Date();
+      dateFrom.setDate(dateFrom.getDate() - exportOffset);
+      dateFrom.setHours(0, 0, 0, 0);
+
+      if (dateFrom > dateTo) dateFrom = dateTo;
+    } else {
+      dateFrom = startDate;
+    }
+
+    return { dateFrom, dateTo, forceBOM: '1', format: exportVersion ?? 'v2' };
   }
 
   /**
