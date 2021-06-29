@@ -21,15 +21,9 @@ import EXPORT_SURVEY_DATA from './ExportSurveyData';
 import UPLOAD_DISPLAY_NAMES from './UploadDisplayNames';
 import UPLOAD_PAQ_LINKS from './UploadPAQLinks';
 
-const tasks = { EXPORT_SURVEY_DATA, UPLOAD_DISPLAY_NAMES, UPLOAD_PAQ_LINKS };
+const tasks = { UPLOAD_DISPLAY_NAMES, EXPORT_SURVEY_DATA, UPLOAD_PAQ_LINKS };
 
 export type TaskType = keyof typeof tasks;
-
-export type TaskParameters = {
-  survey: string;
-  exportOffset?: number | null;
-  exportVersion?: string;
-};
 
 export interface TaskDBConfig extends config {
   tables: {
@@ -38,10 +32,12 @@ export interface TaskDBConfig extends config {
   };
 }
 
-export type TaskDefinition = {
+export type Dictionary<T = any> = { [key: string]: T };
+
+export type TaskDefinition<T = Dictionary> = {
   name: TaskType;
   cron: string | false;
-  params: TaskParameters;
+  params: T;
   db?: TaskDBConfig;
   notify?:
     | false

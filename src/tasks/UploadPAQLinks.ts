@@ -20,10 +20,14 @@
 import { PoolClient } from 'pg';
 import pgPromise from 'pg-promise';
 import schema from '@/config/schema';
-import { pg } from '@/services/db';
+import db from '@/services/db';
 import logger from '@/services/logger';
 import type { TaskDefinition } from '.';
 import Task from './Task';
+
+export type UploadPAQLinksTaskParams = {
+  survey: string;
+};
 
 export type OriginalLinkData = {
   Intake24ID: string;
@@ -42,7 +46,7 @@ export type Stats = {
   removed: number;
 };
 
-export default class UploadPAQLinks extends Task {
+export default class UploadPAQLinks extends Task<UploadPAQLinksTaskParams> {
   protected pgClient!: PoolClient;
 
   private data: OriginalLinkData[];
@@ -55,7 +59,7 @@ export default class UploadPAQLinks extends Task {
 
   public message = '';
 
-  constructor(taskDef: TaskDefinition) {
+  constructor(taskDef: TaskDefinition<UploadPAQLinksTaskParams>) {
     super(taskDef);
 
     this.data = [];
@@ -69,11 +73,11 @@ export default class UploadPAQLinks extends Task {
    * Run the job
    *
    * @returns {Promise<string>}
-   * @memberof ExportSurveyData
+   * @memberof UploadPAQLinks
    */
   async run(): Promise<string> {
     await this.initMSPool();
-    this.pgClient = await pg.connect();
+    this.pgClient = await db.system.connect();
 
     try {
       await this.createTempTable();
@@ -98,7 +102,7 @@ export default class UploadPAQLinks extends Task {
    * Create temporary table to hold intake24-PAQ link data
    *
    * @private
-   * @memberof UploadPAQ
+   * @memberof UploadPAQLinks
    */
   private async createTempTable() {
     const dropTable = `DROP TABLE IF EXISTS ${this.tempTable};`;
@@ -118,7 +122,7 @@ export default class UploadPAQLinks extends Task {
    * Drop temporary table with intake24-PAQ link dataa
    *
    * @private
-   * @memberof UploadPAQ
+   * @memberof UploadPAQLinks
    */
   private async cleanTempTable() {
     await this.pgClient.query(`DROP TABLE IF EXISTS ${this.tempTable};`);
@@ -131,7 +135,7 @@ export default class UploadPAQLinks extends Task {
    * @private
    * @param {number} [chunk=1000]
    * @returns {Promise<void>}
-   * @memberof UploadPAQ
+   * @memberof UploadPAQLinks
    */
   private async importLinkData(chunk = 1000): Promise<void> {
     logger.debug(`Task ${this.name}: importLinkData started.`);
@@ -177,7 +181,7 @@ export default class UploadPAQLinks extends Task {
    *
    * @private
    * @returns {Promise<void>}
-   * @memberof UploadPAQ
+   * @memberof UploadPAQLinks
    */
   private async storeLinkDataChunk(): Promise<void> {
     // Short-cut if no more data
@@ -205,7 +209,7 @@ export default class UploadPAQLinks extends Task {
    * Add PAQ links where consent was given
    *
    * @private
-   * @memberof UploadPAQ
+   * @memberof UploadPAQLinks
    */
   private async addDisplayLinks() {
     logger.debug(`Task ${this.name}: addDisplayLinks started.`);
@@ -231,7 +235,7 @@ export default class UploadPAQLinks extends Task {
    * Remove PAQ links where consent was not given
    *
    * @private
-   * @memberof UploadPAQ
+   * @memberof UploadPAQLinks
    */
   private async removeDisplayLinks() {
     logger.debug(`Task ${this.name}: removeDisplayLinks started.`);

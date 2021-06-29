@@ -19,19 +19,41 @@
 import { config } from 'mssql';
 
 export type DBConfig = {
-  it24: {
-    connectionString: string;
+  foods: {
+    host: string;
+    user: string;
+    password: string;
+    database: string;
+    port: number;
+  };
+  system: {
+    host: string;
+    user: string;
+    password: string;
+    database: string;
+    port: number;
   };
   epid: config;
 };
 
 const dbConfig: DBConfig = {
-  it24: {
-    connectionString: process.env.IT24_DB_URL || '',
+  foods: {
+    host: process.env.IT24_DB_FOODS_HOST || 'localhost',
+    user: process.env.IT24_DB_FOODS_USERNAME || 'intake24',
+    password: process.env.IT24_DB_FOODS_PASSWORD || '',
+    database: process.env.IT24_DB_FOODS_DATABASE || 'intake24_foods',
+    port: parseInt(process.env.IT24_DB_FOODS_PORT ?? '5432', 10),
+  },
+  system: {
+    host: process.env.IT24_DB_SYSTEM_HOST || 'localhost',
+    user: process.env.IT24_DB_SYSTEM_USERNAME || 'intake24',
+    password: process.env.IT24_DB_SYSTEM_PASSWORD || '',
+    database: process.env.IT24_DB_SYSTEM_DATABASE || 'intake24_system',
+    port: parseInt(process.env.IT24_DB_SYSTEM_PORT ?? '5432', 10),
   },
   epid: {
-    server: process.env.MSSQL_DB_SERVER || '',
-    user: process.env.MSSQL_DB_USERNAME || '',
+    server: process.env.MSSQL_DB_SERVER || 'localhost',
+    user: process.env.MSSQL_DB_USERNAME || 'intake24',
     password: process.env.MSSQL_DB_PASSWORD || '',
     database: process.env.MSSQL_DB_DATABASE || '',
     port: parseInt(process.env.MSSQL_DB_PORT ?? '1433', 10),

@@ -17,7 +17,7 @@
 */
 
 import axios from 'axios';
-import fecha from 'fecha';
+import { format } from 'date-fns';
 import config from '@/config';
 import storage from './storage';
 
@@ -126,10 +126,7 @@ export default {
         headers: { 'X-Auth-Token': this.accessToken },
       });
 
-      const filename = `Intake24-export-${surveyId}_${fecha.format(
-        new Date(),
-        'YYYY-MM-DD-hh-mm-ss'
-      )}.csv`;
+      const filename = `Intake24-export-${surveyId}_${format(new Date(), 'yyyyMMdd-HHmmss')}.csv`;
 
       const file = storage.save(filename, data);
       return file;
@@ -187,10 +184,7 @@ export default {
     try {
       const res = await axios.get(url, { headers: { 'X-Auth-Token': this.accessToken } });
 
-      const filename = `Intake24-export-${surveyId}_${fecha.format(
-        new Date(),
-        'YYYY-MM-DD-hh-mm-ss'
-      )}.csv`;
+      const filename = `Intake24-export-${surveyId}_${format(new Date(), 'yyyyMMdd-HHmmss')}.csv`;
 
       const file = storage.save(filename, res.data);
       return file;

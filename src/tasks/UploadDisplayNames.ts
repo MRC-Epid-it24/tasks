@@ -16,14 +16,18 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import fecha from 'fecha';
+import { format } from 'date-fns';
 import { parseAsync } from 'json2csv';
 import schema from '@/config/schema';
-import { pg } from '@/services/db';
+import db from '@/services/db';
 import logger from '@/services/logger';
 import storage from '@/services/storage';
 import type { TaskDefinition } from '.';
 import Task from './Task';
+
+export type UploadDisplayNamesTaskParams = {
+  survey: string;
+};
 
 export type EpidResult = {
   'user name': string;
@@ -43,7 +47,7 @@ export type Results = {
   filtered: EpidResult[];
 };
 
-export default class ExportSurveyData extends Task {
+export default class UploadDisplayNames extends Task<UploadDisplayNamesTaskParams> {
   public data: Results;
 
   public count: number;
@@ -52,7 +56,7 @@ export default class ExportSurveyData extends Task {
 
   public message = '';
 
-  constructor(taskDef: TaskDefinition) {
+  constructor(taskDef: TaskDefinition<UploadDisplayNamesTaskParams>) {
     super(taskDef);
 
     this.count = 0;
@@ -69,7 +73,7 @@ export default class ExportSurveyData extends Task {
    * Run the job
    *
    * @returns {Promise<string>}
-   * @memberof ExportSurveyData
+   * @memberof UploadDisplayNames
    */
   async run(): Promise<string> {
     await this.initMSPool();
@@ -119,7 +123,7 @@ export default class ExportSurveyData extends Task {
    * @return void
    */
   async getIT24DisplayNames(): Promise<void> {
-    const res = await pg.query<IT24Result>(
+    const res = await db.system.query<IT24Result>(
       `SELECT users.id, users.name, alias.user_name FROM users
         JOIN user_survey_aliases alias ON users.id = alias.user_id
         WHERE alias.survey_id = $1`,
@@ -147,7 +151,10 @@ export default class ExportSurveyData extends Task {
 
       if (it24record !== undefined) {
         this.count += 1;
-        await pg.query(`UPDATE users SET name = $1 WHERE id = $2`, [item.name, it24record.id]);
+        await db.system.query(`UPDATE users SET name = $1 WHERE id = $2`, [
+          item.name,
+          it24record.id,
+        ]);
       }
     }
 
@@ -183,9 +190,9 @@ export default class ExportSurveyData extends Task {
 
     const csv = await parseAsync(this.data.filtered, { fields: ['user name', 'password', 'name'] });
 
-    const filename = `Intake24-display-name-${this.params.survey}_${fecha.format(
+    const filename = `Intake24-display-name-${this.params.survey}_${format(
       new Date(),
-      'YYYY-MM-DD-hh-mm-ss'
+      'yyyyMMdd-HHmmss'
     )}.csv`;
 
     this.file = storage.save(filename, csv);

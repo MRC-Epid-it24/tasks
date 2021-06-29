@@ -18,12 +18,12 @@
 
 import sql, { ConnectionPool } from 'mssql';
 import globalDB from '@/config/db';
-import type { TaskDefinition, TaskDBConfig, TaskParameters } from '.';
+import type { TaskDefinition, TaskDBConfig, Dictionary } from '.';
 
-export default abstract class Task {
+export default abstract class Task<T = Dictionary> {
   readonly name: string;
 
-  readonly params: TaskParameters;
+  readonly params: T;
 
   readonly dbConfig: TaskDBConfig;
 
@@ -33,7 +33,7 @@ export default abstract class Task {
 
   abstract run(): Promise<string>;
 
-  constructor({ name, params, db }: TaskDefinition) {
+  constructor({ name, params, db }: TaskDefinition<T>) {
     this.name = name;
     this.params = params;
 

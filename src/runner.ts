@@ -35,7 +35,8 @@ export default (task: TaskDefinition): Runner =>
     let result;
 
     try {
-      message = await new tasks[name](task).run();
+      // TODO: fix the type
+      message = await new tasks[name](task as any).run();
       result = 'SUCCESS';
 
       logger.info(`Task ${name} successfully processed.`);
@@ -54,7 +55,7 @@ export default (task: TaskDefinition): Runner =>
     const subject = `${name} | ${result}`;
     const text = [
       `Task: ${name}`,
-      `Survey: ${survey}\n`,
+      `Survey: ${survey || 'none'}\n`,
       `Result: ${result}`,
       `Message: ${message}`,
     ].join('\n');

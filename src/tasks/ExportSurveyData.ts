@@ -26,7 +26,13 @@ import logger from '@/services/logger';
 import type { TaskDefinition } from '.';
 import Task from './Task';
 
-export default class ExportSurveyData extends Task {
+export type ExportSurveyTaskParams = {
+  survey: string;
+  exportOffset?: number | null;
+  exportVersion?: string;
+};
+
+export default class ExportSurveyData extends Task<ExportSurveyTaskParams> {
   public surveyInfo!: SurveyInfo;
 
   private headers: any[];
@@ -39,7 +45,7 @@ export default class ExportSurveyData extends Task {
 
   public message = '';
 
-  constructor(taskDef: TaskDefinition) {
+  constructor(taskDef: TaskDefinition<ExportSurveyTaskParams>) {
     super(taskDef);
 
     this.headers = [];
