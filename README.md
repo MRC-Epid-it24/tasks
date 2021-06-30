@@ -107,6 +107,34 @@ Currently implemented tasks are:
 }
 ```
 
+### PG_DUMP_TO_SFTP
+
+- Run pg_dump for `system` or `foods` database and upload to sftp.
+- Make sure you got pg_dump binaries installed, e.g. for ubuntu: `apt-get install postgresql-client`.
+
+```json
+{
+    "name": "PG_DUMP_TO_SFTP",
+    "cron": "* * * * *",
+    "params": {
+        "database": "system" | "foods",
+        "sftp": {
+            "host": "sftp-server.example.com",
+            "port": 22,
+            "username": "sftp-username",
+            "password": "sftp-password",
+            "dir": "remove/dir/path"
+        }
+    },
+    "notify": {
+        "success": [],
+        "error": []
+    }
+}
+```
+
+
+
 ## Build
 
 ### Development environment

@@ -18,21 +18,17 @@
 
 import { config } from 'mssql';
 
+export type PgConfig = {
+  host: string;
+  user: string;
+  password: string;
+  database: string;
+  port: number;
+};
+
 export type DBConfig = {
-  foods: {
-    host: string;
-    user: string;
-    password: string;
-    database: string;
-    port: number;
-  };
-  system: {
-    host: string;
-    user: string;
-    password: string;
-    database: string;
-    port: number;
-  };
+  foods: PgConfig;
+  system: PgConfig;
   epid: config;
 };
 

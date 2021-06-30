@@ -21,48 +21,56 @@ import execa from 'execa';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
-import dbConfig from '@/config/db';
-import fsConfig from '@/config/filesystem';
+import { PgConfig } from '@/config/db';
 import logger from '@/services/logger';
-
-export type Intake24Database = 'system' | 'foods';
-
-export type BackupFile = {
-  fileName: string;
-  filePath: string;
-};
+import { FileInfo, Intake24Database } from '@/types';
 
 const PG_DUMP_BIN = '/usr/bin/pg_dump';
 const PG_PASS_FILE = '.pgpass';
 
-const pgPassPath = path.resolve(os.homedir(), PG_PASS_FILE);
-
-export const createPgPass = async (db: Intake24Database): Promise<void> => {
-  const { host, port, database, user, password } = dbConfig[db];
-  const pgPassContent = [host, port, database, user, password].join(':');
-
-  await fs.writeFile(pgPassPath, pgPassContent);
-  await execa.command(`chmod 600 .pgpass`, { cwd: os.homedir() });
+export type PgDumpOps = {
+  db: Intake24Database;
+  connection: PgConfig;
+  tmp?: string;
 };
 
-export const removePgPass = async (): Promise<void> => {
-  try {
-    fs.unlink(pgPassPath);
-  } catch (err) {
-    logger.warn(`removePgPassSetup: could not remove: ${pgPassPath}`);
-  }
+export type PgDump = {
+  createPgPass: () => Promise<void>;
+  removePgPass: () => Promise<void>;
+  runDump: () => Promise<FileInfo>;
 };
 
-export const pgDump = async (db: Intake24Database): Promise<BackupFile> => {
-  const { host, port, database, user } = dbConfig[db];
+export default ({ db, connection, tmp = 'tmp' }: PgDumpOps): PgDump => {
+  const pgPassPath = path.resolve(os.homedir(), PG_PASS_FILE);
 
-  const fileName = `intake24-${db}-${format(new Date(), 'yyyyMMdd-HHmmss')}.custom`;
+  const createPgPass = async (): Promise<void> => {
+    const { host, port, database, user, password } = connection;
+    const pgPassContent = [host, port, database, user, password].join(':');
 
-  const filePath = path.resolve(fsConfig.tmp, fileName);
+    await fs.writeFile(pgPassPath, pgPassContent);
+    await execa.command(`chmod 600 .pgpass`, { cwd: os.homedir() });
+  };
 
-  await execa.command(
-    `${PG_DUMP_BIN} --host=${host} --port=${port} --username=${user} --dbname=${database} --format=c --schema=public --no-owner --file=${filePath}`
-  );
+  const removePgPass = async (): Promise<void> => {
+    try {
+      fs.unlink(pgPassPath);
+    } catch (err) {
+      logger.warn(`removePgPassSetup: could not remove: ${pgPassPath}`);
+    }
+  };
 
-  return { fileName, filePath };
+  const runDump = async (): Promise<FileInfo> => {
+    const { host, port, database, user } = connection;
+
+    const fileName = `intake24-${db}-${format(new Date(), 'yyyyMMdd-HHmmss')}.custom`;
+    const filePath = path.resolve(tmp, fileName);
+
+    await execa.command(
+      `${PG_DUMP_BIN} --host=${host} --port=${port} --username=${user} --dbname=${database} --format=c --schema=public --no-owner --file=${filePath}`
+    );
+
+    return { name: fileName, path: filePath };
+  };
+
+  return { createPgPass, removePgPass, runDump };
 };

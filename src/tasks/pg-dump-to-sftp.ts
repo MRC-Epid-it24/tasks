@@ -16,12 +16,24 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { pgDump, createPgPass, removePgPass, Intake24Database } from '@/services/pg-dump';
+import fs from 'fs-extra';
+import { trimEnd } from 'lodash';
+import Sftp from 'ssh2-sftp-client';
+import dbConfig from '@/config/db';
+import pgDump from '@/services/pg-dump';
 import logger from '@/services/logger';
+import { FileInfo, Intake24Database } from '@/types';
 import type { Task, TaskDefinition } from '.';
 
 export type PgDumpToSftpTaskParams = {
   database: Intake24Database;
+  sftp: {
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    dir: string;
+  };
 };
 
 export default class PgDumpToSftp implements Task<PgDumpToSftpTaskParams> {
@@ -43,16 +55,53 @@ export default class PgDumpToSftp implements Task<PgDumpToSftpTaskParams> {
    * @memberof PgDumpToSftp
    */
   async run(): Promise<string> {
-    await createPgPass('system');
+    const pgBackup = pgDump({ db: this.params.database, connection: dbConfig.system });
 
-    const backup = await pgDump('system');
+    await pgBackup.createPgPass();
+    const backup = await pgBackup.runDump();
+    await pgBackup.removePgPass();
 
-    await removePgPass();
+    await this.copyToSftp(backup);
 
-    console.log(backup);
-
+    this.message = `Task ${this.name}: Database backup successful.`;
     logger.info(this.message);
-
     return this.message;
+  }
+
+  /**
+   * Transfer file to SFTP
+   *
+   * @private
+   * @param {FileInfo} file
+   * @returns {Promise<void>}
+   * @memberof PgDumpToSftp
+   */
+  private async copyToSftp(file: FileInfo): Promise<void> {
+    logger.debug(`Task ${this.name}: transfer to SFTP started.`);
+
+    const fileCheck = await fs.pathExists(file.path);
+    if (!fileCheck) throw new Error(`Missing file to upload: ${file.name}.`);
+
+    const { dir, ...sftpConnection } = this.params.sftp;
+
+    const sftp = new Sftp();
+    await sftp.connect(sftpConnection);
+
+    const cwd = await sftp.cwd();
+    const dirPath = `${trimEnd(cwd, '/')}/${dir}`;
+
+    const dirCheck = await sftp.exists(dirPath);
+    if (!dirCheck) {
+      await sftp.end();
+      throw new Error(`Missing remote directory for upload: ${dirPath}`);
+    }
+
+    const stream = fs.createReadStream(file.path);
+    const done = await sftp.put(stream, `${dirPath}/${file.name}`);
+    await fs.remove(file.path);
+    await sftp.end();
+
+    logger.debug(done);
+    logger.debug(`Task ${this.name}: transfer to SFTP finished.`);
   }
 }

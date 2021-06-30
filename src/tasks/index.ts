@@ -16,13 +16,12 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Dictionary } from '@/types';
 import { config } from 'mssql';
 import EXPORT_SURVEY_DATA from './export-survey-data';
 import PG_DUMP_TO_SFTP from './pg-dump-to-sftp';
 import UPLOAD_DISPLAY_NAMES from './upload-display-names';
 import UPLOAD_PAQ_LINKS from './upload-paq-links';
-
-export type Dictionary<T = any> = { [key: string]: T };
 
 const tasks = {
   UPLOAD_DISPLAY_NAMES,

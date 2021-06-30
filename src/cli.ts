@@ -23,7 +23,7 @@ import config from './config';
 import runner from './runner';
 import mailer from './services/mailer';
 
-async function run() {
+const run = async () => {
   const program = new Command();
 
   program.name('intake24-tasks');
@@ -45,7 +45,7 @@ async function run() {
   });
 
   await program.parseAsync(process.argv);
-}
+};
 
 run().catch((err) => {
   console.error(err);
