@@ -18,21 +18,22 @@
 
 import { pgDump, createPgPass, removePgPass, Intake24Database } from '@/services/pg-dump';
 import logger from '@/services/logger';
-import type { TaskDefinition } from '.';
-import Task from './Task';
+import type { Task, TaskDefinition } from '.';
 
 export type PgDumpToSftpTaskParams = {
   database: Intake24Database;
 };
 
-export default class PgDumpToSftp extends Task<PgDumpToSftpTaskParams> {
+export default class PgDumpToSftp implements Task<PgDumpToSftpTaskParams> {
+  readonly name: string;
+
+  readonly params: PgDumpToSftpTaskParams;
+
   public message = '';
 
-  // eslint-disable-next-line no-useless-constructor
-  constructor(taskDef: TaskDefinition<PgDumpToSftpTaskParams>) {
-    super(taskDef);
-
-    //
+  constructor({ name, params }: TaskDefinition<PgDumpToSftpTaskParams>) {
+    this.name = name;
+    this.params = params;
   }
 
   /**

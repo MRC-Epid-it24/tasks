@@ -22,8 +22,8 @@ import pgPromise from 'pg-promise';
 import schema from '@/config/schema';
 import db from '@/services/db';
 import logger from '@/services/logger';
-import type { TaskDefinition } from '.';
-import Task from './Task';
+import type { Task, TaskDefinition } from '.';
+import HasMsSqlPool from './has-mssql-pool';
 
 export type UploadPAQLinksTaskParams = {
   survey: string;
@@ -46,7 +46,11 @@ export type Stats = {
   removed: number;
 };
 
-export default class UploadPAQLinks extends Task<UploadPAQLinksTaskParams> {
+export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadPAQLinksTaskParams> {
+  readonly name: string;
+
+  readonly params: UploadPAQLinksTaskParams;
+
   protected pgClient!: PoolClient;
 
   private data: OriginalLinkData[];
@@ -61,6 +65,10 @@ export default class UploadPAQLinks extends Task<UploadPAQLinksTaskParams> {
 
   constructor(taskDef: TaskDefinition<UploadPAQLinksTaskParams>) {
     super(taskDef);
+
+    const { name, params } = taskDef;
+    this.name = name;
+    this.params = params;
 
     this.data = [];
     this.stats = {

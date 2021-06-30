@@ -17,13 +17,28 @@
 */
 
 import { config } from 'mssql';
-import EXPORT_SURVEY_DATA from './ExportSurveyData';
-import UPLOAD_DISPLAY_NAMES from './UploadDisplayNames';
-import UPLOAD_PAQ_LINKS from './UploadPAQLinks';
+import EXPORT_SURVEY_DATA from './export-survey-data';
+import PG_DUMP_TO_SFTP from './pg-dump-to-sftp';
+import UPLOAD_DISPLAY_NAMES from './upload-display-names';
+import UPLOAD_PAQ_LINKS from './upload-paq-links';
 
-const tasks = { UPLOAD_DISPLAY_NAMES, EXPORT_SURVEY_DATA, UPLOAD_PAQ_LINKS };
+export type Dictionary<T = any> = { [key: string]: T };
+
+const tasks = {
+  UPLOAD_DISPLAY_NAMES,
+  PG_DUMP_TO_SFTP,
+  EXPORT_SURVEY_DATA,
+  UPLOAD_PAQ_LINKS,
+};
 
 export type TaskType = keyof typeof tasks;
+
+export interface Task<T = Dictionary> {
+  readonly name: string;
+  readonly params: T;
+  message: string;
+  run(): Promise<string>;
+}
 
 export interface TaskDBConfig extends config {
   tables: {
@@ -31,8 +46,6 @@ export interface TaskDBConfig extends config {
     log: string;
   };
 }
-
-export type Dictionary<T = any> = { [key: string]: T };
 
 export type TaskDefinition<T = Dictionary> = {
   name: TaskType;

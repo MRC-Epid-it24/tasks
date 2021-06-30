@@ -19,6 +19,6 @@
 import fs from 'fs-extra';
 import type { TaskDefinition } from '@/tasks';
 
-const tasks = JSON.parse(fs.readFileSync('tasks.json', 'utf8'));
+const tasks: TaskDefinition[] = JSON.parse(fs.readFileSync('tasks.json', 'utf8'));
 
-export default tasks as TaskDefinition[];
+export default tasks;

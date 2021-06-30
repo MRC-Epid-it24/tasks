@@ -23,8 +23,8 @@ import sql from 'mssql';
 import path from 'path';
 import api, { SurveyInfo, ExportSurveyDataParams } from '@/services/intake24API';
 import logger from '@/services/logger';
-import type { TaskDefinition } from '.';
-import Task from './Task';
+import type { Task, TaskDefinition } from '.';
+import HasMsSqlPool from './has-mssql-pool';
 
 export type ExportSurveyTaskParams = {
   survey: string;
@@ -32,7 +32,11 @@ export type ExportSurveyTaskParams = {
   exportVersion?: string;
 };
 
-export default class ExportSurveyData extends Task<ExportSurveyTaskParams> {
+export default class ExportSurveyData extends HasMsSqlPool implements Task<ExportSurveyTaskParams> {
+  readonly name: string;
+
+  readonly params: ExportSurveyTaskParams;
+
   public surveyInfo!: SurveyInfo;
 
   private headers: any[];
@@ -47,6 +51,10 @@ export default class ExportSurveyData extends Task<ExportSurveyTaskParams> {
 
   constructor(taskDef: TaskDefinition<ExportSurveyTaskParams>) {
     super(taskDef);
+
+    const { name, params } = taskDef;
+    this.name = name;
+    this.params = params;
 
     this.headers = [];
     this.data = [];

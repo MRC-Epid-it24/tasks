@@ -22,8 +22,8 @@ import schema from '@/config/schema';
 import db from '@/services/db';
 import logger from '@/services/logger';
 import storage from '@/services/storage';
-import type { TaskDefinition } from '.';
-import Task from './Task';
+import type { Task, TaskDefinition } from '.';
+import HasMsSqlPool from './has-mssql-pool';
 
 export type UploadDisplayNamesTaskParams = {
   survey: string;
@@ -47,7 +47,14 @@ export type Results = {
   filtered: EpidResult[];
 };
 
-export default class UploadDisplayNames extends Task<UploadDisplayNamesTaskParams> {
+export default class UploadDisplayNames
+  extends HasMsSqlPool
+  implements Task<UploadDisplayNamesTaskParams>
+{
+  readonly name: string;
+
+  readonly params: UploadDisplayNamesTaskParams;
+
   public data: Results;
 
   public count: number;
@@ -58,6 +65,10 @@ export default class UploadDisplayNames extends Task<UploadDisplayNamesTaskParam
 
   constructor(taskDef: TaskDefinition<UploadDisplayNamesTaskParams>) {
     super(taskDef);
+
+    const { name, params } = taskDef;
+    this.name = name;
+    this.params = params;
 
     this.count = 0;
     this.data = {

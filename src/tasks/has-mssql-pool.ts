@@ -18,25 +18,14 @@
 
 import sql, { ConnectionPool } from 'mssql';
 import globalDB from '@/config/db';
-import type { TaskDefinition, TaskDBConfig, Dictionary } from '.';
+import type { TaskDefinition, TaskDBConfig } from '.';
 
-export default abstract class Task<T = Dictionary> {
-  readonly name: string;
-
-  readonly params: T;
-
+export default abstract class HasMsSqlPool {
   readonly dbConfig: TaskDBConfig;
 
   protected msPool!: ConnectionPool;
 
-  abstract message: string;
-
-  abstract run(): Promise<string>;
-
-  constructor({ name, params, db }: TaskDefinition<T>) {
-    this.name = name;
-    this.params = params;
-
+  constructor({ db }: TaskDefinition) {
     if (!db) throw Error('No database connection info provided.');
 
     this.dbConfig = { ...globalDB.epid, ...db };
@@ -45,7 +34,9 @@ export default abstract class Task<T = Dictionary> {
   /**
    * Open DB connection pool
    *
-   * @return void
+   * @protected
+   * @returns {Promise<void>}
+   * @memberof HasMsSqlPool
    */
   protected async initMSPool(): Promise<void> {
     const { tables, ...rest } = this.dbConfig;
@@ -55,9 +46,11 @@ export default abstract class Task<T = Dictionary> {
   }
 
   /**
-   * Close DB connection pool
+   * lose DB connection pool
    *
-   * @return void
+   * @protected
+   * @returns {Promise<void>}
+   * @memberof HasMsSqlPool
    */
   protected async closeMSPool(): Promise<void> {
     await this.msPool.close();
