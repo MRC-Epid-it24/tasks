@@ -55,7 +55,8 @@ export default class PgDumpToSftp implements Task<PgDumpToSftpTaskParams> {
    * @memberof PgDumpToSftp
    */
   async run(): Promise<string> {
-    const pgBackup = pgDump({ db: this.params.database, connection: dbConfig.system });
+    const { database } = this.params;
+    const pgBackup = pgDump({ db: database, connection: dbConfig[database] });
 
     await pgBackup.createPgPass();
     const backup = await pgBackup.runDump();
