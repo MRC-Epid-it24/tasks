@@ -26,7 +26,7 @@ import { FileInfo, Intake24Database } from '@/types';
 import type { Task, TaskDefinition } from '.';
 
 export type PgDumpToSftpTaskParams = {
-  database: Intake24Database;
+  database: Intake24Database | Intake24Database[];
   sftp: {
     host: string;
     port: number;
@@ -55,14 +55,19 @@ export default class PgDumpToSftp implements Task<PgDumpToSftpTaskParams> {
    * @memberof PgDumpToSftp
    */
   async run(): Promise<string> {
-    const { database } = this.params;
-    const pgBackup = pgDump({ db: database, connection: dbConfig[database] });
+    const databases = Array.isArray(this.params.database)
+      ? this.params.database
+      : [this.params.database];
 
-    await pgBackup.createPgPass();
-    const backup = await pgBackup.runDump();
-    await pgBackup.removePgPass();
+    for (const db of databases) {
+      const pgBackup = pgDump({ db, connection: dbConfig[db] });
 
-    await this.copyToSftp(backup);
+      await pgBackup.createPgPass();
+      const backup = await pgBackup.runDump();
+      await pgBackup.removePgPass();
+
+      await this.copyToSftp(backup);
+    }
 
     this.message = `Task ${this.name}: Database backup successful.`;
     logger.info(this.message);
