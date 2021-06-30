@@ -1,5 +1,9 @@
 # Intake24-tasks
 
+[![Build Status](https://github.com/MRC-Epid-it24/tasks/workflows/Node.js%20CI/badge.svg)](https://github.com/MRC-Epid-it24/tasks/actions/workflows/nodejs-ci.yml)
+![David](https://img.shields.io/david/MRC-Epid-it24/tasks)
+[![GitHub license](https://img.shields.io/github/license/MRC-Epid-it24/tasks)](https://github.com/MRC-Epid-it24/tasks/blob/master/LICENSE)
+
 Interface between Intake24 API and Clinical DB (CRON-like node.js service)
 
 ## Installation
