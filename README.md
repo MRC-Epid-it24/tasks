@@ -121,13 +121,13 @@ Currently implemented tasks are:
     "name": "PG_DUMP_TO_SFTP",
     "cron": "* * * * *",
     "params": {
-        "database": "system" | "foods",
+        "database": "system" | "foods" | ["system" | "foods"],
         "sftp": {
             "host": "sftp-server.example.com",
             "port": 22,
             "username": "sftp-username",
             "password": "sftp-password",
-            "dir": "remove/dir/path"
+            "dir": "remote/dir/path"
         }
     },
     "notify": {
@@ -136,8 +136,6 @@ Currently implemented tasks are:
     }
 }
 ```
-
-
 
 ## Build
 
