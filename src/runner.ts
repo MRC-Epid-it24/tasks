@@ -55,10 +55,12 @@ export default (task: TaskDefinition): Runner =>
     const subject = `${name} | ${result}`;
     const text = [
       `Task: ${name}`,
-      `Survey: ${survey || 'none'}\n`,
+      survey ? `Survey: ${survey}\n` : null,
       `Result: ${result}`,
       `Message: ${message}`,
-    ].join('\n');
+    ]
+      .filter(Boolean)
+      .join('\n');
 
     if (Array.isArray(notify) && notify.length) {
       await mailer.sendMail({ to: notify, subject, text });
