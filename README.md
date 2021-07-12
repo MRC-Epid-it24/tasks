@@ -6,6 +6,16 @@
 
 Interface between Intake24 API and Clinical DB (CRON-like node.js service)
 
+## Requirements
+
+Make sure you have Node.js (12+) and npm (7+) installed.
+
+MSSQL lib requires ODBC driver headers to be installed:
+
+```sh
+apt install unixodbc-dev
+```
+
 ## Installation
 
 Download local project dependencies
