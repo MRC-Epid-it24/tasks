@@ -47,9 +47,14 @@ const run = async () => {
   await program.parseAsync(process.argv);
 };
 
-run().catch((err) => {
-  console.error(err);
+run()
+  .catch((err) => {
+    console.error(err);
 
-  process.exitCode = process.exitCode || 1;
-  process.exit();
-});
+    process.exitCode = process.exitCode ?? 1;
+    process.exit();
+  })
+  .finally(() => {
+    process.exitCode = process.exitCode ?? 0;
+    process.exit();
+  });
