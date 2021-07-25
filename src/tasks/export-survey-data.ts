@@ -43,7 +43,7 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
 
   private data: any[];
 
-  private count: number;
+  private records: number;
 
   private filename!: string;
 
@@ -58,7 +58,7 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
 
     this.headers = [];
     this.data = [];
-    this.count = 0;
+    this.records = 0;
   }
 
   /**
@@ -226,7 +226,6 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
       stream
         .on('data', (row) => {
           this.data.push(row);
-          this.count++;
 
           if (chunk > 0 && this.data.length === chunk) {
             stream.pause();
@@ -242,6 +241,8 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
           }
         })
         .on('end', (records: number) => {
+          this.records = records - 1;
+
           this.storeToDB()
             .then(() => resolve())
             .catch((err) => {
@@ -261,10 +262,7 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
    * @memberof ExportSurveyData
    */
   private async storeToDB(): Promise<void> {
-    if (!this.headers.length) {
-      this.headers = this.data.shift();
-      this.count--;
-    }
+    if (!this.headers.length) this.headers = this.data.shift();
 
     if (!this.data.length) return;
 
@@ -301,7 +299,9 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
       `INSERT INTO ${this.dbConfig.tables.log} (ImportType, ImportFileName, ImportStatus, ImportMessage) VALUES (@ImportType, @ImportFileName, @ImportStatus, @ImportMessage)`
     );
 
-    this.message = `File processed: ${path.basename(this.filename)}, Rows imported: ${this.count}`;
+    this.message = `File processed: ${path.basename(this.filename)}, Rows imported: ${
+      this.records
+    }`;
 
     await ps.execute({
       ImportType: 'Intake24AutoStep1',
