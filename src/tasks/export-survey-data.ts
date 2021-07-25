@@ -242,8 +242,6 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
           }
         })
         .on('end', (records: number) => {
-          if (records % chunk === 0) return;
-
           this.storeToDB()
             .then(() => resolve())
             .catch((err) => {
