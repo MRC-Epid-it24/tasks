@@ -8,7 +8,7 @@ Group=intake24-tasks
 Restart=on-failure
 KillSignal=SIGQUIT
 WorkingDirectory=/usr/share/intake24-tasks
-ExecStart=/usr/bin/nodejs dist/index.js
+ExecStart=/usr/bin/node dist/index.js
 
 [Install]
 WantedBy=multi-user.target

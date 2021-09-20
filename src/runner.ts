@@ -40,7 +40,7 @@ export default (task: TaskDefinition): Runner =>
       result = 'SUCCESS';
 
       logger.info(`Task ${name} successfully processed.`);
-    } catch (err) {
+    } catch (err: any) {
       message = err.message;
       result = 'ERROR';
 

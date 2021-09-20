@@ -66,7 +66,7 @@ class Mailer {
       logger.info(info.messageId);
 
       if (this.mailer === 'log') info.message.pipe(process.stdout);
-    } catch (err) {
+    } catch (err: any) {
       const { message, name, stack } = err;
       logger.error(stack ?? `${name}: ${message}`);
     }

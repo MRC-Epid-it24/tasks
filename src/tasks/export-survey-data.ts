@@ -16,7 +16,7 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
 import fs from 'fs-extra';
 import { parse } from 'fast-csv';
 import sql from 'mssql';
@@ -39,7 +39,7 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
 
   public surveyInfo!: SurveyInfo;
 
-  private headers: any[];
+  private headers: string[];
 
   private data: any[];
 
@@ -148,11 +148,9 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
       let activeTasks;
       try {
         activeTasks = await api.getActiveTasks(survey);
-      } catch (err) {
-        const { response } = err as AxiosError;
-
+      } catch (err: any) {
         // TEMP: intake24 very sporadically returns with 502 gateway error (nginx or outer proxy -> to investigate)
-        if (response?.status === 502 && failedAttempts < 10) {
+        if (axios.isAxiosError(err) && err.response?.status === 502 && failedAttempts < 10) {
           logger.warn(
             `Task ${this.name}: IT24 API getActiveTasks responded with 502: ${err.message}`
           );

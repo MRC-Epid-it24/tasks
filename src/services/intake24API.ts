@@ -63,7 +63,7 @@ export default {
       } = await axios.post('signin', { email: it24.username, password: it24.password });
 
       this.refreshToken = refreshToken;
-    } catch (err) {
+    } catch (err: any) {
       throw new Error(`IT24 API getRefreshToken failed with: ${err.message}`);
     }
   },
@@ -80,7 +80,7 @@ export default {
       } = await axios.post('refresh', {}, { headers: { 'X-Auth-Token': this.refreshToken } });
 
       this.accessToken = accessToken;
-    } catch (err) {
+    } catch (err: any) {
       throw new Error(`IT24 API getAccessToken failed with: ${err.message}`);
     }
   },
@@ -107,7 +107,7 @@ export default {
         headers: { 'X-Auth-Token': this.accessToken },
       });
       return data;
-    } catch (err) {
+    } catch (err: any) {
       throw new Error(`IT24 API getSurvey failed with: ${err.message}`);
     }
   },
@@ -130,7 +130,7 @@ export default {
 
       const file = storage.save(filename, data);
       return file;
-    } catch (err) {
+    } catch (err: any) {
       throw new Error(`IT24 API exportSurveyData failed with: ${err.message}`);
     }
   },
@@ -153,7 +153,7 @@ export default {
       );
 
       return taskId;
-    } catch (err) {
+    } catch (err: any) {
       throw new Error(`IT24 API asyncExportSurveyData failed with: ${err.message}`);
     }
   },
@@ -188,7 +188,7 @@ export default {
 
       const file = storage.save(filename, res.data);
       return file;
-    } catch (err) {
+    } catch (err: any) {
       throw new Error(`IT24 API getExportFile failed with: ${err.message}`);
     }
   },
