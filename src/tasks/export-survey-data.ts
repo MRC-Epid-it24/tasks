@@ -16,7 +16,7 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import fs from 'fs-extra';
 import { parse } from 'fast-csv';
 import sql from 'mssql';
