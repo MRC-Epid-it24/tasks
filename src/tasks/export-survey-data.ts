@@ -26,6 +26,10 @@ import logger from '@/services/logger';
 import type { Task, TaskDefinition } from '.';
 import HasMsSqlPool from './has-mssql-pool';
 
+const sleep = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
 export type ExportSurveyTaskParams = {
   survey: string;
   exportOffset?: number | null;
@@ -45,6 +49,8 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
 
   private records: number;
 
+  private isProcessing: boolean;
+
   private filename!: string;
 
   public message = '';
@@ -59,6 +65,8 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
     this.headers = [];
     this.data = [];
     this.records = 0;
+
+    this.isProcessing = false;
   }
 
   /**
@@ -132,10 +140,6 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
    * @memberof ExportSurveyData
    */
   private async fetchIntake24Data(): Promise<void> {
-    const sleep = (ms: number) => {
-      return new Promise((resolve) => setTimeout(resolve, ms));
-    };
-
     const { survey } = this.params;
     await api.login();
     this.surveyInfo = await api.getSurvey(survey);
@@ -211,7 +215,7 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
   /**
    * Read the data-export file and stream the data into the DB
    *
-   * @param {number} [chunk=0]
+   * @param {number} [chunk=500]
    * @returns {Promise<void>}
    * @memberof ExportSurveyData
    */
@@ -229,8 +233,7 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
             stream.pause();
             this.storeToDB()
               .then(() => {
-                if (stream.destroyed) resolve();
-                else stream.resume();
+                stream.resume();
               })
               .catch((err) => {
                 stream.destroy(err);
@@ -238,8 +241,10 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
               });
           }
         })
-        .on('end', (records: number) => {
+        .on('end', async (records: number) => {
           this.records = records - 1;
+
+          while (this.isProcessing) await sleep(1000);
 
           this.storeToDB()
             .then(() => resolve())
@@ -255,14 +260,19 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
   /**
    * Store loaded data to database
    *
-   * @param {boolean} [eof=false]
+   * @private
    * @returns {Promise<void>}
    * @memberof ExportSurveyData
    */
   private async storeToDB(): Promise<void> {
+    this.isProcessing = true;
+
     if (!this.headers.length) this.headers = this.data.shift();
 
-    if (!this.data.length) return;
+    if (!this.data.length) {
+      this.isProcessing = false;
+      return;
+    }
 
     const table = new sql.Table(this.dbConfig.tables.data);
     // table.create = true;
@@ -276,7 +286,10 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
 
     const request = this.msPool.request();
     await request.bulk(table);
+
     this.data = [];
+
+    this.isProcessing = false;
   }
 
   /**
