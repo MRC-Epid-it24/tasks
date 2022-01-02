@@ -26,9 +26,10 @@ import logger from '@/services/logger';
 import type { Task, TaskDefinition } from '.';
 import HasMsSqlPool from './has-mssql-pool';
 
-const sleep = (ms: number) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};
+const sleep = (ms: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 
 export type ExportSurveyTaskParams = {
   survey: string;

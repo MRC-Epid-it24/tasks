@@ -1,9 +1,9 @@
-/.idea
-/.vscode
-/node_modules
-/dist
-/logs
-/tmp
+.idea
+.vscode
+node_modules
+dist
+logs
+tmp
 .env*
 !.env-template
 tasks.json

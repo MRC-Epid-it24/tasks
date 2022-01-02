@@ -48,8 +48,8 @@ export type ActiveTask = {
 };
 
 export default {
-  accessToken: null,
-  refreshToken: null,
+  accessToken: '',
+  refreshToken: '',
 
   /**
    * Sign-in to Intake24 instance

@@ -11,14 +11,10 @@ module.exports = {
     sourceType: 'module',
   },
   settings: {
-    'import/extensions': ['.ts'],
     'import/parsers': {
       '@typescript-eslint/parser': ['.ts', '.tsx'],
     },
     'import/resolver': {
-      node: {
-        extensions: ['.ts'],
-      },
       typescript: {
         alwaysTryTypes: true,
       },
