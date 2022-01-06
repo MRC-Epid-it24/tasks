@@ -19,7 +19,7 @@
 import { Pool } from 'pg';
 import dbConfig from '@/config/db';
 
-// const foods = new Pool(dbConfig.foods);
+const foods = new Pool(dbConfig.foods);
 const system = new Pool(dbConfig.system);
 
-export default { system };
+export default { foods, system };

@@ -1,50 +1,63 @@
 [
   {
-      "name": "EXPORT_SURVEY_DATA",
-      "cron": "* * * * *",
-      "params": {
-          "survey": "demo",
-          "exportOffset": 7,
-          "exportVersion": "v2"
-      },
-      "db": {
-          "database": "databaseName",
-          "tables": {
-              "data": "importDataTable",
-              "log": "importLogTable"
-          }
-      },
-      "notify": {
-          "success": [],
-          "error": []
+    "name": "EXPORT_SURVEY_DATA",
+    "cron": "* * * * *",
+    "params": {
+      "survey": "demo",
+      "exportOffset": 7,
+      "exportVersion": "v2"
+    },
+    "db": {
+      "database": "databaseName",
+      "tables": {
+        "data": "importDataTable",
+        "log": "importLogTable"
       }
+    },
+    "notify": {
+      "success": [],
+      "error": []
+    }
   },
   {
-      "name": "UPLOAD_DISPLAY_NAMES",
-      "cron": "* * * * *",
-      "params": {
-          "survey": "demo"
-      },
-      "db": {
-          "database": "databaseName"
-      },
-      "notify": {
-          "success": [],
-          "error": []
-      }
+    "name": "IMPORT_JSON_SUBMISSIONS",
+    "cron": false,
+    "params": {
+      "localeId": "en_GB",
+      "dir": "demo",
+      "output": "csv"
+    },
+    "notify": {
+      "success": [],
+      "error": []
+    }
   },
   {
-      "name": "UPLOAD_PAQ_LINKS",
-      "cron": "* * * * *",
-      "params": {
-          "survey": "demo"
-      },
-      "db": {
-          "database": "databaseName"
-      },
-      "notify": {
-          "success": [],
-          "error": []
-      }
+    "name": "UPLOAD_DISPLAY_NAMES",
+    "cron": "* * * * *",
+    "params": {
+      "survey": "demo"
+    },
+    "db": {
+      "database": "databaseName"
+    },
+    "notify": {
+      "success": [],
+      "error": []
+    }
+  },
+  {
+    "name": "UPLOAD_PAQ_LINKS",
+    "cron": "* * * * *",
+    "params": {
+      "survey": "demo"
+    },
+    "db": {
+      "database": "databaseName"
+    },
+    "notify": {
+      "success": [],
+      "error": []
+    }
   }
 ]

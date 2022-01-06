@@ -1,10 +1,11 @@
 # Intake24-tasks
 
 [![Build Status](https://github.com/MRC-Epid-it24/tasks/workflows/Node.js%20CI/badge.svg)](https://github.com/MRC-Epid-it24/tasks/actions/workflows/nodejs-ci.yml)
-![David](https://img.shields.io/david/MRC-Epid-it24/tasks)
 [![GitHub license](https://img.shields.io/github/license/MRC-Epid-it24/tasks)](https://github.com/MRC-Epid-it24/tasks/blob/master/LICENSE)
 
-Interface between Intake24 API and Clinical DB (CRON-like node.js service)
+Interface between Intake24 API and Clinical DB
+- CRON-like node.js service
+- CLI to execute tasks directly
 
 ## Requirements
 
@@ -79,6 +80,53 @@ Currently implemented tasks are:
 },
 ```
 
+### IMPORT_JSON_SUBMISSIONS
+
+- read contents of folder with files contains intake24 submission in JSON format
+- output either to `csv` or `database`
+
+```json
+{
+    "name": "IMPORT_JSON_SUBMISSIONS",
+    "cron": false,
+    "params": {
+      "localeId": "en_GB",
+      "dir": "/path/to/submission/files",
+      "output": "csv" | "database"
+    },
+    "notify": {
+      "success": [],
+      "error": []
+    }
+  },
+```
+
+### PG_DUMP_TO_SFTP
+
+- Run pg_dump for `system` or `foods` database and upload to sftp.
+- Make sure you got pg_dump binaries installed, e.g. for ubuntu: `apt-get install postgresql-client`.
+
+```json
+{
+    "name": "PG_DUMP_TO_SFTP",
+    "cron": "* * * * *",
+    "params": {
+        "database": "system" | "foods" | ["system" | "foods"],
+        "sftp": {
+            "host": "sftp-server.example.com",
+            "port": 22,
+            "username": "sftp-username",
+            "password": "sftp-password",
+            "dir": "remote/dir/path"
+        }
+    },
+    "notify": {
+        "success": [],
+        "error": []
+    }
+}
+```
+
 ### UPLOAD_DISPLAY_NAMES
 
 - First (display) name synchronization from external database (MSSQL) into Intake24 instance
@@ -113,32 +161,6 @@ Currently implemented tasks are:
     },
     "db": {
         "database": "databaseName"
-    },
-    "notify": {
-        "success": [],
-        "error": []
-    }
-}
-```
-
-### PG_DUMP_TO_SFTP
-
-- Run pg_dump for `system` or `foods` database and upload to sftp.
-- Make sure you got pg_dump binaries installed, e.g. for ubuntu: `apt-get install postgresql-client`.
-
-```json
-{
-    "name": "PG_DUMP_TO_SFTP",
-    "cron": "* * * * *",
-    "params": {
-        "database": "system" | "foods" | ["system" | "foods"],
-        "sftp": {
-            "host": "sftp-server.example.com",
-            "port": 22,
-            "username": "sftp-username",
-            "password": "sftp-password",
-            "dir": "remote/dir/path"
-        }
     },
     "notify": {
         "success": [],
