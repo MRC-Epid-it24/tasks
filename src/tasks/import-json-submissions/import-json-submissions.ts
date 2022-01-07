@@ -17,13 +17,14 @@
 */
 
 import fs from 'fs-extra';
+import { parse } from 'json2csv';
 import path from 'path';
 import { PoolClient } from 'pg';
-import { parse } from 'json2csv';
+import mssql from 'mssql';
 import logger from '@/services/logger';
 import db from '@/services/db';
 import type { Task, TaskDefinition } from '..';
-// import HasMsSqlPool from '../has-mssql-pool';
+import HasMsSqlPool from '../has-mssql-pool';
 import { fields } from './fields';
 import { MISSING_FOOD_CODE, NA, SubmissionData } from './submission';
 
@@ -40,7 +41,7 @@ export type FoodGroup = { id: number; englishName: string; localName: string };
 export type FoodGroups = Record<string, FoodGroup>;
 
 export default class ImportJsonSubmissions
-  /* extends HasMsSqlPool */
+  extends HasMsSqlPool
   implements Task<ImportJsonSubmissionsData>
 {
   readonly name: string;
@@ -58,7 +59,7 @@ export default class ImportJsonSubmissions
   public message = '';
 
   constructor(taskDef: TaskDefinition<ImportJsonSubmissionsData>) {
-    // super(taskDef);
+    super(taskDef);
 
     const { name, params } = taskDef;
     this.name = name;
@@ -78,7 +79,7 @@ export default class ImportJsonSubmissions
     const [foods, system] = await Promise.all([
       db.foods.connect(),
       db.system.connect(),
-      // this.initMSPool();
+      this.initMSPool(),
     ]);
     this.pgClients = { foods, system };
 
@@ -113,8 +114,10 @@ export default class ImportJsonSubmissions
           const outputFilename = path.resolve(path.join(outputPath, `${filename}.csv`));
           const processedFilename = path.resolve(path.join(processedPath, `${filename}.json`));
 
+          if (this.params.output === 'database') await this.toDatabase(rows);
+          else await ImportJsonSubmissions.toCSV(outputFilename, rows);
+
           await fs.move(itemPath, processedFilename);
-          await ImportJsonSubmissions.toCSV(outputFilename, rows);
         } catch (err) {
           const failedFilename = path.resolve(path.join(failedPath, item.name));
           await fs.move(itemPath, failedFilename);
@@ -123,7 +126,7 @@ export default class ImportJsonSubmissions
     } finally {
       this.pgClients.foods.release();
       this.pgClients.system.release();
-      // await this.closeMSPool();
+      await this.closeMSPool();
     }
 
     logger.info(this.message);
@@ -174,9 +177,26 @@ export default class ImportJsonSubmissions
     }, {});
   }
 
-  static async toCSV(filepath: string, content: any) {
+  static async toCSV(filepath: string, content: any[]) {
     const csv = parse(content, { fields, defaultValue: NA });
     await fs.writeFile(filepath, csv, { encoding: 'utf8' });
+  }
+
+  async toDatabase(rows: any[]) {
+    const transformedRows = rows.map((row) => fields.map((field) => row[field.value] ?? 'N/A'));
+
+    const table = new mssql.Table(this.dbConfig.tables.data);
+    this.fields.forEach((column) =>
+      table.columns.add(
+        column.label,
+        column.label === 'Survey ID' ? mssql.UniqueIdentifier : mssql.VarChar,
+        { nullable: true }
+      )
+    );
+    transformedRows.forEach((row) => table.rows.add(...row));
+
+    const request = this.msPool.request();
+    await request.bulk(table);
   }
 
   /**
@@ -376,14 +396,6 @@ export default class ImportJsonSubmissions
         }
       }
     }
-
-    /* const transformedRows = rows.map((row) =>
-      // fields.map((field) => (row as Record<string, any>)[field.value] ?? 'N/A')
-      fields.map(({ label, value }) => ({
-        label,
-        value: (row as Record<string, any>)[value] ?? NA,
-      }))
-    ); */
 
     return rows;
   }

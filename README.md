@@ -90,9 +90,16 @@ Currently implemented tasks are:
     "name": "IMPORT_JSON_SUBMISSIONS",
     "cron": false,
     "params": {
-      "localeId": "en_GB",
-      "dir": "/path/to/submission/files",
-      "output": "csv" | "database"
+        "localeId": "en_GB",
+        "dir": "/path/to/submission/files",
+        "output": "csv" | "database"
+    },
+    "db": {
+        "database": "databaseName",
+        "tables": {
+            "data": "importDataTable",
+            "log": "importLogTable"
+        }
     },
     "notify": {
       "success": [],
