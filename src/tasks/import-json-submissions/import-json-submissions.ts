@@ -111,7 +111,7 @@ export default class ImportJsonSubmissions
 
           const filename = path.basename(item.name).replace(path.extname(item.name), '');
           const outputFilename = path.resolve(path.join(outputPath, `${filename}.csv`));
-          const processedFilename = path.resolve(path.join(processedPath, `${filename}.csv`));
+          const processedFilename = path.resolve(path.join(processedPath, `${filename}.json`));
 
           await fs.move(itemPath, processedFilename);
           await ImportJsonSubmissions.toCSV(outputFilename, rows);
@@ -161,7 +161,7 @@ export default class ImportJsonSubmissions
     const result = await this.pgClients.system.query<Nutrient>(
       `SELECT nt.id, nt.description as name FROM nutrient_types nt
         JOIN local_nutrient_types lnt ON nt.id = lnt.nutrient_type_id AND lnt.locale_id = $1
-        ORDER BY nt.id;`,
+        ORDER BY lnt.id;`,
       [localeId]
     );
 
