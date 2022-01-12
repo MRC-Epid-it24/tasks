@@ -25,7 +25,7 @@ import logger from '@/services/logger';
 import db from '@/services/db';
 import type { Task, TaskDefinition } from '..';
 import HasMsSqlPool from '../has-mssql-pool';
-import { fields } from './fields';
+import { fields, round } from './fields';
 import { MISSING_FOOD_CODE, NA, SubmissionData } from './submission';
 
 export type ImportJsonSubmissionsData = {
@@ -39,6 +39,8 @@ export type Nutrients = Record<string, Nutrient>;
 
 export type FoodGroup = { id: number; englishName: string; localName: string };
 export type FoodGroups = Record<string, FoodGroup>;
+
+export type Row = Record<string, any>;
 
 export default class ImportJsonSubmissions
   extends HasMsSqlPool
@@ -171,7 +173,7 @@ export default class ImportJsonSubmissions
     this.nutrients = result.rows.reduce<Nutrients>((acc, item) => {
       acc[item.id] = item;
 
-      this.fields.push({ label: item.name, value: `nutrientId.${item.id}` });
+      this.fields.push({ label: item.name, value: (row) => round(row[`nutrientId.${item.id}`]) });
 
       return acc;
     }, {});
@@ -182,8 +184,10 @@ export default class ImportJsonSubmissions
     await fs.writeFile(filepath, csv, { encoding: 'utf8' });
   }
 
-  async toDatabase(rows: any[]) {
-    const transformedRows = rows.map((row) => fields.map((field) => row[field.value] ?? 'N/A'));
+  async toDatabase(rows: Row[]) {
+    const transformedRows = rows.map((row) =>
+      fields.map(({ value }) => (typeof value === 'string' ? row[value] : value(row)) ?? 'N/A')
+    );
 
     const table = new mssql.Table(this.dbConfig.tables.data);
     this.fields.forEach((column) =>
@@ -207,7 +211,7 @@ export default class ImportJsonSubmissions
    * @returns {Promise<void>}
    * @memberof ImportJsonSubmissions
    */
-  private async processFile(file: string) {
+  private async processFile(file: string): Promise<Row[]> {
     const content = await fs.readFile(file, 'utf8');
     const data: SubmissionData = JSON.parse(content);
 

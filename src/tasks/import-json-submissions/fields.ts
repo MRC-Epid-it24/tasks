@@ -1,4 +1,7 @@
-export type Field = { label: string; value: string };
+export type Field = { label: string; value: string | ((row: any) => any) };
+
+export const round = (value: any) =>
+  typeof value === 'number' ? Math.round(value * 100) / 100 : value;
 
 export const fields: Field[] = [
   { label: 'Survey ID', value: 'submissionId' },
@@ -39,11 +42,11 @@ export const fields: Field[] = [
   { label: 'Ready meal', value: 'isReadyMeal' },
   { label: 'Brand', value: 'brand' },
   { label: 'As served weight factor', value: 'servingWeightFactor' },
-  { label: 'Serving size (g/ml)', value: 'servingWeight' },
+  { label: 'Serving size (g/ml)', value: (item) => round(item.servingWeight) },
   { label: 'Serving image', value: 'servingImage' },
-  { label: 'Leftovers (g/ml)', value: 'leftoversWeight' },
+  { label: 'Leftovers (g/ml)', value: (item) => round(item.leftoversWeight) },
   { label: 'Leftovers image', value: 'leftoversImage' },
-  { label: 'Portion size (g/ml)', value: 'portionWeight' },
+  { label: 'Portion size (g/ml)', value: (item) => round(item.portionWeight) },
   { label: 'Reasonable amount', value: 'reasonableAmount' },
   { label: 'Missing food ID', value: 'missingFoodId' },
   { label: 'Missing food description', value: 'missingFoodDescription' },
