@@ -32,7 +32,7 @@
     "axios": "^0.24.0",
     "commander": "^8.3.0",
     "date-fns": "^2.28.0",
-    "dotenv": "^10.0.0",
+    "dotenv": "^13.0.1",
     "dotenv-expand": "^5.1.0",
     "execa": "^5.1.1",
     "fast-csv": "^4.3.6",
