@@ -34,13 +34,7 @@ export type PgDumpOps = {
   tmp?: string;
 };
 
-export type PgDump = {
-  createPgPass: () => Promise<void>;
-  removePgPass: () => Promise<void>;
-  runDump: () => Promise<FileInfo>;
-};
-
-export default ({ db, connection, tmp = 'tmp' }: PgDumpOps): PgDump => {
+const pgDump = ({ db, connection, tmp = 'tmp' }: PgDumpOps) => {
   const pgPassPath = path.resolve(os.homedir(), PG_PASS_FILE);
 
   const createPgPass = async (): Promise<void> => {
@@ -55,11 +49,13 @@ export default ({ db, connection, tmp = 'tmp' }: PgDumpOps): PgDump => {
     try {
       fs.unlink(pgPassPath);
     } catch (err) {
-      logger.warn(`removePgPassSetup: could not remove: ${pgPassPath}`);
+      logger.warn(`pgDump|removePgPassSetup: could not remove: ${pgPassPath}`);
     }
   };
 
   const runDump = async (): Promise<FileInfo> => {
+    logger.debug(`pgDump|runDump: pg_dump for '${db}' started.`);
+
     const { host, port, database, user } = connection;
 
     const fileName = `intake24-${db}-${format(new Date(), 'yyyyMMdd-HHmmss')}.custom`;
@@ -69,8 +65,14 @@ export default ({ db, connection, tmp = 'tmp' }: PgDumpOps): PgDump => {
       `${PG_DUMP_BIN} --host=${host} --port=${port} --username=${user} --dbname=${database} --format=c --schema=public --no-owner --file=${filePath}`
     );
 
+    logger.debug(`pgDump|runDump: pg_dump for '${db}' finished.`);
+
     return { name: fileName, path: filePath };
   };
 
   return { createPgPass, removePgPass, runDump };
 };
+
+export default pgDump;
+
+export type PgDump = ReturnType<typeof pgDump>;

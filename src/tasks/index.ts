@@ -19,6 +19,7 @@
 import { config } from 'mssql';
 import { Dictionary } from '@/types';
 import EXPORT_SURVEY_DATA from './export-survey-data';
+import PG_DUMP_TO_LOCAL from './pg-dump-to-local';
 import PG_DUMP_TO_SFTP from './pg-dump-to-sftp';
 import UPLOAD_DISPLAY_NAMES from './upload-display-names';
 import UPLOAD_PAQ_LINKS from './upload-paq-links';
@@ -27,6 +28,7 @@ import { IMPORT_JSON_SUBMISSIONS } from './import-json-submissions';
 const tasks = {
   EXPORT_SURVEY_DATA,
   IMPORT_JSON_SUBMISSIONS,
+  PG_DUMP_TO_LOCAL,
   PG_DUMP_TO_SFTP,
   UPLOAD_DISPLAY_NAMES,
   UPLOAD_PAQ_LINKS,

@@ -108,6 +108,26 @@ Currently implemented tasks are:
   },
 ```
 
+### PG_DUMP_TO_LOCAL
+
+- Run pg_dump for `system` or `foods` database and transfer to local / network location.
+- Make sure you got pg_dump binaries installed, e.g. for ubuntu: `apt-get install postgresql-client`.
+
+```json
+{
+    "name": "PG_DUMP_TO_LOCAL",
+    "cron": "* * * * *",
+    "params": {
+        "database": "system" | "foods" | ["system" | "foods"],
+        "path": "/destination/path"
+    },
+    "notify": {
+        "success": [],
+        "error": []
+    }
+}
+```
+
 ### PG_DUMP_TO_SFTP
 
 - Run pg_dump for `system` or `foods` database and upload to sftp.
