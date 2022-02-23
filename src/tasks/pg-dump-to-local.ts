@@ -29,6 +29,7 @@ export type PgDumpToLocalTaskParams = {
   database: string | string[] | DatabaseBackupOptions[];
   basePath: string;
   appendPath?: string;
+  maxAge?: string;
 };
 
 export default class PgDumpToLocal implements Task<PgDumpToLocalTaskParams> {
@@ -57,7 +58,7 @@ export default class PgDumpToLocal implements Task<PgDumpToLocalTaskParams> {
       : [{ name: this.params.database }];
 
     for (const database of databases) {
-      const { name: dbName, maxAge } = database;
+      const { name: dbName, maxAge = this.params.maxAge } = database;
 
       const pgBackup = pgDump({ dbName });
 
