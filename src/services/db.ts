@@ -17,9 +17,19 @@
 */
 
 import { Pool } from 'pg';
-import dbConfig from '@/config/db';
+import dbConfig, { PgConfig } from '@/config/db';
 
-const foods = new Pool(dbConfig.foods);
-const system = new Pool(dbConfig.system);
+const pgPool = (config: PgConfig) => {
+  let pool: Pool | null = null;
 
-export default { foods, system };
+  const getPool = () => {
+    if (pool) return pool;
+
+    pool = new Pool(config);
+    return pool;
+  };
+
+  return { getPool };
+};
+
+export default { foods: pgPool(dbConfig.foods), system: pgPool(dbConfig.system) };

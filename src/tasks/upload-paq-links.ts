@@ -85,7 +85,7 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
    */
   async run(): Promise<string> {
     await this.initMSPool();
-    this.pgClient = await db.system.connect();
+    this.pgClient = await db.system.getPool().connect();
 
     try {
       await this.createTempTable();

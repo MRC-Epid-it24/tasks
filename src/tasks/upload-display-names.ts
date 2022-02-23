@@ -134,7 +134,7 @@ export default class UploadDisplayNames
    * @return void
    */
   async getIT24DisplayNames(): Promise<void> {
-    const res = await db.system.query<IT24Result>(
+    const res = await db.system.getPool().query<IT24Result>(
       `SELECT users.id, users.name, alias.user_name FROM users
         JOIN user_survey_aliases alias ON users.id = alias.user_id
         WHERE alias.survey_id = $1`,
@@ -162,10 +162,9 @@ export default class UploadDisplayNames
 
       if (it24record !== undefined) {
         this.count += 1;
-        await db.system.query(`UPDATE users SET name = $1 WHERE id = $2`, [
-          item.name,
-          it24record.id,
-        ]);
+        await db.system
+          .getPool()
+          .query(`UPDATE users SET name = $1 WHERE id = $2`, [item.name, it24record.id]);
       }
     }
 

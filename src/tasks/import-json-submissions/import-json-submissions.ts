@@ -79,8 +79,8 @@ export default class ImportJsonSubmissions
    */
   async run(): Promise<string> {
     const [foods, system] = await Promise.all([
-      db.foods.connect(),
-      db.system.connect(),
+      db.foods.getPool().connect(),
+      db.system.getPool().connect(),
       this.initMSPool(),
     ]);
     this.pgClients = { foods, system };
