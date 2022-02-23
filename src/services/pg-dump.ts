@@ -29,12 +29,12 @@ const PG_DUMP_BIN = '/usr/bin/pg_dump';
 const PG_PASS_FILE = '.pgpass';
 
 export type PgDumpOps = {
-  db: Intake24Database;
+  dbType: Intake24Database;
   connection: PgConfig;
   tmp?: string;
 };
 
-const pgDump = ({ db, connection, tmp = 'tmp' }: PgDumpOps) => {
+const pgDump = ({ dbType, connection, tmp = 'tmp' }: PgDumpOps) => {
   const pgPassPath = path.resolve(os.homedir(), PG_PASS_FILE);
 
   const createPgPass = async (): Promise<void> => {
@@ -54,18 +54,18 @@ const pgDump = ({ db, connection, tmp = 'tmp' }: PgDumpOps) => {
   };
 
   const runDump = async (): Promise<FileInfo> => {
-    logger.debug(`pgDump|runDump: pg_dump for '${db}' started.`);
+    logger.debug(`pgDump|runDump: pg_dump for '${dbType}' started.`);
 
     const { host, port, database, user } = connection;
 
-    const fileName = `intake24-${db}-${format(new Date(), 'yyyyMMdd-HHmmss')}.custom`;
+    const fileName = `intake24-${dbType}-${format(new Date(), 'yyyyMMdd-HHmmss')}.custom`;
     const filePath = path.resolve(tmp, fileName);
 
     await execa.command(
       `${PG_DUMP_BIN} --host=${host} --port=${port} --username=${user} --dbname=${database} --format=c --schema=public --no-owner --file=${filePath}`
     );
 
-    logger.debug(`pgDump|runDump: pg_dump for '${db}' finished.`);
+    logger.debug(`pgDump|runDump: pg_dump for '${dbType}' finished.`);
 
     return { name: fileName, path: filePath };
   };
