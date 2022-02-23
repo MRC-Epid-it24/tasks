@@ -22,11 +22,11 @@ import Sftp from 'ssh2-sftp-client';
 import dbConfig from '@/config/db';
 import pgDump from '@/services/pg-dump';
 import logger from '@/services/logger';
-import { FileInfo, Intake24Database } from '@/types';
+import { FileInfo, Intake24Database, Intake24DatabaseWithRetention } from '@/types';
 import type { Task, TaskDefinition } from '.';
 
 export type PgDumpToSftpTaskParams = {
-  database: Intake24Database | Intake24Database[];
+  database: Intake24Database | Intake24Database[] | Intake24DatabaseWithRetention[];
   sftp: {
     host: string;
     port: number;
@@ -55,16 +55,17 @@ export default class PgDumpToSftp implements Task<PgDumpToSftpTaskParams> {
    * @memberof PgDumpToSftp
    */
   async run(): Promise<string> {
-    const databases = Array.isArray(this.params.database)
-      ? this.params.database
-      : [this.params.database];
+    const databases: Intake24DatabaseWithRetention[] = Array.isArray(this.params.database)
+      ? this.params.database.map((database) =>
+          typeof database === 'string' ? { name: database } : database
+        )
+      : [{ name: this.params.database }];
 
-    for (const db of databases) {
-      const pgBackup = pgDump({ db, connection: dbConfig[db] });
+    for (const database of databases) {
+      const { name } = database;
 
-      await pgBackup.createPgPass();
+      const pgBackup = pgDump({ dbType: name, connection: dbConfig[name] });
       const backup = await pgBackup.runDump();
-      await pgBackup.removePgPass();
 
       await this.copyToSftp(backup);
     }

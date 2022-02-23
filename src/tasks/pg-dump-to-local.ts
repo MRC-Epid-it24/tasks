@@ -23,13 +23,8 @@ import path from 'path';
 import dbConfig from '@/config/db';
 import pgDump from '@/services/pg-dump';
 import logger from '@/services/logger';
-import { FileInfo, Intake24Database } from '@/types';
+import { FileInfo, Intake24Database, Intake24DatabaseWithRetention } from '@/types';
 import type { Task, TaskDefinition } from '.';
-
-export type Intake24DatabaseWithRetention = {
-  name: Intake24Database;
-  maxAge?: string;
-};
 
 export type PgDumpToLocalTaskParams = {
   database: Intake24Database | Intake24Database[] | Intake24DatabaseWithRetention[];
@@ -66,9 +61,7 @@ export default class PgDumpToLocal implements Task<PgDumpToLocalTaskParams> {
 
       const pgBackup = pgDump({ dbType: name, connection: dbConfig[name] });
 
-      await pgBackup.createPgPass();
       const backup = await pgBackup.runDump();
-      await pgBackup.removePgPass();
 
       await this.copyToDestination(name, backup);
 

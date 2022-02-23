@@ -56,13 +56,14 @@ const pgDump = ({ dbType, connection, tmp = 'tmp' }: PgDumpOps) => {
   const runDump = async (): Promise<FileInfo> => {
     logger.debug(`pgDump|runDump: pg_dump for '${dbType}' started.`);
 
-    const { host, port, database, user } = connection;
+    const { host, port, database, user, password } = connection;
 
     const fileName = `intake24-${dbType}-${format(new Date(), 'yyyyMMdd-HHmmss')}.custom`;
     const filePath = path.resolve(tmp, fileName);
 
     await execa.command(
-      `${PG_DUMP_BIN} --host=${host} --port=${port} --username=${user} --dbname=${database} --format=c --schema=public --no-owner --file=${filePath}`
+      `${PG_DUMP_BIN} --host=${host} --port=${port} --username=${user} --dbname=${database} --format=c --schema=public --no-owner --file=${filePath}`,
+      { env: { PGPASSWORD: password } }
     );
 
     logger.debug(`pgDump|runDump: pg_dump for '${dbType}' finished.`);
