@@ -30,13 +30,14 @@ const PG_DUMP_BIN = '/usr/bin/pg_dump';
 const PG_PASS_FILE = '.pgpass';
 
 export type PgDumpOps = {
+  instance: string;
   dbName: string;
   connection?: PgConfig;
   tmp?: string;
 };
 
 const pgDump = (options: PgDumpOps) => {
-  const { dbName, connection = dbConfig.pg, tmp = fsConfig.tmp } = options;
+  const { instance, dbName, connection = dbConfig.pg, tmp = fsConfig.tmp } = options;
 
   const pgPassPath = path.resolve(os.homedir(), PG_PASS_FILE);
 
@@ -61,7 +62,7 @@ const pgDump = (options: PgDumpOps) => {
 
     const { host, port, user, password } = connection;
 
-    const fileName = `intake24-${dbName}-${format(new Date(), 'yyyyMMdd-HHmmss')}.custom`;
+    const fileName = `${instance}-${dbName}-${format(new Date(), 'yyyyMMdd-HHmmss')}.custom`;
     const filePath = path.resolve(tmp, fileName);
 
     await execa.command(

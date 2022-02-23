@@ -118,8 +118,11 @@ Currently implemented tasks are:
     "name": "PG_DUMP_TO_LOCAL",
     "cron": "* * * * *",
     "params": {
-        "database": "system" | "foods" | ["system" | "foods"],
-        "path": "/destination/path"
+        "instance": "pgInstanceName",
+        "database": string | string[],
+        "basePath": "/destination/path",
+        "appendPath"?: "hourly",
+        "maxAge"?: "30d"
     },
     "notify": {
         "success": [],
@@ -138,7 +141,9 @@ Currently implemented tasks are:
     "name": "PG_DUMP_TO_SFTP",
     "cron": "* * * * *",
     "params": {
-        "database": "system" | "foods" | ["system" | "foods"],
+        "instance": "pgInstanceName",
+        "database": string | string[],
+        "maxAge"?: "30d",
         "sftp": {
             "host": "sftp-server.example.com",
             "port": 22,

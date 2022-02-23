@@ -23,14 +23,13 @@ import path from 'path';
 import pgDump from '@/services/pg-dump';
 import logger from '@/services/logger';
 import { FileInfo, DatabaseBackupOptions } from '@/types';
-import type { Task, TaskDefinition } from '.';
+import type { Task, TaskDefinition } from '..';
+import type { PgDumpBase } from './pg-dump';
 
-export type PgDumpToLocalTaskParams = {
-  database: string | string[] | DatabaseBackupOptions[];
+export interface PgDumpToLocalTaskParams extends PgDumpBase {
   basePath: string;
   appendPath?: string;
-  maxAge?: string;
-};
+}
 
 export default class PgDumpToLocal implements Task<PgDumpToLocalTaskParams> {
   readonly name: string;
@@ -51,6 +50,7 @@ export default class PgDumpToLocal implements Task<PgDumpToLocalTaskParams> {
    * @memberof PgDumpToLocal
    */
   async run(): Promise<string> {
+    const { instance } = this.params;
     const databases: DatabaseBackupOptions[] = Array.isArray(this.params.database)
       ? this.params.database.map((database) =>
           typeof database === 'string' ? { name: database } : database
@@ -60,7 +60,7 @@ export default class PgDumpToLocal implements Task<PgDumpToLocalTaskParams> {
     for (const database of databases) {
       const { name: dbName, maxAge = this.params.maxAge } = database;
 
-      const pgBackup = pgDump({ dbName });
+      const pgBackup = pgDump({ instance, dbName });
 
       const backup = await pgBackup.runDump();
       await this.copyToDestination(dbName, backup);
