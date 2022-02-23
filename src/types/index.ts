@@ -7,7 +7,7 @@ export type FileInfo = {
 
 export type Intake24Database = 'system' | 'foods';
 
-export type Intake24DatabaseWithRetention = {
-  name: Intake24Database;
+export type DatabaseBackupOptions = {
+  name: string;
   maxAge?: string;
 };

@@ -27,12 +27,20 @@ export type PgConfig = {
 };
 
 export type DBConfig = {
+  pg: PgConfig;
   foods: PgConfig;
   system: PgConfig;
   epid: config;
 };
 
 const dbConfig: DBConfig = {
+  pg: {
+    host: process.env.PG_HOST || 'localhost',
+    user: process.env.PG_USERNAME || 'postgres',
+    password: process.env.PG_PASSWORD || 'postgres',
+    database: process.env.PG_DATABASE || 'postgres',
+    port: parseInt(process.env.PG_PORT ?? '5432', 10),
+  },
   foods: {
     host: process.env.IT24_DB_FOODS_HOST || 'localhost',
     user: process.env.IT24_DB_FOODS_USERNAME || 'intake24',

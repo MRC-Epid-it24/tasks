@@ -21,20 +21,23 @@ import execa from 'execa';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
-import { PgConfig } from '@/config/db';
+import dbConfig, { PgConfig } from '@/config/db';
+import fsConfig from '@/config/filesystem';
 import logger from '@/services/logger';
-import { FileInfo, Intake24Database } from '@/types';
+import { FileInfo } from '@/types';
 
 const PG_DUMP_BIN = '/usr/bin/pg_dump';
 const PG_PASS_FILE = '.pgpass';
 
 export type PgDumpOps = {
-  dbType: Intake24Database;
-  connection: PgConfig;
+  dbName: string;
+  connection?: PgConfig;
   tmp?: string;
 };
 
-const pgDump = ({ dbType, connection, tmp = 'tmp' }: PgDumpOps) => {
+const pgDump = (options: PgDumpOps) => {
+  const { dbName, connection = dbConfig.pg, tmp = fsConfig.tmp } = options;
+
   const pgPassPath = path.resolve(os.homedir(), PG_PASS_FILE);
 
   const createPgPass = async (): Promise<void> => {
@@ -47,26 +50,26 @@ const pgDump = ({ dbType, connection, tmp = 'tmp' }: PgDumpOps) => {
 
   const removePgPass = async (): Promise<void> => {
     try {
-      fs.unlink(pgPassPath);
+      await fs.unlink(pgPassPath);
     } catch (err) {
       logger.warn(`pgDump|removePgPassSetup: could not remove: ${pgPassPath}`);
     }
   };
 
   const runDump = async (): Promise<FileInfo> => {
-    logger.debug(`pgDump|runDump: pg_dump for '${dbType}' started.`);
+    logger.debug(`pgDump|runDump: pg_dump for '${dbName}' started.`);
 
-    const { host, port, database, user, password } = connection;
+    const { host, port, user, password } = connection;
 
-    const fileName = `intake24-${dbType}-${format(new Date(), 'yyyyMMdd-HHmmss')}.custom`;
+    const fileName = `intake24-${dbName}-${format(new Date(), 'yyyyMMdd-HHmmss')}.custom`;
     const filePath = path.resolve(tmp, fileName);
 
     await execa.command(
-      `${PG_DUMP_BIN} --host=${host} --port=${port} --username=${user} --dbname=${database} --format=c --schema=public --no-owner --file=${filePath}`,
+      `${PG_DUMP_BIN} --host=${host} --port=${port} --username=${user} --dbname=${dbName} --format=c --schema=public --no-owner --file=${filePath}`,
       { env: { PGPASSWORD: password } }
     );
 
-    logger.debug(`pgDump|runDump: pg_dump for '${dbType}' finished.`);
+    logger.debug(`pgDump|runDump: pg_dump for '${dbName}' finished.`);
 
     return { name: fileName, path: filePath };
   };

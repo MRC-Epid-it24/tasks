@@ -19,14 +19,13 @@
 import fs from 'fs-extra';
 import { trimEnd } from 'lodash';
 import Sftp from 'ssh2-sftp-client';
-import dbConfig from '@/config/db';
 import pgDump from '@/services/pg-dump';
 import logger from '@/services/logger';
-import { FileInfo, Intake24Database, Intake24DatabaseWithRetention } from '@/types';
+import { FileInfo, DatabaseBackupOptions } from '@/types';
 import type { Task, TaskDefinition } from '.';
 
 export type PgDumpToSftpTaskParams = {
-  database: Intake24Database | Intake24Database[] | Intake24DatabaseWithRetention[];
+  database: string | string[] | DatabaseBackupOptions[];
   sftp: {
     host: string;
     port: number;
@@ -55,16 +54,16 @@ export default class PgDumpToSftp implements Task<PgDumpToSftpTaskParams> {
    * @memberof PgDumpToSftp
    */
   async run(): Promise<string> {
-    const databases: Intake24DatabaseWithRetention[] = Array.isArray(this.params.database)
+    const databases: DatabaseBackupOptions[] = Array.isArray(this.params.database)
       ? this.params.database.map((database) =>
           typeof database === 'string' ? { name: database } : database
         )
       : [{ name: this.params.database }];
 
     for (const database of databases) {
-      const { name } = database;
+      const { name: dbName } = database;
 
-      const pgBackup = pgDump({ dbType: name, connection: dbConfig[name] });
+      const pgBackup = pgDump({ dbName });
       const backup = await pgBackup.runDump();
 
       await this.copyToSftp(backup);
