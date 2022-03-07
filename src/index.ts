@@ -17,8 +17,9 @@
 */
 
 import './bootstrap';
-import cron from 'node-cron';
+import cron from 'node-schedule';
 import config from './config';
+import logger from './services/logger';
 import mailer from './services/mailer';
 import runner from './runner';
 
@@ -27,5 +28,12 @@ mailer.init();
 for (const task of config.tasks) {
   if (!task.cron) continue;
 
-  cron.schedule(task.cron, runner(task));
+  const job = cron.scheduleJob(task.cron, runner(task));
+
+  job.on('error', (err) => {
+    if (err instanceof Error) {
+      const { message, name, stack } = err;
+      logger.error(stack ?? `${name}: ${message}`);
+    } else console.error(err);
+  });
 }
