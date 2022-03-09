@@ -27,6 +27,7 @@ export type PgConfig = {
 };
 
 export type DBConfig = {
+  pgBin: string;
   pg: PgConfig;
   foods: PgConfig;
   system: PgConfig;
@@ -34,6 +35,7 @@ export type DBConfig = {
 };
 
 const dbConfig: DBConfig = {
+  pgBin: process.env.PG_BIN || '/usr/bin/pg_dump',
   pg: {
     host: process.env.PG_HOST || 'localhost',
     user: process.env.PG_USERNAME || 'postgres',

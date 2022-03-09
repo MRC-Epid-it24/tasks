@@ -26,7 +26,6 @@ import fsConfig from '@/config/filesystem';
 import logger from '@/services/logger';
 import { FileInfo } from '@/types';
 
-const PG_DUMP_BIN = '/usr/bin/pg_dump';
 const PG_PASS_FILE = '.pgpass';
 
 export type PgDumpOps = {
@@ -37,7 +36,8 @@ export type PgDumpOps = {
 };
 
 const pgDump = (options: PgDumpOps) => {
-  const { instance, dbName, connection = dbConfig.pg, tmp = fsConfig.tmp } = options;
+  const { pg, pgBin } = dbConfig;
+  const { instance, dbName, connection = pg, tmp = fsConfig.tmp } = options;
 
   const pgPassPath = path.resolve(os.homedir(), PG_PASS_FILE);
 
@@ -66,7 +66,7 @@ const pgDump = (options: PgDumpOps) => {
     const filePath = path.resolve(tmp, fileName);
 
     await execa.command(
-      `${PG_DUMP_BIN} --host=${host} --port=${port} --username=${user} --dbname=${dbName} --format=c --schema=public --no-owner --file=${filePath}`,
+      `${pgBin} --host=${host} --port=${port} --username=${user} --dbname=${dbName} --format=c --schema=public --no-owner --file=${filePath}`,
       { env: { PGPASSWORD: password } }
     );
 
