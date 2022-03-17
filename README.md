@@ -218,7 +218,7 @@ npm run dev
 Build application
 
 ```sh
-npm run prod
+npm run build
 ```
 
 Launch application
@@ -240,6 +240,12 @@ Optional
 
 ```sh
 npm run cli -- --task-index <index>
+```
+
+- Execute specific task without build.
+
+```sh
+npm run cli:dev -- --task-index <index>
 ```
 
 ## Deployment
