@@ -19,7 +19,7 @@
 import nodemailer, { SendMailOptions, Transporter } from 'nodemailer';
 import appConfig from '@/config/app';
 import config, { MailerType } from '@/config/mail';
-import { logger } from '@/services';
+import logger from '@/services/logger';
 
 class Mailer {
   mailer!: MailerType;
