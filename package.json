@@ -22,6 +22,7 @@
     "prod": "npm run production",
     "start": "node dist/index.js",
     "cli": "node dist/cli.js",
+    "cli:dev": "npx ts-node -r tsconfig-paths/register src/cli.ts",
     "lint": "eslint --ext .js,.ts src",
     "lint:fix": "npm run lint -- --fix"
   },
