@@ -20,25 +20,25 @@ import { parse } from 'date-fns';
 import fs from 'fs-extra';
 import ms from 'ms';
 import path from 'path';
-import pgDump from '@/services/pg-dump';
-import logger from '@/services/logger';
+import dbConfig from '@/config/db';
+import { dumpRunners, logger } from '@/services';
 import { FileInfo, DatabaseBackupOptions } from '@/types';
 import type { Task, TaskDefinition } from '..';
-import type { PgDumpBase } from './pg-dump';
+import type { DbDumpBase } from './db-dump';
 
-export interface PgDumpToLocalTaskParams extends PgDumpBase {
+export interface DbDumpToLocalTaskParams extends DbDumpBase {
   basePath: string;
   appendPath?: string;
 }
 
-export default class PgDumpToLocal implements Task<PgDumpToLocalTaskParams> {
+export default class DbDumpToLocal implements Task<DbDumpToLocalTaskParams> {
   readonly name: string;
 
-  readonly params: PgDumpToLocalTaskParams;
+  readonly params: DbDumpToLocalTaskParams;
 
   public message = '';
 
-  constructor({ name, params }: TaskDefinition<PgDumpToLocalTaskParams>) {
+  constructor({ name, params }: TaskDefinition<DbDumpToLocalTaskParams>) {
     this.name = name;
     this.params = params;
   }
@@ -47,10 +47,12 @@ export default class PgDumpToLocal implements Task<PgDumpToLocalTaskParams> {
    * Run the job
    *
    * @returns {Promise<string>}
-   * @memberof PgDumpToLocal
+   * @memberof DbDumpToSftp
    */
   async run(): Promise<string> {
-    const { instance } = this.params;
+    const { instance, dialect } = this.params;
+    const config = dbConfig.backup[dialect];
+
     const databases: DatabaseBackupOptions[] = Array.isArray(this.params.database)
       ? this.params.database.map((database) =>
           typeof database === 'string' ? { name: database } : database
@@ -60,9 +62,9 @@ export default class PgDumpToLocal implements Task<PgDumpToLocalTaskParams> {
     for (const database of databases) {
       const { name: dbName, maxAge = this.params.maxAge } = database;
 
-      const pgBackup = pgDump({ instance, dbName });
+      const runner = new dumpRunners[dialect](config, { instance, dialect, dbName });
 
-      const backup = await pgBackup.runDump();
+      const backup = await runner.run();
       await this.copyToDestination(dbName, backup);
 
       if (maxAge) await this.cleanOldBackups(dbName, ms(maxAge));
@@ -81,7 +83,7 @@ export default class PgDumpToLocal implements Task<PgDumpToLocalTaskParams> {
    * @param {string} dbName
    * @param {FileInfo} file
    * @returns {Promise<void>}
-   * @memberof PgDumpToLocal
+   * @memberof DbDumpToSftp
    */
   private async copyToDestination(dbName: string, file: FileInfo): Promise<void> {
     logger.debug(`Task ${this.name}: transfer of '${file.name}' started.`);
@@ -104,7 +106,7 @@ export default class PgDumpToLocal implements Task<PgDumpToLocalTaskParams> {
    * @param {string} dbName
    * @param {number} maxAge
    * @returns {Promise<void>}
-   * @memberof PgDumpToLocal
+   * @memberof DbDumpToSftp
    */
   private async cleanOldBackups(dbName: string, maxAge: number): Promise<void> {
     logger.debug(`Task ${this.name}: cleanup of '${dbName}' started.`);

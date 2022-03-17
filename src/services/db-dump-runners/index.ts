@@ -16,10 +16,11 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { DatabaseBackupOptions } from '@/types';
+import mysqlDumpRunner from './mysql-dump-runner';
+import pgDumpRunner from './pg-dump-runner';
 
-export type PgDumpBase = {
-  instance: string;
-  database: string | string[] | DatabaseBackupOptions[];
-  maxAge?: string;
+export default {
+  mariadb: mysqlDumpRunner,
+  mysql: mysqlDumpRunner,
+  postgres: pgDumpRunner,
 };

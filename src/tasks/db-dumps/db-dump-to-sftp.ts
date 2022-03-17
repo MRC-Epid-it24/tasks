@@ -19,13 +19,13 @@
 import fs from 'fs-extra';
 import { trimEnd } from 'lodash';
 import Sftp from 'ssh2-sftp-client';
-import pgDump from '@/services/pg-dump';
-import logger from '@/services/logger';
+import dbConfig from '@/config/db';
+import { dumpRunners, logger } from '@/services';
 import { FileInfo, DatabaseBackupOptions } from '@/types';
 import type { Task, TaskDefinition } from '..';
-import type { PgDumpBase } from './pg-dump';
+import type { DbDumpBase } from './db-dump';
 
-export interface PgDumpToSftpTaskParams extends PgDumpBase {
+export interface DbDumpToSftpTaskParams extends DbDumpBase {
   sftp: {
     host: string;
     port: number;
@@ -35,14 +35,14 @@ export interface PgDumpToSftpTaskParams extends PgDumpBase {
   };
 }
 
-export default class PgDumpToSftp implements Task<PgDumpToSftpTaskParams> {
+export default class DbDumpToSftp implements Task<DbDumpToSftpTaskParams> {
   readonly name: string;
 
-  readonly params: PgDumpToSftpTaskParams;
+  readonly params: DbDumpToSftpTaskParams;
 
   public message = '';
 
-  constructor({ name, params }: TaskDefinition<PgDumpToSftpTaskParams>) {
+  constructor({ name, params }: TaskDefinition<DbDumpToSftpTaskParams>) {
     this.name = name;
     this.params = params;
   }
@@ -51,10 +51,12 @@ export default class PgDumpToSftp implements Task<PgDumpToSftpTaskParams> {
    * Run the job
    *
    * @returns {Promise<string>}
-   * @memberof PgDumpToSftp
+   * @memberof DbDumpToSftp
    */
   async run(): Promise<string> {
-    const { instance } = this.params;
+    const { instance, dialect } = this.params;
+    const config = dbConfig.backup[dialect];
+
     const databases: DatabaseBackupOptions[] = Array.isArray(this.params.database)
       ? this.params.database.map((database) =>
           typeof database === 'string' ? { name: database } : database
@@ -64,8 +66,9 @@ export default class PgDumpToSftp implements Task<PgDumpToSftpTaskParams> {
     for (const database of databases) {
       const { name: dbName } = database;
 
-      const pgBackup = pgDump({ instance, dbName });
-      const backup = await pgBackup.runDump();
+      const runner = new dumpRunners[dialect](config, { instance, dialect, dbName });
+
+      const backup = await runner.run();
 
       await this.copyToSftp(backup);
     }
@@ -81,7 +84,7 @@ export default class PgDumpToSftp implements Task<PgDumpToSftpTaskParams> {
    * @private
    * @param {FileInfo} file
    * @returns {Promise<void>}
-   * @memberof PgDumpToSftp
+   * @memberof DbDumpToSftp
    */
   private async copyToSftp(file: FileInfo): Promise<void> {
     logger.debug(`Task ${this.name}: transfer to SFTP started.`);

@@ -21,8 +21,7 @@ import fs from 'fs-extra';
 import { parse } from 'fast-csv';
 import sql from 'mssql';
 import path from 'path';
-import api, { SurveyInfo, ExportSurveyDataParams } from '@/services/intake24API';
-import logger from '@/services/logger';
+import { intake24Api, logger, SurveyInfo, ExportSurveyDataParams } from '@/services';
 import type { Task, TaskDefinition } from '.';
 import HasMsSqlPool from './has-mssql-pool';
 
@@ -142,9 +141,9 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
    */
   private async fetchIntake24Data(): Promise<void> {
     const { survey } = this.params;
-    await api.login();
-    this.surveyInfo = await api.getSurvey(survey);
-    const taskId = await api.asyncExportSurveyData(survey, this.getExportDataParams());
+    await intake24Api.login();
+    this.surveyInfo = await intake24Api.getSurvey(survey);
+    const taskId = await intake24Api.asyncExportSurveyData(survey, this.getExportDataParams());
 
     let inProgress = true;
     let failedAttempts = 0;
@@ -152,7 +151,7 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
     while (inProgress) {
       let activeTasks;
       try {
-        activeTasks = await api.getActiveTasks(survey);
+        activeTasks = await intake24Api.getActiveTasks(survey);
       } catch (err: any) {
         // TEMP: intake24 very sporadically returns with 502 gateway error (nginx or outer proxy -> to investigate)
         if (axios.isAxiosError(err) && err.response?.status === 502 && failedAttempts < 10) {
@@ -195,7 +194,7 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
           break;
         case 'DownloadUrlAvailable':
           inProgress = false;
-          this.filename = await api.getExportFile(survey, value.url as string);
+          this.filename = await intake24Api.getExportFile(survey, value.url as string);
           logger.info(`Task ${this.name}: DataExport from Intake24 is done.`);
           break;
         case 'Failed':

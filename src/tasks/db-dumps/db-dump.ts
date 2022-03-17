@@ -16,23 +16,12 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import './bootstrap';
-import cron from 'node-schedule';
-import config from './config';
-import { logger, mailer } from './services';
-import runner from './runner';
+import { Dialect } from '@/config/db';
+import { DatabaseBackupOptions } from '@/types';
 
-mailer.init();
-
-for (const task of config.tasks) {
-  if (!task.cron) continue;
-
-  const job = cron.scheduleJob(task.cron, runner(task));
-
-  job.on('error', (err) => {
-    if (err instanceof Error) {
-      const { message, name, stack } = err;
-      logger.error(stack ?? `${name}: ${message}`);
-    } else console.error(err);
-  });
-}
+export type DbDumpBase = {
+  instance: string;
+  dialect: Dialect;
+  database: string | string[] | DatabaseBackupOptions[];
+  maxAge?: string;
+};

@@ -108,17 +108,18 @@ Currently implemented tasks are:
   },
 ```
 
-### PG_DUMP_TO_LOCAL
+### DB_DUMP_TO_LOCAL
 
 - Run pg_dump for `system` or `foods` database and transfer to local / network location.
 - Make sure you got pg_dump binaries installed, e.g. for ubuntu: `apt-get install postgresql-client`.
 
 ```json
 {
-    "name": "PG_DUMP_TO_LOCAL",
+    "name": "DB_DUMP_TO_LOCAL",
     "cron": "* * * * *",
     "params": {
-        "instance": "pgInstanceName",
+        "instance": "instance-name",
+        "dialect": "mariadb" | "mysql" | "postgres",
         "database": string | string[],
         "basePath": "/destination/path",
         "appendPath"?: "hourly",
@@ -131,17 +132,18 @@ Currently implemented tasks are:
 }
 ```
 
-### PG_DUMP_TO_SFTP
+### DB_DUMP_TO_SFTP
 
 - Run pg_dump for `system` or `foods` database and upload to sftp.
 - Make sure you got pg_dump binaries installed, e.g. for ubuntu: `apt-get install postgresql-client`.
 
 ```json
 {
-    "name": "PG_DUMP_TO_SFTP",
+    "name": "DB_DUMP_TO_SFTP",
     "cron": "* * * * *",
     "params": {
-        "instance": "pgInstanceName",
+        "instance": "instance-name",
+        "dialect": "mariadb" | "mysql" | "postgres",
         "database": string | string[],
         "maxAge"?: "30d",
         "sftp": {

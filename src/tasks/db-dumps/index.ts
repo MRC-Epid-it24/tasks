@@ -16,7 +16,7 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-export * from './pg-dump';
+export * from './db-dump';
 
-export { default as PG_DUMP_TO_LOCAL } from './pg-dump-to-local';
-export { default as PG_DUMP_TO_SFTP } from './pg-dump-to-sftp';
+export { default as DB_DUMP_TO_LOCAL } from './db-dump-to-local';
+export { default as DB_DUMP_TO_SFTP } from './db-dump-to-sftp';

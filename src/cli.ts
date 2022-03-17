@@ -21,7 +21,7 @@ import { Command } from 'commander';
 import pkg from '@@/package.json';
 import config from './config';
 import runner from './runner';
-import mailer from './services/mailer';
+import { mailer } from './services';
 
 const run = async () => {
   const program = new Command();

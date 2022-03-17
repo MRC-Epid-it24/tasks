@@ -16,9 +16,11 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { config } from 'mssql';
+import { config as MSSQLConfig } from 'mssql';
 
-export type PgConfig = {
+export type Dialect = 'postgres' | 'mariadb' | 'mysql';
+
+export type ConnConfig = {
   host: string;
   user: string;
   password: string;
@@ -26,22 +28,50 @@ export type PgConfig = {
   port: number;
 };
 
+export type DumpConfig = {
+  bin: string;
+  connection: ConnConfig;
+};
+
 export type DBConfig = {
-  pgBin: string;
-  pg: PgConfig;
-  foods: PgConfig;
-  system: PgConfig;
-  epid: config;
+  backup: Record<Dialect, DumpConfig>;
+  foods: ConnConfig;
+  system: ConnConfig;
+  epid: MSSQLConfig;
 };
 
 const dbConfig: DBConfig = {
-  pgBin: process.env.PG_BIN || '/usr/bin/pg_dump',
-  pg: {
-    host: process.env.PG_HOST || 'localhost',
-    user: process.env.PG_USERNAME || 'postgres',
-    password: process.env.PG_PASSWORD || 'postgres',
-    database: process.env.PG_DATABASE || 'postgres',
-    port: parseInt(process.env.PG_PORT ?? '5432', 10),
+  backup: {
+    postgres: {
+      bin: process.env.PG_BIN || '/usr/bin/pg_dump',
+      connection: {
+        host: process.env.PG_HOST || 'localhost',
+        user: process.env.PG_USERNAME || 'postgres',
+        password: process.env.PG_PASSWORD || 'postgres',
+        database: process.env.PG_DATABASE || 'postgres',
+        port: parseInt(process.env.PG_PORT ?? '5432', 10),
+      },
+    },
+    mariadb: {
+      bin: process.env.MARIADB_BIN || '/usr/bin/mysqldump',
+      connection: {
+        host: process.env.MARIADB_HOST || 'localhost',
+        user: process.env.MARIADB_USERNAME || 'mysql',
+        password: process.env.MARIADB_PASSWORD || 'mysql',
+        database: process.env.MARIADB_DATABASE || 'mysql',
+        port: parseInt(process.env.MARIADB_PORT ?? '3306', 10),
+      },
+    },
+    mysql: {
+      bin: process.env.MYSQL_BIN || '/usr/bin/mysqldump',
+      connection: {
+        host: process.env.MYSQL_HOST || 'localhost',
+        user: process.env.MYSQL_USERNAME || 'mysql',
+        password: process.env.MYSQL_PASSWORD || 'mysql',
+        database: process.env.MYSQL_DATABASE || 'mysql',
+        port: parseInt(process.env.MYSQL_PORT ?? '3306', 10),
+      },
+    },
   },
   foods: {
     host: process.env.IT24_DB_FOODS_HOST || 'localhost',
