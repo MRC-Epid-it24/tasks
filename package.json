@@ -44,7 +44,7 @@
     "nodemailer": "^6.7.3",
     "pg": "^8.7.3",
     "pg-promise": "^10.11.1",
-    "ssh2-sftp-client": "^7.2.3",
+    "ssh2-sftp-client": "^8.0.0",
     "winston": "^3.7.2",
     "winston-daily-rotate-file": "^4.6.1"
   },
