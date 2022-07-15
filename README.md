@@ -1,15 +1,26 @@
+<p align="center">
+    <a href="https://nodejs.org/en/about/releases">
+        <img src="https://img.shields.io/badge/node-%3E%3D%2014.20.0-success" alt="node compatibility">
+    </a>
+    <a href='https://github.com/MRC-Epid-it24/tasks/actions' target="__blank">
+        <img alt="Build Status" src='https://github.com/MRC-Epid-it24/tasks/workflows/CI/badge.svg'>
+    </a>
+    <a href="https://github.com/MRC-Epid-it24/tasks/blob/master/LICENSE" target="__blank">
+        <img alt="License" src="https://img.shields.io/github/license/MRC-Epid-it24/tasks">
+    </a>
+</p>
+<br/>
+
 # Intake24-tasks
 
-[![Build Status](https://github.com/MRC-Epid-it24/tasks/workflows/Node.js%20CI/badge.svg)](https://github.com/MRC-Epid-it24/tasks/actions/workflows/nodejs-ci.yml)
-[![GitHub license](https://img.shields.io/github/license/MRC-Epid-it24/tasks)](https://github.com/MRC-Epid-it24/tasks/blob/master/LICENSE)
-
 Interface between Intake24 API and Clinical DB
+
 - CRON-like node.js service
 - CLI to execute tasks directly
 
 ## Requirements
 
-Make sure you have Node.js (12+) and npm (7+) installed.
+Make sure you have Node.js (14+) and npm (7+) installed.
 
 MSSQL lib requires ODBC driver headers to be installed:
 
@@ -188,18 +199,18 @@ Currently implemented tasks are:
 
 ```json
 {
-    "name": "UPLOAD_PAQ_LINKS",
-    "cron": "* * * * *",
-    "params": {
-        "survey": "demo"
-    },
-    "db": {
-        "database": "databaseName"
-    },
-    "notify": {
-        "success": [],
-        "error": []
-    }
+  "name": "UPLOAD_PAQ_LINKS",
+  "cron": "* * * * *",
+  "params": {
+    "survey": "demo"
+  },
+  "db": {
+    "database": "databaseName"
+  },
+  "notify": {
+    "success": [],
+    "error": []
+  }
 }
 ```
 

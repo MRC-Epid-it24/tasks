@@ -1,30 +1,22 @@
 {
-  "extends": [
-    "config:base",
-    "schedule:earlyMondays"
-  ],
-  "labels": ["dependencies"],
-  "pin": false,
-  "packageRules": [
+  extends: ['config:base', 'schedule:earlyMondays'],
+  labels: ['dependencies'],
+  pin: false,
+  packageRules: [
     {
-      "matchPackagePatterns": [
-        "*"
-      ],
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "excludePackageNames": ["typescript"],
-      "groupName": "all non-major dependencies",
-      "groupSlug": "all-minor-patch"
-    }
+      matchPackagePatterns: ['*'],
+      matchUpdateTypes: ['minor', 'patch'],
+      excludePackageNames: ['typescript'],
+      groupName: 'all non-major dependencies',
+      groupSlug: 'all-minor-patch',
+    },
   ],
-  "rangeStrategy": "bump",
-  "ignoreDeps": [
+  rangeStrategy: 'bump',
+  ignoreDeps: [
     // Manual
-    "node",
+    'node',
 
     // Breaking changes
-    "execa", // ESM-only since 6.x.x
-  ]
+    'execa', // ESM-only since 6.x.x
+  ],
 }
