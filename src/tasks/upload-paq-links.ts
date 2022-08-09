@@ -17,10 +17,12 @@
 */
 
 /* eslint-disable camelcase */
-import { PoolClient } from 'pg';
+import type { PoolClient } from 'pg';
 import pgPromise from 'pg-promise';
+
 import schema from '@/config/schema';
 import { db, logger } from '@/services';
+
 import type { Task, TaskDefinition } from '.';
 import HasMsSqlPool from './has-mssql-pool';
 

@@ -17,10 +17,12 @@
 */
 
 import './bootstrap';
+
 import cron from 'node-schedule';
+
 import config from './config';
-import { logger, mailer } from './services';
 import runner from './runner';
+import { logger, mailer } from './services';
 
 mailer.init();
 

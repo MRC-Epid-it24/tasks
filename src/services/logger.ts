@@ -16,10 +16,12 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+import 'winston-daily-rotate-file';
+
 import fs from 'fs';
 import path from 'path';
 import { createLogger, format, transports } from 'winston';
-import 'winston-daily-rotate-file';
+
 import fsConfig from '@/config/filesystem';
 
 const { logs } = fsConfig;

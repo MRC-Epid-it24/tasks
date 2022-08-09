@@ -16,13 +16,15 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { config } from 'mssql';
-import { Dictionary } from '@/types';
-import EXPORT_SURVEY_DATA from './export-survey-data';
+import type { config } from 'mssql';
+
+import type { Dictionary } from '@/types';
+
 import { DB_DUMP_TO_LOCAL, DB_DUMP_TO_SFTP } from './db-dumps';
+import EXPORT_SURVEY_DATA from './export-survey-data';
+import { IMPORT_JSON_SUBMISSIONS } from './import-json-submissions';
 import UPLOAD_DISPLAY_NAMES from './upload-display-names';
 import UPLOAD_PAQ_LINKS from './upload-paq-links';
-import { IMPORT_JSON_SUBMISSIONS } from './import-json-submissions';
 
 const tasks = {
   EXPORT_SURVEY_DATA,

@@ -19,9 +19,11 @@
 import fs from 'fs-extra';
 import { trimEnd } from 'lodash';
 import Sftp from 'ssh2-sftp-client';
+
+import type { DatabaseBackupOptions, FileInfo } from '@/types';
 import dbConfig from '@/config/db';
 import { dumpRunners, logger } from '@/services';
-import { FileInfo, DatabaseBackupOptions } from '@/types';
+
 import type { Task, TaskDefinition } from '..';
 import type { DbDumpBase } from './db-dump';
 

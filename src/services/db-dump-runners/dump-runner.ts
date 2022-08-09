@@ -19,9 +19,10 @@
 import execa from 'execa';
 import fs from 'fs-extra';
 import os from 'os';
-import { Dialect, DumpConfig } from '@/config/db';
+
+import type { Dialect, DumpConfig } from '@/config/db';
+import type { FileInfo } from '@/types';
 import logger from '@/services/logger';
-import { FileInfo } from '@/types';
 
 export type DumpRunnerOps = {
   instance: string;

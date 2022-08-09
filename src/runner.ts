@@ -16,8 +16,9 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+import type { TaskDefinition } from './tasks';
 import { logger, mailer } from './services';
-import tasks, { TaskDefinition } from './tasks';
+import tasks from './tasks';
 
 export default (task: TaskDefinition) => async () => {
   const {

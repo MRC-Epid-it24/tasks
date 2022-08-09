@@ -17,11 +17,14 @@
 */
 
 import axios from 'axios';
-import fs from 'fs-extra';
 import { parse } from 'fast-csv';
+import fs from 'fs-extra';
 import sql from 'mssql';
 import path from 'path';
-import { intake24Api, logger, SurveyInfo, ExportSurveyDataParams } from '@/services';
+
+import type { ExportSurveyDataParams, SurveyInfo } from '@/services';
+import { intake24Api, logger } from '@/services';
+
 import type { Task, TaskDefinition } from '.';
 import HasMsSqlPool from './has-mssql-pool';
 

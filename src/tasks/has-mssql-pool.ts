@@ -16,9 +16,12 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import sql, { ConnectionPool } from 'mssql';
+import type { ConnectionPool } from 'mssql';
+import sql from 'mssql';
+
 import globalDB from '@/config/db';
-import type { TaskDefinition, TaskDBConfig } from '.';
+
+import type { TaskDBConfig, TaskDefinition } from '.';
 
 export default abstract class HasMsSqlPool {
   readonly dbConfig: TaskDBConfig;

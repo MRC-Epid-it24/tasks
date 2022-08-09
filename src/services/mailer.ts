@@ -16,9 +16,12 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import nodemailer, { SendMailOptions, Transporter } from 'nodemailer';
+import type { SendMailOptions, Transporter } from 'nodemailer';
+import nodemailer from 'nodemailer';
+
+import type { MailerType } from '@/config/mail';
 import appConfig from '@/config/app';
-import config, { MailerType } from '@/config/mail';
+import config from '@/config/mail';
 import logger from '@/services/logger';
 
 class Mailer {

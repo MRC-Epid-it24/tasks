@@ -19,11 +19,14 @@
 import { format } from 'date-fns';
 import execa from 'execa';
 import path from 'path';
-import { DumpConfig } from '@/config/db';
+
+import type { DumpConfig } from '@/config/db';
+import type { FileInfo } from '@/types';
 import fsConfig from '@/config/filesystem';
 import logger from '@/services/logger';
-import { FileInfo } from '@/types';
-import DumpRunner, { DumpRunnerOps } from './dump-runner';
+
+import type { DumpRunnerOps } from './dump-runner';
+import DumpRunner from './dump-runner';
 
 export default class PgDumpRunner extends DumpRunner {
   readonly passEnv: string;

@@ -17,7 +17,9 @@
 */
 
 import { Pool } from 'pg';
-import dbConfig, { ConnConfig } from '@/config/db';
+
+import type { ConnConfig } from '@/config/db';
+import dbConfig from '@/config/db';
 
 const pgPool = (config: ConnConfig) => {
   let pool: Pool | null = null;

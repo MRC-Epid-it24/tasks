@@ -20,9 +20,11 @@ import { parse } from 'date-fns';
 import fs from 'fs-extra';
 import ms from 'ms';
 import path from 'path';
+
+import type { DatabaseBackupOptions, FileInfo } from '@/types';
 import dbConfig from '@/config/db';
 import { dumpRunners, logger } from '@/services';
-import { FileInfo, DatabaseBackupOptions } from '@/types';
+
 import type { Task, TaskDefinition } from '..';
 import type { DbDumpBase } from './db-dump';
 

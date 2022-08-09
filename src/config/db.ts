@@ -16,7 +16,7 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { config as MSSQLConfig } from 'mssql';
+import type { config as MSSQLConfig } from 'mssql';
 
 export type Dialect = 'postgres' | 'mariadb' | 'mysql';
 

@@ -18,6 +18,7 @@
 
 import fs from 'fs';
 import path from 'path';
+
 import fsConfig from '@/config/filesystem';
 
 class Storage {

@@ -17,6 +17,5 @@
 */
 
 export * from './db-dump';
-
 export { default as DB_DUMP_TO_LOCAL } from './db-dump-to-local';
 export { default as DB_DUMP_TO_SFTP } from './db-dump-to-sftp';

@@ -16,17 +16,20 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+import type { PoolClient } from 'pg';
 import fs from 'fs-extra';
 import { parse } from 'json2csv';
-import path from 'path';
-import { PoolClient } from 'pg';
 import mssql from 'mssql';
-import logger from '@/services/logger';
+import path from 'path';
+
 import db from '@/services/db';
+import logger from '@/services/logger';
+
 import type { Task, TaskDefinition } from '..';
+import type { SubmissionData } from './submission';
 import HasMsSqlPool from '../has-mssql-pool';
 import { fields, round } from './fields';
-import { MISSING_FOOD_CODE, NA, SubmissionData } from './submission';
+import { MISSING_FOOD_CODE, NA } from './submission';
 
 export type ImportJsonSubmissionsData = {
   localeId: string;
