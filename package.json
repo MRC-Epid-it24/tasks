@@ -60,7 +60,7 @@
     "@types/node-schedule": "^2.1.0",
     "@types/nodemailer": "^6.4.6",
     "@types/pg": "^8.6.5",
-    "@types/ssh2-sftp-client": "^7.1.0",
+    "@types/ssh2-sftp-client": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^5.38.1",
     "@typescript-eslint/parser": "^5.38.1",
     "eslint": "^8.24.0",
