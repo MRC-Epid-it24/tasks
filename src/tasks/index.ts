@@ -66,7 +66,7 @@ export type TaskDefinition<T = Dictionary> = {
 };
 
 export type Tasks = {
-  [P in TaskType]: new (taskDef: TaskDefinition) => typeof tasks[P];
+  [P in TaskType]: new (taskDef: TaskDefinition) => (typeof tasks)[P];
 };
 
 export default tasks;
