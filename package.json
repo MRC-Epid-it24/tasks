@@ -67,7 +67,7 @@
     "eslint-config-prettier": "^8.6.0",
     "eslint-define-config": "^1.14.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-simple-import-sort": "^8.0.0",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
     "lint-staged": "^13.1.0",
     "nodemon": "^2.0.20",
     "nodemon-webpack-plugin": "^4.8.1",
