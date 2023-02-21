@@ -16,8 +16,8 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { AsyncParser } from '@json2csv/node';
 import { format } from 'date-fns';
-import { parseAsync } from 'json2csv';
 
 import schema from '@/config/schema';
 import { db, logger, storage } from '@/services';
@@ -198,7 +198,9 @@ export default class UploadDisplayNames
       return;
     }
 
-    const csv = await parseAsync(this.data.filtered, { fields: ['user name', 'password', 'name'] });
+    const csv = await new AsyncParser({ fields: ['user name', 'password', 'name'] })
+      .parse(this.data.filtered)
+      .promise();
 
     const filename = `Intake24-display-name-${this.params.survey}_${format(
       new Date(),

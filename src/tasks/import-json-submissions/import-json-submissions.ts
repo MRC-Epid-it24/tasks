@@ -17,8 +17,8 @@
 */
 
 import type { PoolClient } from 'pg';
+import { AsyncParser } from '@json2csv/node';
 import fs from 'fs-extra';
-import { parse } from 'json2csv';
 import mssql from 'mssql';
 import path from 'path';
 
@@ -124,6 +124,7 @@ export default class ImportJsonSubmissions
 
           await fs.move(itemPath, processedFilename);
         } catch (err) {
+          logger.error(err);
           const failedFilename = path.resolve(path.join(failedPath, item.name));
           await fs.move(itemPath, failedFilename);
         }
@@ -183,13 +184,15 @@ export default class ImportJsonSubmissions
   }
 
   static async toCSV(filepath: string, content: any[]) {
-    const csv = parse(content, { fields, defaultValue: NA });
+    const csv = await new AsyncParser({ fields, defaultValue: NA }).parse(content).promise();
     await fs.writeFile(filepath, csv, { encoding: 'utf8' });
   }
 
   async toDatabase(rows: Row[]) {
     const transformedRows = rows.map((row) =>
-      fields.map(({ value }) => (typeof value === 'string' ? row[value] : value(row)) ?? 'N/A')
+      fields.map(
+        ({ value }) => (typeof value === 'string' ? row[value] : value(row))?.toString() ?? 'N/A'
+      )
     );
 
     const table = new mssql.Table(this.dbConfig.tables.data);
