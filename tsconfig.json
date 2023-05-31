@@ -8,13 +8,12 @@
     "strict": true,
     // "preserveValueImports": true,
     "importsNotUsedAsValues": "error",
+    "ignoreDeprecations": "5.0",
     // "importHelpers": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "sourceMap": true,
     "baseUrl": ".",
     "outDir": "dist",
@@ -22,15 +21,8 @@
       "@/*": ["src/*"],
       "@@/*": ["./*"]
     },
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   },
-  "include": [
-    "src/**/*.ts",
-  ],
-  "exclude": [
-    "**/*.spec.ts",
-    "**/*.test.ts",
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["**/*.spec.ts", "**/*.test.ts"]
 }
