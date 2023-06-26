@@ -63,9 +63,10 @@ export default class ExtractStudyData implements Task<ExtractStudyDataParams> {
   }
 
   private async fetchData() {
-    const selectQuery = `SELECT id, start_date, end_date FROM surveys ORDER BY start_date ASC;`;
-
-    const data = await this.pgClient.query(selectQuery);
+    const data = await this.pgClient.query(
+      `SELECT id, start_date, end_date FROM surveys WHERE end_date > $1 ORDER BY start_date ASC;`,
+      [new Date()]
+    );
 
     const fields: FieldInfo<SurveyRow>[] = [
       { label: 'SurveyID', value: 'id' },
@@ -83,8 +84,6 @@ export default class ExtractStudyData implements Task<ExtractStudyDataParams> {
     const csv = await new AsyncParser({ fields }).parse(data.rows).promise();
     await fs.writeFile(path, csv, { encoding: 'utf8', flag: 'w+' });
 
-    const attachments = [{ contentType: 'text/csv', path, filename }];
-
-    return attachments;
+    return [{ contentType: 'text/csv', path, filename }];
   }
 }
