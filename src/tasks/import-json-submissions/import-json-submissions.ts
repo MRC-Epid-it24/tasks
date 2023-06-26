@@ -74,13 +74,7 @@ export default class ImportJsonSubmissions
     this.nutrients = {};
   }
 
-  /**
-   * Run the job
-   *
-   * @returns {Promise<string>}
-   * @memberof ExportSurveyData
-   */
-  async run(): Promise<string> {
+  async run() {
     const [foods, system] = await Promise.all([
       db.foods.getPool().connect(),
       db.system.getPool().connect(),
@@ -135,9 +129,10 @@ export default class ImportJsonSubmissions
       await this.closeMSPool();
     }
 
-    logger.info(this.message);
+    const { message } = this;
+    logger.info(message);
 
-    return this.message;
+    return { message };
   }
 
   /**

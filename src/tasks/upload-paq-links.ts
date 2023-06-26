@@ -78,13 +78,7 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
     };
   }
 
-  /**
-   * Run the job
-   *
-   * @returns {Promise<string>}
-   * @memberof UploadPAQLinks
-   */
-  async run(): Promise<string> {
+  async run() {
     await this.initMSPool();
     this.pgClient = await db.system.getPool().connect();
 
@@ -102,9 +96,10 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
       await this.closeMSPool();
     }
 
-    logger.info(this.message);
+    const { message } = this;
+    logger.info(message);
 
-    return this.message;
+    return { message };
   }
 
   /**

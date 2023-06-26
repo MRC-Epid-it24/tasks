@@ -80,13 +80,7 @@ export default class UploadDisplayNames
     this.file = null;
   }
 
-  /**
-   * Run the job
-   *
-   * @returns {Promise<string>}
-   * @memberof UploadDisplayNames
-   */
-  async run(): Promise<string> {
+  async run() {
     await this.initMSPool();
 
     await this.getDisplayNames();
@@ -103,9 +97,10 @@ export default class UploadDisplayNames
 
     await this.closeMSPool();
 
-    logger.info(this.message);
+    const { message } = this;
+    logger.info(message);
 
-    return this.message;
+    return { message };
   }
 
   /**

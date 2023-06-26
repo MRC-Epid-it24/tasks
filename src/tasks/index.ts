@@ -17,17 +17,20 @@
 */
 
 import type { config } from 'mssql';
+import type { SendMailOptions } from 'nodemailer';
 
 import type { Dictionary } from '@/types';
 
 import { DB_DUMP_TO_LOCAL, DB_DUMP_TO_SFTP } from './db-dumps';
 import EXPORT_SURVEY_DATA from './export-survey-data';
+import EXPORT_SURVEY_SETTINGS from './export-survey-settings';
 import { IMPORT_JSON_SUBMISSIONS } from './import-json-submissions';
 import UPLOAD_DISPLAY_NAMES from './upload-display-names';
 import UPLOAD_PAQ_LINKS from './upload-paq-links';
 
 const tasks = {
   EXPORT_SURVEY_DATA,
+  EXPORT_SURVEY_SETTINGS,
   IMPORT_JSON_SUBMISSIONS,
   DB_DUMP_TO_LOCAL,
   DB_DUMP_TO_SFTP,
@@ -37,11 +40,16 @@ const tasks = {
 
 export type TaskType = keyof typeof tasks;
 
+export type TaskOutput = {
+  message: string;
+  attachments?: SendMailOptions['attachments'];
+};
+
 export interface Task<T = Dictionary> {
   readonly name: string;
   readonly params: T;
   message: string;
-  run(): Promise<string>;
+  run(): Promise<TaskOutput>;
 }
 
 export interface TaskDBConfig extends config {

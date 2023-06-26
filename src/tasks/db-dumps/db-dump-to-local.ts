@@ -45,13 +45,7 @@ export default class DbDumpToLocal implements Task<DbDumpToLocalTaskParams> {
     this.params = params;
   }
 
-  /**
-   * Run the job
-   *
-   * @returns {Promise<string>}
-   * @memberof DbDumpToSftp
-   */
-  async run(): Promise<string> {
+  async run() {
     const { instance, dialect } = this.params;
     const config = dbConfig.backup[dialect];
 
@@ -73,9 +67,10 @@ export default class DbDumpToLocal implements Task<DbDumpToLocalTaskParams> {
     }
 
     this.message = `Task ${this.name}: Database backup successful.`;
-    logger.info(this.message);
+    const { message } = this;
+    logger.info(message);
 
-    return this.message;
+    return { message };
   }
 
   /**

@@ -15,8 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-
-import type { TaskDefinition } from './tasks';
+import type { TaskDefinition, TaskOutput } from './tasks';
 import { logger, mailer } from './services';
 import tasks from './tasks';
 
@@ -28,17 +27,17 @@ export default (task: TaskDefinition) => async () => {
 
   logger.info(`Task ${name} started.`);
 
-  let message;
+  let output: TaskOutput;
   let result;
 
   try {
     // TODO: fix the type
-    message = await new tasks[name](task as any).run();
+    output = await new tasks[name](task as any).run();
     result = 'SUCCESS';
 
     logger.info(`Task ${name} successfully processed.`);
   } catch (err: any) {
-    message = err.message;
+    output = { message: err.message };
     result = 'ERROR';
 
     logger.error(`Task ${name} failed with: ${err.message}`);
@@ -49,7 +48,9 @@ export default (task: TaskDefinition) => async () => {
   const { notify } = task;
   if (!notify) return;
 
-  const subject = `${name} | ${result}`;
+  const { message, attachments } = output;
+
+  const subject = `🚀 ${name} | ${result}`;
   const text = [
     `Task: ${name}`,
     survey ? `Survey: ${survey}\n` : null,
@@ -60,7 +61,7 @@ export default (task: TaskDefinition) => async () => {
     .join('\n');
 
   if (Array.isArray(notify) && notify.length) {
-    await mailer.sendMail({ to: notify, subject, text });
+    await mailer.sendMail({ to: notify, subject, text, attachments });
     return;
   }
 
@@ -68,9 +69,9 @@ export default (task: TaskDefinition) => async () => {
     const { success, error } = notify;
 
     if (success && success.length && result === 'SUCCESS')
-      await mailer.sendMail({ to: success, subject, text });
+      await mailer.sendMail({ to: success, subject, text, attachments });
 
     if (error && error.length && result === 'ERROR')
-      await mailer.sendMail({ to: error, subject, text });
+      await mailer.sendMail({ to: error, subject, text, attachments });
   }
 };

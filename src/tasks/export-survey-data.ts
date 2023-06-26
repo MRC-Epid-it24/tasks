@@ -72,13 +72,7 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
     this.isProcessing = false;
   }
 
-  /**
-   * Run the job
-   *
-   * @returns {Promise<string>}
-   * @memberof ExportSurveyData
-   */
-  async run(): Promise<string> {
+  async run() {
     await this.initMSPool();
 
     await this.fetchIntake24Data();
@@ -95,9 +89,10 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
 
     await this.closeMSPool();
 
-    logger.info(this.message);
+    const { message } = this;
+    logger.info(message);
 
-    return this.message;
+    return { message };
   }
 
   /**

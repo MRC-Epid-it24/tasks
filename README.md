@@ -91,6 +91,22 @@ Currently implemented tasks are:
 },
 ```
 
+### EXPORT_SURVEY_SETTINGS
+
+- Export Intake24 survey stats
+
+```json
+{
+    "name": "EXPORT_SURVEY_SETTINGS",
+    "cron": "* * * * *",
+    "params": {},
+    "notify": {
+        "success": [],
+        "error": []
+    }
+},
+```
+
 ### IMPORT_JSON_SUBMISSIONS
 
 - read contents of folder with files contains intake24 submission in JSON format
