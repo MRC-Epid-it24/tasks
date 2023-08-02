@@ -26,6 +26,8 @@ import { sleep } from '@/util';
 import type { Task, TaskDefinition } from '.';
 import HasMsSqlPool from './has-mssql-pool';
 
+export type ColumnInfo = Record<string, { name: string; type: string; nullable: boolean }>;
+
 export type ExportSurveyTaskParams = {
   apiVersion: 'v3' | 'v4';
   survey: string;
@@ -40,7 +42,7 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
 
   private headers: string[];
 
-  private data: any[];
+  private data: string[][];
 
   private records: number;
 
@@ -66,6 +68,8 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
 
   async run() {
     await this.initMSPool();
+
+    await this.readTableSchema();
 
     await this.fetchData();
 
@@ -96,6 +100,24 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
    */
   private async clearOldSurveyData(): Promise<void> {
     await this.msPool.request().query(`DELETE FROM ${this.dbConfig.tables.data}`);
+  }
+
+  private async readTableSchema() {
+    const result = await this.msPool
+      .request()
+      .input('table', sql.VarChar, this.dbConfig.tables.data)
+      .query(`SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = @table;`);
+
+    const columnInfo = result.recordset.reduce<ColumnInfo>((acc, cur) => {
+      acc[cur.COLUMN_NAME] = {
+        name: cur.COLUMN_NAME,
+        type: cur.DATA_TYPE,
+        nullable: cur.IS_NULLABLE === 'YES',
+      };
+      return acc;
+    }, {});
+
+    return columnInfo;
   }
 
   /**
@@ -163,22 +185,31 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
   private async storeToDB(): Promise<void> {
     this.isProcessing = true;
 
-    if (!this.headers.length) this.headers = this.data.shift();
+    if (!this.headers.length) this.headers = this.data.shift() as string[];
 
     if (!this.data.length) {
       this.isProcessing = false;
       return;
     }
 
+    const columnInfo = await this.readTableSchema();
     const table = new sql.Table(this.dbConfig.tables.data);
     // table.create = true;
     // schema.fields.forEach(field => table.columns.add(field.id, field.type, field.opt));
-    this.headers.forEach((column) =>
-      table.columns.add(column, column === 'Survey ID' ? sql.UniqueIdentifier : sql.VarChar, {
-        nullable: true,
-      })
-    );
-    this.data.forEach((data) => table.rows.add(...data));
+    this.headers.forEach((column) => {
+      const info = columnInfo[column];
+      if (!info) throw new Error(`Missing column info for ${column}`);
+
+      table.columns.add(
+        column,
+        info.type === 'uniqueidentifier' ? sql.UniqueIdentifier : sql.VarChar,
+        { nullable: info.nullable }
+      );
+    });
+
+    this.data.forEach((data) => {
+      table.rows.add(...data.map((value) => value || null));
+    });
 
     const request = this.msPool.request();
     await request.bulk(table);
