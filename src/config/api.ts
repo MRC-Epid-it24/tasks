@@ -17,7 +17,12 @@
 */
 
 export type ApiConfig = {
-  it24: {
+  v3: {
+    url: string;
+    username: string;
+    password: string;
+  };
+  v4: {
     url: string;
     username: string;
     password: string;
@@ -25,10 +30,15 @@ export type ApiConfig = {
 };
 
 const apiConfig: ApiConfig = {
-  it24: {
-    url: process.env.IT24_API_URL || '',
-    username: process.env.IT24_API_USERNAME || '',
-    password: process.env.IT24_API_PASSWORD || '',
+  v3: {
+    url: process.env.API_V3_URL || '',
+    username: process.env.API_V3_USERNAME || '',
+    password: process.env.API_V3_PASSWORD || '',
+  },
+  v4: {
+    url: process.env.API_V4_URL || '',
+    username: process.env.API_V4_USERNAME || '',
+    password: process.env.API_V4_PASSWORD || '',
   },
 };
 

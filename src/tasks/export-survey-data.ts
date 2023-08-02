@@ -15,25 +15,19 @@
     You should have received a copy of the GNU General Public License
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-
-import axios from 'axios';
 import { parse } from 'fast-csv';
 import fs from 'fs-extra';
 import sql from 'mssql';
 import path from 'path';
 
-import type { ExportSurveyDataParams, SurveyInfo } from '@/services';
-import { intake24Api, logger } from '@/services';
+import { api, logger } from '@/services';
+import { sleep } from '@/util';
 
 import type { Task, TaskDefinition } from '.';
 import HasMsSqlPool from './has-mssql-pool';
 
-const sleep = (ms: number) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-
 export type ExportSurveyTaskParams = {
+  apiVersion: 'v3' | 'v4';
   survey: string;
   exportOffset?: number | null;
   exportVersion?: string;
@@ -43,8 +37,6 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
   readonly name: string;
 
   readonly params: ExportSurveyTaskParams;
-
-  public surveyInfo!: SurveyInfo;
 
   private headers: string[];
 
@@ -75,7 +67,7 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
   async run() {
     await this.initMSPool();
 
-    await this.fetchIntake24Data();
+    await this.fetchData();
 
     if (!this.filename) throw new Error(`Missing file: ${this.filename}`);
 
@@ -107,107 +99,13 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
   }
 
   /**
-   * Get parameters for data export
-   *
-   * @returns {ExportSurveyDataParams}
-   * @memberof ExportSurveyData
-   */
-  private getExportDataParams(): ExportSurveyDataParams {
-    const { exportOffset, exportVersion } = this.params;
-    const { startDate, endDate: dateTo } = this.surveyInfo;
-
-    let dateFrom: Date;
-
-    if (exportOffset) {
-      dateFrom = new Date();
-      dateFrom.setDate(dateFrom.getDate() - exportOffset);
-      dateFrom.setHours(0, 0, 0, 0);
-
-      if (dateFrom > dateTo) dateFrom = dateTo;
-    } else {
-      dateFrom = startDate;
-    }
-
-    return { dateFrom, dateTo, forceBOM: '1', format: exportVersion ?? 'v2' };
-  }
-
-  /**
    * Export data from Intake24 instance
    *
    * @returns {Promise<void>}
    * @memberof ExportSurveyData
    */
-  private async fetchIntake24Data(): Promise<void> {
-    const { survey } = this.params;
-    await intake24Api.login();
-    this.surveyInfo = await intake24Api.getSurvey(survey);
-    const taskId = await intake24Api.asyncExportSurveyData(survey, this.getExportDataParams());
-
-    let inProgress = true;
-    let failedAttempts = 0;
-
-    while (inProgress) {
-      let activeTasks;
-      try {
-        activeTasks = await intake24Api.getActiveTasks(survey);
-      } catch (err: any) {
-        // TEMP: intake24 very sporadically returns with 502 gateway error (nginx or outer proxy -> to investigate)
-        if (axios.isAxiosError(err) && err.response?.status === 502 && failedAttempts < 10) {
-          logger.warn(
-            `Task ${this.name}: IT24 API getActiveTasks responded with 502: ${err.message}`
-          );
-          failedAttempts++;
-          await sleep(2000);
-          continue;
-        }
-
-        // If any other error, stop the polling
-        inProgress = false;
-        throw new Error(`Task ${this.name}: IT24 API getActiveTasks failed with: ${err.message}`);
-      }
-
-      const task = activeTasks.find((item) => item.id === taskId);
-      if (!task) {
-        inProgress = false;
-        logger.warn(`Task ${this.name}: DataExport task not found.`);
-        return;
-      }
-
-      const [status, value] = Object.entries(task.status)[0];
-      switch (status) {
-        case 'Pending':
-          logger.info(`Task ${this.name}: DataExport (Task ${taskId}) is pending.`);
-          break;
-        case 'InProgress':
-          logger.info(
-            `Task ${this.name}: DataExport (Task ${taskId}) is in progress (${Math.ceil(
-              (value.progress as number) * 100
-            )}%).`
-          );
-          break;
-        case 'DownloadUrlPending':
-          logger.info(
-            `Task ${this.name}: DataExport (Task ${taskId}) is preparing URL for download.`
-          );
-          break;
-        case 'DownloadUrlAvailable':
-          inProgress = false;
-          this.filename = await intake24Api.getExportFile(survey, value.url as string);
-          logger.info(`Task ${this.name}: DataExport from Intake24 is done.`);
-          break;
-        case 'Failed':
-          inProgress = false;
-          throw new Error(`Task ${this.name}: DataExport (Task ${taskId}) has failed.`);
-        default:
-          inProgress = false;
-          logger.warn(
-            `Task ${this.name}: DataExport (Task ${taskId}) with invalid status (${status}).`
-          );
-          break;
-      }
-
-      if (inProgress) await sleep(2000);
-    }
+  private async fetchData(): Promise<void> {
+    this.filename = await api[this.params.apiVersion].fetchDataExportFile(this.params);
   }
 
   /**

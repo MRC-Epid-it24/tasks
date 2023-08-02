@@ -24,7 +24,7 @@ import mail from './mail';
 import schema from './schema';
 import tasks from './tasks';
 
-export default {
+export const config = {
   api,
   app,
   db,
@@ -33,3 +33,7 @@ export default {
   schema,
   tasks,
 };
+
+export default config;
+
+export type Config = typeof config;
