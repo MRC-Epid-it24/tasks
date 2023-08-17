@@ -59,7 +59,7 @@ export default class PgDumpRunner extends DumpRunner {
     const filePath = path.resolve(fsConfig.tmp, fileName);
 
     await execa.command(
-      `${bin} --host=${host} --port=${port} --username=${user} --dbname=${dbName} --format=c --schema=public --no-owner --file=${filePath}`,
+      `${bin} --host=${host} --port=${port} --username=${user} --dbname=${dbName} --format=c --schema=public --no-owner --no-acl --file=${filePath}`,
       { env: { [this.passEnv]: password } }
     );
 
