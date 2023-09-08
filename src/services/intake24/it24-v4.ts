@@ -173,7 +173,10 @@ const it24v4 = (config: Config) => {
     surveyId: string,
     params: ExportSurveyDataParams
   ): Promise<JobEntry> => {
-    const { data } = await client.post<JobEntry>(`surveys/${surveyId}/data-export`, { params });
+    const { data } = await client.post<JobEntry>(`surveys/${surveyId}/tasks`, {
+      type: 'SurveyDataExport',
+      params,
+    });
     return data;
   };
 
