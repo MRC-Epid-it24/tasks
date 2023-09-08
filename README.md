@@ -28,12 +28,18 @@ MSSQL lib requires ODBC driver headers to be installed:
 apt install unixodbc-dev
 ```
 
+Install pnpm
+
+```sh
+pnpm install -g pnpm
+```
+
 ## Installation
 
 Download local project dependencies
 
 ```sh
-npm install
+pnpm install
 ```
 
 Copy `.env-template` to `.env` file.
@@ -238,7 +244,7 @@ Currently implemented tasks are:
 Start server with hot-reloading
 
 ```sh
-npm run dev
+pnpm dev
 ```
 
 ### Production environment
@@ -246,13 +252,13 @@ npm run dev
 Build application
 
 ```sh
-npm run build
+pnpm build
 ```
 
 Launch application
 
 ```sh
-npm run start
+pnpm start
 ```
 
 Optional
@@ -267,13 +273,13 @@ Optional
 - Execute specific task in `tasks.json` based on index.
 
 ```sh
-npm run cli -- --task-index <index>
+pnpm cli --task-index <index>
 ```
 
 - Execute specific task without build.
 
 ```sh
-npm run cli:dev -- --task-index <index>
+pnpm cli:dev --task-index <index>
 ```
 
 ## Deployment
