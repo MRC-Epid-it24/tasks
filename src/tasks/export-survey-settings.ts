@@ -16,7 +16,6 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import type { FieldInfo } from '@json2csv/node';
 import type { PoolClient } from 'pg';
 import { AsyncParser } from '@json2csv/node';
 import { format } from 'date-fns';
@@ -68,20 +67,25 @@ export default class ExtractStudyData implements Task<ExtractStudyDataParams> {
       [new Date()]
     );
 
-    const fields: FieldInfo<SurveyRow>[] = [
-      { label: 'SurveyID', value: 'id' },
-      {
-        label: 'StarDate',
-        value: (row: SurveyRow) => format(row.start_date, 'yyyy-MM-dd HH:mm:ss'),
-      },
-      { label: 'EndDate', value: (row: SurveyRow) => format(row.end_date, 'yyyy-MM-dd HH:mm:ss') },
-    ];
-
     const timestamp = format(new Date(), 'yyyyMMdd-HHmmss');
     const filename = `surveys-settings-${timestamp}.csv`;
     const path = resolve(fsConfig.tmp, filename);
 
-    const csv = await new AsyncParser({ fields }).parse(data.rows).promise();
+    const csv = await new AsyncParser({
+      fields: [
+        { label: 'SurveyID', value: 'id' },
+        {
+          label: 'StarDate',
+          value: (row: SurveyRow) => format(row.start_date, 'yyyy-MM-dd HH:mm:ss'),
+        },
+        {
+          label: 'EndDate',
+          value: (row: SurveyRow) => format(row.end_date, 'yyyy-MM-dd HH:mm:ss'),
+        },
+      ],
+    })
+      .parse(data.rows)
+      .promise();
     await fs.writeFile(path, csv, { encoding: 'utf8', flag: 'w+' });
 
     return [{ contentType: 'text/csv', path, filename }];
