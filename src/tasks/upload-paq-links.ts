@@ -230,7 +230,7 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
     `;
 
     const queryRes = await this.pgClient.query(insertQuery);
-    this.stats.added = queryRes.rowCount;
+    this.stats.added = queryRes.rowCount ?? 0;
 
     logger.debug(`Task ${this.name}: addDisplayLinks finished.`);
   }
@@ -255,7 +255,7 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
     `;
 
     const queryRes = await this.pgClient.query(removeQuery);
-    this.stats.removed = queryRes.rowCount;
+    this.stats.removed = queryRes.rowCount ?? 0;
 
     logger.debug(`Task ${this.name}: removeDisplayLinks finished.`);
   }
