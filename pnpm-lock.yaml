@@ -12,8 +12,8 @@ dependencies:
     specifier: ^1.6.1
     version: 1.6.1
   axios-retry:
-    specifier: ^3.8.1
-    version: 3.8.1
+    specifier: ^4.0.0
+    version: 4.0.0(axios@1.6.1)
   commander:
     specifier: ^11.1.0
     version: 11.1.0
@@ -846,8 +846,8 @@ packages:
       '@types/node': 20.9.0
     dev: true
 
-  /@types/nodemon@1.19.5:
-    resolution: {integrity: sha512-jUKYdrnwLp4jMztMdQEJnF4lBhthCfqE7P6cYCIy0txMJrSFtKqs2HjmyEsyQueLjZjve0IjJ1S+20DtgJpUjA==}
+  /@types/nodemon@1.19.6:
+    resolution: {integrity: sha512-vjKuaQOLUA5EY2zkUmWG1ipXbKt9Wd+H/0SiIuHVeH4cHtt6509iRUGH9ZR0iqgUrtj3BrP9KqoTuV3ZCbQcYA==}
     dependencies:
       '@types/node': 20.9.0
     dev: true
@@ -1321,10 +1321,12 @@ packages:
     engines: {node: '>= 0.4'}
     dev: false
 
-  /axios-retry@3.8.1:
-    resolution: {integrity: sha512-4XseuArB4CEbfLRtMpUods2q8MLBvD4r8ifKgK4SP2FRgzQIPUDpzZ+cjQ/19eu3w2UpKgkJA+myEh2BYDSjqQ==}
+  /axios-retry@4.0.0(axios@1.6.1):
+    resolution: {integrity: sha512-F6P4HVGITD/v4z9Lw2mIA24IabTajvpDZmKa6zq/gGwn57wN5j1P3uWrAV0+diqnW6kTM2fTqmWNfgYWGmMuiA==}
+    peerDependencies:
+      axios: 0.x || 1.x
     dependencies:
-      '@babel/runtime': 7.23.2
+      axios: 1.6.1
       is-retry-allowed: 2.2.0
     dev: false
 
@@ -3157,7 +3159,7 @@ packages:
     peerDependencies:
       webpack: 4 || 5
     dependencies:
-      '@types/nodemon': 1.19.5
+      '@types/nodemon': 1.19.6
       nodemon: 3.0.1
       webpack: 5.89.0(webpack-cli@5.1.4)
     dev: true
