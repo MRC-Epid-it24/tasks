@@ -63,8 +63,8 @@ dependencies:
     specifier: ^11.5.4
     version: 11.5.4
   ssh2-sftp-client:
-    specifier: ^9.1.0
-    version: 9.1.0
+    specifier: ^10.0.3
+    version: 10.0.3
   winston:
     specifier: ^3.11.0
     version: 3.11.0
@@ -846,8 +846,8 @@ packages:
       '@types/node': 20.9.0
     dev: true
 
-  /@types/nodemon@1.19.5:
-    resolution: {integrity: sha512-jUKYdrnwLp4jMztMdQEJnF4lBhthCfqE7P6cYCIy0txMJrSFtKqs2HjmyEsyQueLjZjve0IjJ1S+20DtgJpUjA==}
+  /@types/nodemon@1.19.6:
+    resolution: {integrity: sha512-vjKuaQOLUA5EY2zkUmWG1ipXbKt9Wd+H/0SiIuHVeH4cHtt6509iRUGH9ZR0iqgUrtj3BrP9KqoTuV3ZCbQcYA==}
     dependencies:
       '@types/node': 20.9.0
     dev: true
@@ -3157,7 +3157,7 @@ packages:
     peerDependencies:
       webpack: 4 || 5
     dependencies:
-      '@types/nodemon': 1.19.5
+      '@types/nodemon': 1.19.6
       nodemon: 3.0.1
       webpack: 5.89.0(webpack-cli@5.1.4)
     dev: true
@@ -3890,17 +3890,17 @@ packages:
     resolution: {integrity: sha512-Oo+0REFV59/rz3gfJNKQiBlwfHaSESl1pcGyABQsnnIfWOFt6JNj5gCog2U6MLZ//IGYD+nA8nI+mTShREReaA==}
     dev: false
 
-  /ssh2-sftp-client@9.1.0:
-    resolution: {integrity: sha512-Hzdr9OE6GxZjcmyM9tgBSIFVyrHAp9c6U2Y4yBkmYOHoQvZ7pIm27dmltvcmRfxcWiIcg8HBvG5iAikDf+ZuzQ==}
-    engines: {node: '>=10.24.1'}
+  /ssh2-sftp-client@10.0.3:
+    resolution: {integrity: sha512-Wlhasz/OCgrlqC8IlBZhF19Uw/X/dHI8ug4sFQybPE+0sDztvgvDf7Om6o7LbRLe68E7XkFZf3qMnqAvqn1vkQ==}
+    engines: {node: '>=16.20.2'}
     dependencies:
       concat-stream: 2.0.0
       promise-retry: 2.0.1
-      ssh2: 1.14.0
+      ssh2: 1.15.0
     dev: false
 
-  /ssh2@1.14.0:
-    resolution: {integrity: sha512-AqzD1UCqit8tbOKoj6ztDDi1ffJZ2rV2SwlgrVVrHPkV5vWqGJOVp5pmtj18PunkPJAuKQsnInyKV+/Nb2bUnA==}
+  /ssh2@1.15.0:
+    resolution: {integrity: sha512-C0PHgX4h6lBxYx7hcXwu3QWdh4tg6tZZsTfXcdvc5caW/EMxaB4H9dWsl7qk+F7LAW762hp8VbXOX7x4xUYvEw==}
     engines: {node: '>=10.16.0'}
     requiresBuild: true
     dependencies:
