@@ -139,7 +139,7 @@ Currently implemented tasks are:
       "success": [],
       "error": []
     }
-  },
+},
 ```
 
 ### DB_DUMP_TO_LOCAL
