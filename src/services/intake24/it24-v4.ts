@@ -71,7 +71,7 @@ const it24v4 = (config: Config) => {
   const onTokenRefreshed = (errRefreshing?: AxiosError) =>
     tokenSubscribers.map((cb) => cb(errRefreshing));
 
-  let accessToken = '';
+  let accessToken = config.api.v4.token;
   let refreshToken = '';
 
   const client = axios.create({

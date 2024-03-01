@@ -26,6 +26,7 @@ export type ApiConfig = {
     url: string;
     username: string;
     password: string;
+    token: string;
   };
 };
 
@@ -39,6 +40,7 @@ const apiConfig: ApiConfig = {
     url: process.env.API_V4_URL || '',
     username: process.env.API_V4_USERNAME || '',
     password: process.env.API_V4_PASSWORD || '',
+    token: process.env.API_V4_ACCESS_TOKEN || '',
   },
 };
 
