@@ -26,19 +26,19 @@ import type { Task, TaskDefinition } from '.';
 import HasMsSqlPool from './has-mssql-pool';
 
 export type UploadDisplayNamesTaskParams = {
+  dbVersion: 'v3' | 'v4';
   survey: string;
 };
 
 export type EpidResult = {
-  'user name': string;
+  username: string;
   name: string;
 };
 
 export type IT24Result = {
   id: number;
   name: string;
-  // eslint-disable-next-line camelcase
-  user_name: string;
+  username: string;
 };
 
 export type Results = {
@@ -83,16 +83,8 @@ export default class UploadDisplayNames
   async run() {
     await this.initMSPool();
 
-    await this.getDisplayNames();
+    await Promise.all([this.getDisplayNames(), this.getIT24DisplayNames()]);
 
-    // Do not use Intake24 API for update now
-    // IT24 Bug: when API used, autoincrement gets bumped with each update
-    /* if (this.file && fs.existsSync(this.file)) {
-      await api.uploadSurveyRespondents(this.survey, this.file);
-      fs.unlinkSync(this.file);
-    } */
-
-    await this.getIT24DisplayNames();
     await this.updateDisplayNames();
 
     await this.closeMSPool();
@@ -110,17 +102,11 @@ export default class UploadDisplayNames
    */
   async getDisplayNames(): Promise<void> {
     const res = await this.msPool.request().query<EpidResult>(
-      `SELECT Intake24ID as 'user name', DisplayName as 'name'
+      `SELECT SurveyUsername as 'username', DisplayName as 'name'
           FROM ${schema.tables.displayNames} WHERE DisplayName IS NOT NULL`
     );
 
     this.data.epid = res.recordset;
-
-    /* res.recordset.forEach(item => {
-      // Current Intake24 API call expects to have username & password
-      // Let's re-roll the password since we only use access token for respondents
-      this.data.epid.push({ ...item, ...{ password: genPassword(9) } });
-    }); */
   }
 
   /**
@@ -129,8 +115,8 @@ export default class UploadDisplayNames
    * @return void
    */
   async getIT24DisplayNames(): Promise<void> {
-    const res = await db.system.getPool().query<IT24Result>(
-      `SELECT users.id, users.name, alias.user_name FROM users
+    const res = await db[this.params.dbVersion].system.getPool().query<IT24Result>(
+      `SELECT users.id, users.name, alias.username FROM users
         JOIN user_survey_aliases alias ON users.id = alias.user_id
         WHERE alias.survey_id = $1`,
       [this.params.survey]
@@ -152,12 +138,12 @@ export default class UploadDisplayNames
 
     for (const item of this.data.epid) {
       const it24record = this.data.it24.find(
-        (row) => item['user name'] === row.user_name && item.name !== row.name
+        (row) => item.username === row.username && item.name !== row.name
       );
 
       if (it24record !== undefined) {
         this.count += 1;
-        await db.system
+        await db[this.params.dbVersion].system
           .getPool()
           .query(`UPDATE users SET name = $1 WHERE id = $2`, [item.name, it24record.id]);
       }
@@ -176,9 +162,8 @@ export default class UploadDisplayNames
   filterResults(): void {
     this.data.filtered = this.data.epid.filter(
       (item) =>
-        this.data.it24.find(
-          (row) => item['user name'] === row.user_name && item.name !== row.name
-        ) !== undefined
+        this.data.it24.find((row) => item.username === row.username && item.name !== row.name) !==
+        undefined
     );
   }
 

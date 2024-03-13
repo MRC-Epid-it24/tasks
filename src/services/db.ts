@@ -16,12 +16,12 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+import type { ConnectionConfig } from 'pg';
 import { Pool } from 'pg';
 
-import type { ConnConfig } from '@/config/db';
 import dbConfig from '@/config/db';
 
-const pgPool = (config: ConnConfig) => {
+const pgPool = (config: ConnectionConfig) => {
   let pool: Pool | null = null;
 
   const getPool = () => {
@@ -34,4 +34,7 @@ const pgPool = (config: ConnConfig) => {
   return { getPool };
 };
 
-export default { foods: pgPool(dbConfig.foods), system: pgPool(dbConfig.system) };
+export const db = {
+  v3: { foods: pgPool(dbConfig.v3Foods), system: pgPool(dbConfig.v3System) },
+  v4: { foods: pgPool(dbConfig.v4Foods), system: pgPool(dbConfig.v4System) },
+};

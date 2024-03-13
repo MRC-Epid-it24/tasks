@@ -204,6 +204,7 @@ Currently implemented tasks are:
     "name": "UPLOAD_DISPLAY_NAMES",
     "cron": "* * * * *",
     "params": {
+        "dbVersion": "v3 | v4",
         "survey": "demo"
     },
     "db": {
@@ -225,6 +226,7 @@ Currently implemented tasks are:
   "name": "UPLOAD_PAQ_LINKS",
   "cron": "* * * * *",
   "params": {
+    "dbVersion": "v3 | v4",
     "survey": "demo"
   },
   "db": {

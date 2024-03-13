@@ -27,6 +27,7 @@ import type { Task, TaskDefinition } from '.';
 import HasMsSqlPool from './has-mssql-pool';
 
 export type UploadPAQLinksTaskParams = {
+  dbVersion: 'v3' | 'v4';
   survey: string;
 };
 
@@ -80,7 +81,7 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
 
   async run() {
     await this.initMSPool();
-    this.pgClient = await db.system.getPool().connect();
+    this.pgClient = await db[this.params.dbVersion].system.getPool().connect();
 
     try {
       await this.createTempTable();

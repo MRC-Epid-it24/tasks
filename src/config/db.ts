@@ -17,26 +17,21 @@
 */
 
 import type { config as MSSQLConfig } from 'mssql';
+import type { ConnectionConfig } from 'pg';
 
 export type Dialect = 'postgres' | 'mariadb' | 'mysql';
 
-export type ConnConfig = {
-  host: string;
-  user: string;
-  password: string;
-  database: string;
-  port: number;
-};
-
 export type DumpConfig = {
   bin: string;
-  connection: ConnConfig;
+  connection: ConnectionConfig;
 };
 
 export type DBConfig = {
   backup: Record<Dialect, DumpConfig>;
-  foods: ConnConfig;
-  system: ConnConfig;
+  v3Foods: ConnectionConfig;
+  v3System: ConnectionConfig;
+  v4Foods: ConnectionConfig;
+  v4System: ConnectionConfig;
   epid: MSSQLConfig;
 };
 
@@ -73,19 +68,17 @@ const dbConfig: DBConfig = {
       },
     },
   },
-  foods: {
-    host: process.env.IT24_DB_FOODS_HOST || 'localhost',
-    user: process.env.IT24_DB_FOODS_USERNAME || 'intake24',
-    password: process.env.IT24_DB_FOODS_PASSWORD || '',
-    database: process.env.IT24_DB_FOODS_DATABASE || 'intake24_foods',
-    port: parseInt(process.env.IT24_DB_FOODS_PORT ?? '5432', 10),
+  v3Foods: {
+    connectionString: process.env.IT24_V3_DB_FOODS_URL || '',
   },
-  system: {
-    host: process.env.IT24_DB_SYSTEM_HOST || 'localhost',
-    user: process.env.IT24_DB_SYSTEM_USERNAME || 'intake24',
-    password: process.env.IT24_DB_SYSTEM_PASSWORD || '',
-    database: process.env.IT24_DB_SYSTEM_DATABASE || 'intake24_system',
-    port: parseInt(process.env.IT24_DB_SYSTEM_PORT ?? '5432', 10),
+  v3System: {
+    connectionString: process.env.IT24_V3_DB_SYSTEM_URL || '',
+  },
+  v4Foods: {
+    connectionString: process.env.IT24_V4_DB_FOODS_URL || '',
+  },
+  v4System: {
+    connectionString: process.env.IT24_V4_DB_SYSTEM_URL || '',
   },
   epid: {
     server: process.env.MSSQL_DB_SERVER || 'localhost',
