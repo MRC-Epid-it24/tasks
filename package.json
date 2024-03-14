@@ -57,7 +57,7 @@
     "@types/lodash": "^4.17.0",
     "@types/ms": "^0.7.34",
     "@types/mssql": "^9.1.5",
-    "@types/node": "^20.11.26",
+    "@types/node": "^20.11.27",
     "@types/node-schedule": "^2.1.6",
     "@types/nodemailer": "^6.4.14",
     "@types/pg": "^8.11.2",

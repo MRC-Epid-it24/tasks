@@ -60,7 +60,7 @@ export default class MysqlDumpRunner extends DumpRunner {
 
     // --defaults-file=${this.passPath}
     await execa.command(`${bin} --user=${user} --result-file=${filePath} --databases ${dbName}`, {
-      env: { [this.passEnv]: password },
+      env: { [this.passEnv]: password as string },
     });
 
     logger.debug(`${this.constructor.name}|run: database dump for '${dbName}' finished.`);

@@ -51,7 +51,7 @@ export default class ExtractStudyData implements Task<ExtractStudyDataParams> {
   }
 
   async run() {
-    this.pgClient = await db.system.getPool().connect();
+    this.pgClient = await db.v3.system.getPool().connect();
 
     try {
       const attachments = await this.fetchData();

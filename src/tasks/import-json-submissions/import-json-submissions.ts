@@ -22,7 +22,7 @@ import fs from 'fs-extra';
 import mssql from 'mssql';
 import path from 'path';
 
-import db from '@/services/db';
+import { db } from '@/services/db';
 import logger from '@/services/logger';
 
 import type { Task, TaskDefinition } from '..';
@@ -76,8 +76,8 @@ export default class ImportJsonSubmissions
 
   async run() {
     const [foods, system] = await Promise.all([
-      db.foods.getPool().connect(),
-      db.system.getPool().connect(),
+      db.v3.foods.getPool().connect(),
+      db.v3.system.getPool().connect(),
       this.initMSPool(),
     ]);
     this.pgClients = { foods, system };
