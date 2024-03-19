@@ -16,11 +16,11 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { AsyncParser } from '@json2csv/node';
-import { format } from 'date-fns';
+import type { PoolClient } from 'pg';
+import pgPromise from 'pg-promise';
 
 import schema from '@/config/schema';
-import { db, logger, storage } from '@/services';
+import { db, logger } from '@/services';
 
 import type { Task, TaskDefinition } from '.';
 import HasMsSqlPool from './has-mssql-pool';
@@ -30,21 +30,14 @@ export type UploadDisplayNamesTaskParams = {
   survey: string;
 };
 
-export type EpidResult = {
-  username: string;
+export type NamesData = {
+  userId: number;
   name: string;
 };
 
-export type IT24Result = {
-  id: number;
-  name: string;
-  username: string;
-};
-
-export type Results = {
-  it24: IT24Result[];
-  epid: EpidResult[];
-  filtered: EpidResult[];
+export type Stats = {
+  added: number;
+  removed: number;
 };
 
 export default class UploadDisplayNames
@@ -55,11 +48,13 @@ export default class UploadDisplayNames
 
   readonly params: UploadDisplayNamesTaskParams;
 
-  public data: Results;
+  protected pgClient!: PoolClient;
 
-  public count: number;
+  private tempTable = 'it24_display_names';
 
-  public file: string | null;
+  private data: NamesData[];
+
+  private stats: Stats;
 
   public message = '';
 
@@ -70,24 +65,30 @@ export default class UploadDisplayNames
     this.name = name;
     this.params = params;
 
-    this.count = 0;
-    this.data = {
-      it24: [],
-      epid: [],
-      filtered: [],
+    this.data = [];
+    this.stats = {
+      added: 0,
+      removed: 0,
     };
-
-    this.file = null;
   }
 
   async run() {
     await this.initMSPool();
+    this.pgClient = await db[this.params.dbVersion].system.getPool().connect();
 
-    await Promise.all([this.getDisplayNames(), this.getIT24DisplayNames()]);
+    try {
+      await this.createTempTable();
+      await this.importData();
+      await this.addNames();
+      // await this.removeNames();
 
-    await this.updateDisplayNames();
+      this.message = `Task ${this.name}: Number of links added: ${this.stats.added}. Number of links removed: ${this.stats.removed}.`;
+    } finally {
+      await this.dropTempTable();
 
-    await this.closeMSPool();
+      this.pgClient.release();
+      await this.closeMSPool();
+    }
 
     const { message } = this;
     logger.info(message);
@@ -96,97 +97,116 @@ export default class UploadDisplayNames
   }
 
   /**
-   * Get display names from EPID DB
+   * Re-create temporary table
    *
-   * @return void
+   * @private
+   * @memberof UploadDisplayNames
    */
-  async getDisplayNames(): Promise<void> {
-    const res = await this.msPool.request().query<EpidResult>(
-      `SELECT SurveyUsername as 'username', DisplayName as 'name'
-          FROM ${schema.tables.displayNames} WHERE DisplayName IS NOT NULL`
-    );
+  private async createTempTable() {
+    await this.dropTempTable();
 
-    this.data.epid = res.recordset;
+    const createTable = `
+      CREATE TEMPORARY TABLE ${this.tempTable}(
+          user_id int8 NOT NULL,
+          name varchar(256) NOT NULL,
+          CONSTRAINT ${this.tempTable}_pk PRIMARY KEY (user_id)
+      );`;
+    await this.pgClient.query(createTable);
   }
 
   /**
-   * Get display names from Intake24 DB
+   * Drop temporary table
    *
-   * @return void
+   * @private
+   * @memberof UploadDisplayNames
    */
-  async getIT24DisplayNames(): Promise<void> {
-    const res = await db[this.params.dbVersion].system.getPool().query<IT24Result>(
-      `SELECT users.id, users.name, alias.username FROM users
-        JOIN user_survey_aliases alias ON users.id = alias.user_id
-        WHERE alias.survey_id = $1`,
-      [this.params.survey]
-    );
-
-    this.data.it24 = res.rows;
+  private async dropTempTable() {
+    await this.pgClient.query(`DROP TABLE IF EXISTS ${this.tempTable};`);
   }
 
   /**
-   * Update display name in Intake24 database
+   * Import data to temporary table
    *
-   * @return void
+   * @private
+   * @param {number} [chunk=1000]
+   * @returns {Promise<void>}
+   * @memberof UploadDisplayNames
    */
-  async updateDisplayNames(): Promise<void> {
-    if (!this.data.epid.length) {
-      this.message = `Task ${this.name}: No EPID data. Skipping...`;
-      return;
-    }
+  private async importData(chunk = 1000): Promise<void> {
+    logger.debug(`Task ${this.name}: importNameData started.`);
 
-    for (const item of this.data.epid) {
-      const it24record = this.data.it24.find(
-        (row) => item.username === row.username && item.name !== row.name
+    return new Promise((resolve, reject) => {
+      const request = this.msPool.request();
+      request.stream = true;
+      request.query(
+        `SELECT Intake24UserID as user_id, DisplayName as name FROM ${schema.tables.displayNames} WHERE DisplayName IS NOT NULL`
       );
 
-      if (it24record !== undefined) {
-        this.count += 1;
-        await db[this.params.dbVersion].system
-          .getPool()
-          .query(`UPDATE users SET name = $1 WHERE id = $2`, [item.name, it24record.id]);
-      }
-    }
+      request
+        .on('row', (row) => {
+          this.data.push(row);
 
-    this.message = this.count
-      ? `Task ${this.name}: Records updated: ${this.count}`
-      : `Task ${this.name}: No records to update.`;
+          if (chunk > 0 && this.data.length === chunk) {
+            request.pause();
+            this.storeDataChunk()
+              .then(() => {
+                request.resume();
+              })
+              .catch((err) => {
+                request.cancel();
+                reject(err);
+              });
+          }
+        })
+        .on('done', () => {
+          this.storeDataChunk()
+            .then(() => {
+              logger.debug(`Task ${this.name}: importLinkData finished.`);
+              resolve();
+            })
+            .catch((err) => {
+              request.cancel();
+              reject(err);
+            });
+        })
+        .on('error', (err) => reject(err));
+    });
   }
 
   /**
-   * Filter display names to get the ones needing an update
+   * Store data chunk
    *
-   * @return void
+   * @private
+   * @returns
+   * @memberof UploadDisplayNames
    */
-  filterResults(): void {
-    this.data.filtered = this.data.epid.filter(
-      (item) =>
-        this.data.it24.find((row) => item.username === row.username && item.name !== row.name) !==
-        undefined
-    );
+  private async storeDataChunk() {
+    // Short-cut if no more data
+    if (!this.data.length) return;
+
+    const pgp = pgPromise({ capSQL: true });
+    const columnSet = new pgp.helpers.ColumnSet(['user_id', 'name'], { table: this.tempTable });
+    const inserts = pgp.helpers.insert(this.data, columnSet);
+
+    await this.pgClient.query(inserts);
+
+    this.data = [];
   }
 
   /**
-   * Save Display Name data from EPID DB to CSV file for upload
+   * Add display names where consent was given
    *
-   * @return void
+   * @private
+   * @memberof UploadDisplayNames
    */
-  async saveToCSV(): Promise<void> {
-    if (!this.data.filtered.length) {
-      logger.info(`Task ${this.name}: No records to update, skipping...`);
-      return;
-    }
+  private async addNames() {
+    logger.debug(`Task ${this.name}: addNames started.`);
 
-    const csv = await new AsyncParser({ fields: ['user name', 'password', 'name'] })
-      .parse(this.data.filtered)
-      .promise();
+    const updateQuery = `update users set name = temp.name from ${this.tempTable} temp where users.id = temp.user_id;`;
 
-    const filename = `Intake24-display-name-${this.params.survey}_${format(
-      new Date(),
-      'yyyyMMdd-HHmmss'
-    )}.csv`;
+    const queryRes = await this.pgClient.query(updateQuery);
+    this.stats.added = queryRes.rowCount ?? 0;
 
-    this.file = storage.save(filename, csv);
+    logger.debug(`Task ${this.name}: addNames finished.`);
   }
 }

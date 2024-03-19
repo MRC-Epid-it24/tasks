@@ -20,7 +20,7 @@ export default {
   tables: {
     importData: 'tblIntake24Import',
     importLog: 'tblImportLogAuto',
-    displayNames: 'vwIntake24DisplayName',
+    displayNames: 'Admin.tblIntake24Name',
     paqLinks: 'vwPAQLinkForI24',
   },
 };
