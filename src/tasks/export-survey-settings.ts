@@ -20,7 +20,7 @@ import type { PoolClient } from 'pg';
 import { AsyncParser } from '@json2csv/node';
 import { format } from 'date-fns';
 import fs from 'fs-extra';
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 
 import fsConfig from '@/config/filesystem';
 import { db } from '@/services';
@@ -56,7 +56,8 @@ export default class ExtractStudyData implements Task<ExtractStudyDataParams> {
     try {
       const attachments = await this.fetchData();
       return { message: `Task ${this.name}: Survey data exported.`, attachments };
-    } finally {
+    }
+    finally {
       this.pgClient.release();
     }
   }
@@ -64,7 +65,7 @@ export default class ExtractStudyData implements Task<ExtractStudyDataParams> {
   private async fetchData() {
     const data = await this.pgClient.query(
       `SELECT id, start_date, end_date FROM surveys WHERE end_date > $1 ORDER BY start_date ASC;`,
-      [new Date()]
+      [new Date()],
     );
 
     const timestamp = format(new Date(), 'yyyyMMdd-HHmmss');

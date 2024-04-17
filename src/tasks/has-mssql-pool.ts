@@ -29,7 +29,8 @@ export default abstract class HasMsSqlPool {
   protected msPool!: ConnectionPool;
 
   constructor({ db }: TaskDefinition) {
-    if (!db) throw Error('No database connection info provided.');
+    if (!db)
+      throw new Error('No database connection info provided.');
 
     this.dbConfig = { ...globalDB.epid, ...db };
   }

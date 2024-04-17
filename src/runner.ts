@@ -36,7 +36,8 @@ export default (task: TaskDefinition) => async () => {
     result = 'SUCCESS';
 
     logger.info(`Task ${name} successfully processed.`);
-  } catch (err: any) {
+  }
+  catch (err: any) {
     output = { message: err.message };
     result = 'ERROR';
 
@@ -46,7 +47,8 @@ export default (task: TaskDefinition) => async () => {
 
   // Notifications
   const { notify } = task;
-  if (!notify) return;
+  if (!notify)
+    return;
 
   const { message, attachments } = output;
 

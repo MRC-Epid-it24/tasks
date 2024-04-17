@@ -49,7 +49,7 @@ export interface Task<T = Dictionary> {
   readonly name: string;
   readonly params: T;
   message: string;
-  run(): Promise<TaskOutput>;
+  run: () => Promise<TaskOutput>;
 }
 
 export interface TaskDBConfig extends config {
@@ -67,9 +67,9 @@ export type TaskDefinition<T = Dictionary> = {
   notify?:
     | false
     | {
-        success?: string[];
-        error?: string[];
-      }
+      success?: string[];
+      error?: string[];
+    }
     | string[];
 };
 

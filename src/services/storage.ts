@@ -16,8 +16,8 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import fsConfig from '@/config/filesystem';
 
@@ -38,17 +38,18 @@ class Storage {
    */
   tap(...segments: string[]) {
     const dir = path.resolve(this.cwd, ...segments);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+    if (!fs.existsSync(dir))
+      fs.mkdirSync(dir);
     return dir;
   }
 
   /**
    * Save data to file at temporary location
    *
-   * @param String filename
-   * @param String data
-   *
-   * @return String
+   * @param {string} filename
+   * @param {string} data
+   * @returns
+   * @memberof Storage
    */
   save(filename: string, data: string) {
     const file = path.resolve(this.cwd, filename);

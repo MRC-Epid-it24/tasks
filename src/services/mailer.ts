@@ -17,6 +17,7 @@
 */
 
 import type { SendMailOptions, Transporter } from 'nodemailer';
+import process from 'node:process';
 import nodemailer from 'nodemailer';
 
 import type { MailerType } from '@/config/mail';
@@ -68,8 +69,10 @@ class Mailer {
 
       logger.info(info.messageId);
 
-      if (this.mailer === 'log') info.message.pipe(process.stdout);
-    } catch (err: any) {
+      if (this.mailer === 'log')
+        info.message.pipe(process.stdout);
+    }
+    catch (err: any) {
       const { message, name, stack } = err;
       logger.error(stack ?? `${name}: ${message}`);
     }

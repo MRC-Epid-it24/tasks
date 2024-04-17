@@ -19,7 +19,7 @@
 import { parse } from 'date-fns';
 import fs from 'fs-extra';
 import ms from 'ms';
-import path from 'path';
+import path from 'node:path';
 
 import type { DatabaseBackupOptions, FileInfo } from '@/types';
 import dbConfig from '@/config/db';
@@ -50,9 +50,9 @@ export default class DbDumpToLocal implements Task<DbDumpToLocalTaskParams> {
     const config = dbConfig.backup[dialect];
 
     const databases: DatabaseBackupOptions[] = Array.isArray(this.params.database)
-      ? this.params.database.map((database) =>
-          typeof database === 'string' ? { name: database } : database
-        )
+      ? this.params.database.map(database =>
+        typeof database === 'string' ? { name: database } : database,
+      )
       : [{ name: this.params.database }];
 
     for (const database of databases) {
@@ -63,7 +63,8 @@ export default class DbDumpToLocal implements Task<DbDumpToLocalTaskParams> {
       const backup = await runner.run();
       await this.copyToDestination(dbName, backup);
 
-      if (maxAge) await this.cleanOldBackups(dbName, ms(maxAge));
+      if (maxAge)
+        await this.cleanOldBackups(dbName, ms(maxAge));
     }
 
     this.message = `Task ${this.name}: Database backup successful.`;
@@ -86,7 +87,8 @@ export default class DbDumpToLocal implements Task<DbDumpToLocalTaskParams> {
     logger.debug(`Task ${this.name}: transfer of '${file.name}' started.`);
 
     const srcPathCheck = await fs.pathExists(file.path);
-    if (!srcPathCheck) throw new Error(`Missing source file for transfer: ${file.name}.`);
+    if (!srcPathCheck)
+      throw new Error(`Missing source file for transfer: ${file.name}.`);
 
     const destPath = path.join(this.params.basePath, dbName, this.params.appendPath ?? '');
 
@@ -116,12 +118,14 @@ export default class DbDumpToLocal implements Task<DbDumpToLocalTaskParams> {
 
     for (const file of dirContent) {
       const dateTimePattern = file.match(/[0-9]{8}-[0-9]{6}/gi);
-      if (!dateTimePattern || !dateTimePattern.length) continue;
+      if (!dateTimePattern || !dateTimePattern.length)
+        continue;
 
       const fileDate = parse(dateTimePattern[0], 'yyyyMMdd-HHmmss', today);
       const fileAgeInMs = fileDate.getTime() + maxAge;
 
-      if (fileAgeInMs < todayInMs) await fs.unlink(path.join(destPath, file));
+      if (fileAgeInMs < todayInMs)
+        await fs.unlink(path.join(destPath, file));
     }
 
     logger.debug(`Task ${this.name}: cleanup of '${dbName}' finished.`);

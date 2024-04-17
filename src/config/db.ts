@@ -18,6 +18,7 @@
 
 import type { config as MSSQLConfig } from 'mssql';
 import type { ConnectionConfig } from 'pg';
+import process from 'node:process';
 
 export type Dialect = 'postgres' | 'mariadb' | 'mysql';
 
@@ -44,7 +45,7 @@ const dbConfig: DBConfig = {
         user: process.env.PG_USERNAME || 'postgres',
         password: process.env.PG_PASSWORD || 'postgres',
         database: process.env.PG_DATABASE || 'postgres',
-        port: parseInt(process.env.PG_PORT ?? '5432', 10),
+        port: Number.parseInt(process.env.PG_PORT ?? '5432', 10),
       },
     },
     mariadb: {
@@ -54,7 +55,7 @@ const dbConfig: DBConfig = {
         user: process.env.MARIADB_USERNAME || 'mysql',
         password: process.env.MARIADB_PASSWORD || 'mysql',
         database: process.env.MARIADB_DATABASE || 'mysql',
-        port: parseInt(process.env.MARIADB_PORT ?? '3306', 10),
+        port: Number.parseInt(process.env.MARIADB_PORT ?? '3306', 10),
       },
     },
     mysql: {
@@ -64,7 +65,7 @@ const dbConfig: DBConfig = {
         user: process.env.MYSQL_USERNAME || 'mysql',
         password: process.env.MYSQL_PASSWORD || 'mysql',
         database: process.env.MYSQL_DATABASE || 'mysql',
-        port: parseInt(process.env.MYSQL_PORT ?? '3306', 10),
+        port: Number.parseInt(process.env.MYSQL_PORT ?? '3306', 10),
       },
     },
   },
@@ -85,11 +86,11 @@ const dbConfig: DBConfig = {
     user: process.env.MSSQL_DB_USERNAME || 'intake24',
     password: process.env.MSSQL_DB_PASSWORD || '',
     database: process.env.MSSQL_DB_DATABASE || '',
-    port: parseInt(process.env.MSSQL_DB_PORT ?? '1433', 10),
+    port: Number.parseInt(process.env.MSSQL_DB_PORT ?? '1433', 10),
 
-    requestTimeout: parseInt(process.env.MSSQL_REQUEST_TIMEOUT || `${60 * 1000}`, 10),
+    requestTimeout: Number.parseInt(process.env.MSSQL_REQUEST_TIMEOUT || `${60 * 1000}`, 10),
     options: {
-      cancelTimeout: parseInt(process.env.MSSQL_CANCEL_TIMEOUT || `${60 * 1000}`, 10),
+      cancelTimeout: Number.parseInt(process.env.MSSQL_CANCEL_TIMEOUT || `${60 * 1000}`, 10),
       encrypt: false,
     },
   },

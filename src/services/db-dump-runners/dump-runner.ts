@@ -18,7 +18,7 @@
 
 import execa from 'execa';
 import fs from 'fs-extra';
-import os from 'os';
+import os from 'node:os';
 
 import type { Dialect, DumpConfig } from '@/config/db';
 import type { FileInfo } from '@/types';
@@ -59,7 +59,8 @@ export default abstract class DumpRunner {
   async removePass(): Promise<void> {
     try {
       await fs.unlink(this.passPath);
-    } catch (err) {
+    }
+    catch (err) {
       logger.warn(`${this.constructor.name}|removePass: could not remove: ${this.passPath}`);
     }
   }

@@ -19,6 +19,7 @@
 import './bootstrap';
 
 import { Command } from 'commander';
+import process from 'node:process';
 
 import pkg from '@@/package.json';
 
@@ -26,14 +27,15 @@ import config from './config';
 import runner from './runner';
 import { mailer } from './services';
 
-const run = async () => {
+async function run() {
   const program = new Command();
 
   program.name('intake24-tasks');
   program.version(pkg.version);
   program.requiredOption('--task-index <index>', 'Index of the task.').action(async (cmd) => {
-    const taskIndex = parseInt(cmd.taskIndex, 10);
-    if (typeof taskIndex !== 'number') throw new Error('Task index must be a number.');
+    const taskIndex = Number.parseInt(cmd.taskIndex, 10);
+    if (typeof taskIndex !== 'number')
+      throw new Error('Task index must be a number.');
 
     if (taskIndex < 0 || taskIndex >= config.tasks.length)
       throw new Error('Task index is out of range.');
@@ -48,7 +50,7 @@ const run = async () => {
   });
 
   await program.parseAsync(process.argv);
-};
+}
 
 run()
   .catch((err) => {

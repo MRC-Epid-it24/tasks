@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://nodejs.org/en/about/releases">
-        <img src="https://img.shields.io/badge/node-%3E%3D%2016-success" alt="node compatibility">
+        <img src="https://img.shields.io/badge/node-%3E%3D%2020-success" alt="node compatibility">
     </a>
     <a href='https://github.com/MRC-Epid-it24/tasks/actions' target="__blank">
         <img alt="Build Status" src='https://github.com/MRC-Epid-it24/tasks/workflows/CI/badge.svg'>
@@ -20,7 +20,7 @@ Interface between Intake24 API and Clinical DB
 
 ## Requirements
 
-Make sure you have Node.js (16+) and npm (7+) installed.
+Make sure you have latest Node.js LTS and pnpm installed.
 
 MSSQL lib requires ODBC driver headers to be installed:
 

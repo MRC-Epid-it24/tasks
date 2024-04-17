@@ -54,9 +54,9 @@ export default class DbDumpToSftp implements Task<DbDumpToSftpTaskParams> {
     const config = dbConfig.backup[dialect];
 
     const databases: DatabaseBackupOptions[] = Array.isArray(this.params.database)
-      ? this.params.database.map((database) =>
-          typeof database === 'string' ? { name: database } : database
-        )
+      ? this.params.database.map(database =>
+        typeof database === 'string' ? { name: database } : database,
+      )
       : [{ name: this.params.database }];
 
     for (const database of databases) {
@@ -88,7 +88,8 @@ export default class DbDumpToSftp implements Task<DbDumpToSftpTaskParams> {
     logger.debug(`Task ${this.name}: transfer to SFTP started.`);
 
     const fileCheck = await fs.pathExists(file.path);
-    if (!fileCheck) throw new Error(`Missing file to upload: ${file.name}.`);
+    if (!fileCheck)
+      throw new Error(`Missing file to upload: ${file.name}.`);
 
     const { dir, ...sftpConnection } = this.params.sftp;
 

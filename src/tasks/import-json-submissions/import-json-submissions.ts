@@ -20,7 +20,7 @@ import type { PoolClient } from 'pg';
 import { AsyncParser } from '@json2csv/node';
 import fs from 'fs-extra';
 import mssql from 'mssql';
-import path from 'path';
+import path from 'node:path';
 
 import { db } from '@/services/db';
 import logger from '@/services/logger';
@@ -47,8 +47,7 @@ export type Row = Record<string, any>;
 
 export default class ImportJsonSubmissions
   extends HasMsSqlPool
-  implements Task<ImportJsonSubmissionsData>
-{
+  implements Task<ImportJsonSubmissionsData> {
   readonly name: string;
 
   readonly params: ImportJsonSubmissionsData;
@@ -88,7 +87,8 @@ export default class ImportJsonSubmissions
       await Promise.all([this.loadFoodGroups(localeId), this.loadNutrients(localeId)]);
 
       const dir = path.resolve(this.params.dir);
-      if (!(await fs.pathExists(dir))) throw new Error('Invalid directory path.');
+      if (!(await fs.pathExists(dir)))
+        throw new Error('Invalid directory path.');
 
       const failedPath = path.join(this.params.dir, 'failed');
       const outputPath = path.join(this.params.dir, 'output');
@@ -104,7 +104,8 @@ export default class ImportJsonSubmissions
 
       for (const item of dirContent) {
         const itemPath = path.resolve(dir, item.name);
-        if (!item.isFile()) continue;
+        if (!item.isFile())
+          continue;
 
         try {
           const rows = await this.processFile(itemPath);
@@ -113,17 +114,20 @@ export default class ImportJsonSubmissions
           const outputFilename = path.resolve(path.join(outputPath, `${filename}.csv`));
           const processedFilename = path.resolve(path.join(processedPath, `${filename}.json`));
 
-          if (this.params.output === 'database') await this.toDatabase(rows);
+          if (this.params.output === 'database')
+            await this.toDatabase(rows);
           else await ImportJsonSubmissions.toCSV(outputFilename, rows);
 
           await fs.move(itemPath, processedFilename);
-        } catch (err) {
+        }
+        catch (err) {
           logger.error(err);
           const failedFilename = path.resolve(path.join(failedPath, item.name));
           await fs.move(itemPath, failedFilename);
         }
       }
-    } finally {
+    }
+    finally {
       this.pgClients.foods.release();
       this.pgClients.system.release();
       await this.closeMSPool();
@@ -146,7 +150,7 @@ export default class ImportJsonSubmissions
       `SELECT fg.id, fg.description as "englishName", fgl.local_description as "localName" FROM food_groups fg
         LEFT JOIN food_groups_local fgl ON fg.id = fgl.food_group_id AND fgl.locale_id = $1
         ORDER BY fg.id;`,
-      [localeId]
+      [localeId],
     );
 
     this.foodGroups = result.rows.reduce<FoodGroups>((acc, item) => {
@@ -166,13 +170,13 @@ export default class ImportJsonSubmissions
       `SELECT nt.id, nt.description as name FROM nutrient_types nt
         JOIN local_nutrient_types lnt ON nt.id = lnt.nutrient_type_id AND lnt.locale_id = $1
         ORDER BY lnt.id;`,
-      [localeId]
+      [localeId],
     );
 
     this.nutrients = result.rows.reduce<Nutrients>((acc, item) => {
       acc[item.id] = item;
 
-      this.fields.push({ label: item.name, value: (row) => round(row[`nutrientId.${item.id}`]) });
+      this.fields.push({ label: item.name, value: row => round(row[`nutrientId.${item.id}`]) });
 
       return acc;
     }, {});
@@ -184,21 +188,21 @@ export default class ImportJsonSubmissions
   }
 
   async toDatabase(rows: Row[]) {
-    const transformedRows = rows.map((row) =>
+    const transformedRows = rows.map(row =>
       fields.map(
-        ({ value }) => (typeof value === 'string' ? row[value] : value(row))?.toString() ?? 'N/A'
-      )
+        ({ value }) => (typeof value === 'string' ? row[value] : value(row))?.toString() ?? 'N/A',
+      ),
     );
 
     const table = new mssql.Table(this.dbConfig.tables.data);
-    this.fields.forEach((column) =>
+    this.fields.forEach(column =>
       table.columns.add(
         column.label,
         column.label === 'Survey ID' ? mssql.UniqueIdentifier : mssql.VarChar,
-        { nullable: true }
-      )
+        { nullable: true },
+      ),
     );
-    transformedRows.forEach((row) => table.rows.add(...row));
+    transformedRows.forEach(row => table.rows.add(...row));
 
     const request = this.msPool.request();
     await request.bulk(table);
@@ -335,7 +339,7 @@ export default class ImportJsonSubmissions
               acc[`nutrientId.${nutrientId}`] = value;
               return acc;
             },
-            {}
+            {},
           );
 
           const row = {

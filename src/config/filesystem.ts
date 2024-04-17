@@ -16,6 +16,8 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+import process from 'node:process';
+
 export type FileSystemConfig = {
   logs: string;
   tmp: string;

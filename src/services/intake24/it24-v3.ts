@@ -50,12 +50,12 @@ export type ActiveTask = {
   status: ActiveTaskStatus;
 };
 
-const it24v3 = (config: Config) => {
+function it24v3(config: Config) {
   let accessToken = '';
   let refreshToken = '';
 
   const client = axios.create({ baseURL: config.api.v3.url });
-  axiosRetry(client, { retries: 5, retryDelay: (retryCount) => retryCount * 400 });
+  axiosRetry(client, { retries: 5, retryDelay: retryCount => retryCount * 400 });
 
   /**
    * Sign-in to Intake24 instance
@@ -70,7 +70,8 @@ const it24v3 = (config: Config) => {
       });
 
       refreshToken = data.refreshToken;
-    } catch (err: any) {
+    }
+    catch (err: any) {
       throw new Error(`IT24v3: getRefreshToken failed with: ${err.message}`);
     }
   };
@@ -85,11 +86,12 @@ const it24v3 = (config: Config) => {
       const { data } = await client.post(
         'refresh',
         {},
-        { headers: { 'X-Auth-Token': refreshToken } }
+        { headers: { 'X-Auth-Token': refreshToken } },
       );
 
       accessToken = data.accessToken;
-    } catch (err: any) {
+    }
+    catch (err: any) {
       throw new Error(`IT24v3: getAccessToken failed with: ${err.message}`);
     }
   };
@@ -116,7 +118,8 @@ const it24v3 = (config: Config) => {
         headers: { 'X-Auth-Token': accessToken },
       });
       return data;
-    } catch (err: any) {
+    }
+    catch (err: any) {
       throw new Error(`IT24v3: getSurvey failed with: ${err.message}`);
     }
   };
@@ -156,7 +159,7 @@ const it24v3 = (config: Config) => {
    */
   const asyncExportSurveyData = async (
     surveyId: string,
-    params: ExportSurveyDataParams
+    params: ExportSurveyDataParams,
   ): Promise<number> => {
     try {
       const {
@@ -164,11 +167,12 @@ const it24v3 = (config: Config) => {
       } = await client.post(
         `data-export/${surveyId}/submissions/async/csv`,
         {},
-        { params, headers: { 'X-Auth-Token': accessToken } }
+        { params, headers: { 'X-Auth-Token': accessToken } },
       );
 
       return taskId;
-    } catch (err: any) {
+    }
+    catch (err: any) {
       throw new Error(`IT24v3: asyncExportSurveyData failed with: ${err.message}`);
     }
   };
@@ -203,14 +207,15 @@ const it24v3 = (config: Config) => {
 
       const file = storage.save(filename, res.data);
       return file;
-    } catch (err: any) {
+    }
+    catch (err: any) {
       throw new Error(`IT24v3: getExportFile failed with: ${err.message}`);
     }
   };
 
   const getExportDataParams = (
     params: ExportSurveyTaskParams,
-    surveyInfo: SurveyInfo
+    surveyInfo: SurveyInfo,
   ): ExportSurveyDataParams => {
     const { exportOffset, exportVersion } = params;
     const { startDate, endDate: dateTo } = surveyInfo;
@@ -222,8 +227,10 @@ const it24v3 = (config: Config) => {
       dateFrom.setDate(dateFrom.getDate() - exportOffset);
       dateFrom.setHours(0, 0, 0, 0);
 
-      if (dateFrom > dateTo) dateFrom = dateTo;
-    } else {
+      if (dateFrom > dateTo)
+        dateFrom = dateTo;
+    }
+    else {
       dateFrom = startDate;
     }
 
@@ -238,13 +245,14 @@ const it24v3 = (config: Config) => {
 
     let inProgress = true;
     let failedAttempts = 0;
-    let filename: string | undefined = undefined;
+    let filename: string | undefined;
 
     while (inProgress) {
       let activeTasks;
       try {
         activeTasks = await getActiveTasks(survey);
-      } catch (err: any) {
+      }
+      catch (err: any) {
         // TEMP: intake24 very sporadically returns with 502 gateway error (nginx or outer proxy -> to investigate)
         if (axios.isAxiosError(err) && err.response?.status === 502 && failedAttempts < 10) {
           logger.warn(`IT24v3: getActiveTasks responded with 502: ${err.message}`);
@@ -258,7 +266,7 @@ const it24v3 = (config: Config) => {
         throw new Error(`IT24v3: getActiveTasks failed with: ${err.message}`);
       }
 
-      const task = activeTasks.find((item) => item.id === taskId);
+      const task = activeTasks.find(item => item.id === taskId);
       if (!task) {
         inProgress = false;
         throw new Error(`IT24v3: DataExport task not found.`);
@@ -272,8 +280,8 @@ const it24v3 = (config: Config) => {
         case 'InProgress':
           logger.info(
             `IT24v3: DataExport (Task ${taskId}) is in progress (${Math.ceil(
-              (value.progress as number) * 100
-            )}%).`
+              (value.progress as number) * 100,
+            )}%).`,
           );
           break;
         case 'DownloadUrlPending':
@@ -293,10 +301,12 @@ const it24v3 = (config: Config) => {
           break;
       }
 
-      if (inProgress) await sleep(2000);
+      if (inProgress)
+        await sleep(2000);
     }
 
-    if (!filename) throw new Error(`Missing file: ${filename}`);
+    if (!filename)
+      throw new Error(`Missing file: ${filename}`);
 
     return filename;
   };
@@ -325,7 +335,7 @@ const it24v3 = (config: Config) => {
       throw new Error(`IT24 API uploadSurveyRespondents failed with: ${err.message}`);
     }
   }, */
-};
+}
 
 export default it24v3;
 

@@ -42,8 +42,7 @@ export type Stats = {
 
 export default class UploadDisplayNames
   extends HasMsSqlPool
-  implements Task<UploadDisplayNamesTaskParams>
-{
+  implements Task<UploadDisplayNamesTaskParams> {
   readonly name: string;
 
   readonly params: UploadDisplayNamesTaskParams;
@@ -83,7 +82,8 @@ export default class UploadDisplayNames
       // await this.removeNames();
 
       this.message = `Task ${this.name}: Number of links added: ${this.stats.added}. Number of links removed: ${this.stats.removed}.`;
-    } finally {
+    }
+    finally {
       await this.dropTempTable();
 
       this.pgClient.release();
@@ -128,7 +128,7 @@ export default class UploadDisplayNames
    * Import data to temporary table
    *
    * @private
-   * @param {number} [chunk=1000]
+   * @param {number} [chunk]
    * @returns {Promise<void>}
    * @memberof UploadDisplayNames
    */
@@ -139,7 +139,7 @@ export default class UploadDisplayNames
       const request = this.msPool.request();
       request.stream = true;
       request.query(
-        `SELECT Intake24UserID as user_id, DisplayName as name FROM ${schema.tables.displayNames} WHERE DisplayName IS NOT NULL`
+        `SELECT Intake24UserID as user_id, DisplayName as name FROM ${schema.tables.displayNames} WHERE DisplayName IS NOT NULL`,
       );
 
       request
@@ -169,7 +169,7 @@ export default class UploadDisplayNames
               reject(err);
             });
         })
-        .on('error', (err) => reject(err));
+        .on('error', err => reject(err));
     });
   }
 
@@ -182,7 +182,8 @@ export default class UploadDisplayNames
    */
   private async storeDataChunk() {
     // Short-cut if no more data
-    if (!this.data.length) return;
+    if (!this.data.length)
+      return;
 
     const pgp = pgPromise({ capSQL: true });
     const columnSet = new pgp.helpers.ColumnSet(['user_id', 'name'], { table: this.tempTable });

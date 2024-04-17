@@ -27,7 +27,8 @@ import { logger, mailer } from './services';
 mailer.init();
 
 for (const task of config.tasks) {
-  if (!task.cron) continue;
+  if (!task.cron)
+    continue;
 
   const job = cron.scheduleJob(task.cron, runner(task));
 
@@ -35,6 +36,9 @@ for (const task of config.tasks) {
     if (err instanceof Error) {
       const { message, name, stack } = err;
       logger.error(stack ?? `${name}: ${message}`);
-    } else console.error(err);
+    }
+    else {
+      console.error(err);
+    }
   });
 }

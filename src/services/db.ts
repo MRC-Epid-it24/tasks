@@ -21,18 +21,19 @@ import { Pool } from 'pg';
 
 import dbConfig from '@/config/db';
 
-const pgPool = (config: ConnectionConfig) => {
+function pgPool(config: ConnectionConfig) {
   let pool: Pool | null = null;
 
   const getPool = () => {
-    if (pool) return pool;
+    if (pool)
+      return pool;
 
     pool = new Pool(config);
     return pool;
   };
 
   return { getPool };
-};
+}
 
 export const db = {
   v3: { foods: pgPool(dbConfig.v3Foods), system: pgPool(dbConfig.v3System) },

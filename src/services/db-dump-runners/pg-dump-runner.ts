@@ -18,7 +18,7 @@
 
 import { format } from 'date-fns';
 import execa from 'execa';
-import path from 'path';
+import path from 'node:path';
 
 import type { DumpConfig } from '@/config/db';
 import type { FileInfo } from '@/types';
@@ -60,7 +60,7 @@ export default class PgDumpRunner extends DumpRunner {
 
     await execa.command(
       `${bin} --host=${host} --port=${port} --username=${user} --dbname=${dbName} --format=c --schema=public --no-owner --no-acl --file=${filePath}`,
-      { env: { [this.passEnv]: password as string } }
+      { env: { [this.passEnv]: password as string } },
     );
 
     logger.debug(`${this.constructor.name}|run: database dump for '${dbName}' finished.`);

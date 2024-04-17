@@ -18,7 +18,7 @@
 import { parse } from 'fast-csv';
 import fs from 'fs-extra';
 import sql from 'mssql';
-import path from 'path';
+import path from 'node:path';
 
 import { api, logger } from '@/services';
 import { sleep } from '@/util';
@@ -73,14 +73,16 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
 
     await this.fetchData();
 
-    if (!this.filename) throw new Error(`Missing file: ${this.filename}`);
+    if (!this.filename)
+      throw new Error(`Missing file: ${this.filename}`);
 
     await this.processSurveyData();
 
     await this.triggerLog();
 
     fs.unlink(this.filename, (err) => {
-      if (err) logger.error(err);
+      if (err)
+        logger.error(err);
     });
 
     await this.closeMSPool();
@@ -133,7 +135,7 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
   /**
    * Read the data-export file and stream the data into the DB
    *
-   * @param {number} [chunk=500]
+   * @param {number} [chunk]
    * @returns {Promise<void>}
    * @memberof ExportSurveyData
    */
@@ -171,7 +173,7 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
               reject(err);
             });
         })
-        .on('error', (err) => reject(err));
+        .on('error', err => reject(err));
     });
   }
 
@@ -185,7 +187,8 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
   private async storeToDB(): Promise<void> {
     this.isProcessing = true;
 
-    if (!this.headers.length) this.headers = this.data.shift() as string[];
+    if (!this.headers.length)
+      this.headers = this.data.shift() as string[];
 
     if (!this.data.length) {
       this.isProcessing = false;
@@ -198,17 +201,18 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
     // schema.fields.forEach(field => table.columns.add(field.id, field.type, field.opt));
     this.headers.forEach((column) => {
       const info = columnInfo[column];
-      if (!info) throw new Error(`Missing column info for ${column}`);
+      if (!info)
+        throw new Error(`Missing column info for ${column}`);
 
       table.columns.add(
         column,
         info.type === 'uniqueidentifier' ? sql.UniqueIdentifier : sql.VarChar,
-        { nullable: info.nullable }
+        { nullable: info.nullable },
       );
     });
 
     this.data.forEach((data) => {
-      table.rows.add(...data.map((value) => value || null));
+      table.rows.add(...data.map(value => value || null));
     });
 
     const request = this.msPool.request();
@@ -234,7 +238,7 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
     ps.input('ImportStatus', sql.VarChar);
     ps.input('ImportMessage', sql.VarChar);
     await ps.prepare(
-      `INSERT INTO ${this.dbConfig.tables.log} (ImportType, ImportFileName, ImportStatus, ImportMessage) VALUES (@ImportType, @ImportFileName, @ImportStatus, @ImportMessage)`
+      `INSERT INTO ${this.dbConfig.tables.log} (ImportType, ImportFileName, ImportStatus, ImportMessage) VALUES (@ImportType, @ImportFileName, @ImportStatus, @ImportMessage)`,
     );
 
     this.message = `File processed: ${path.basename(this.filename)}, Rows imported: ${

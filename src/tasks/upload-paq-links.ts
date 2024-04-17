@@ -83,7 +83,8 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
       // await this.removeDisplayLinks();
 
       this.message = `Task ${this.name}: Number of links added: ${this.stats.added}. Number of links removed: ${this.stats.removed}.`;
-    } finally {
+    }
+    finally {
       await this.dropTempTable();
 
       this.pgClient.release();
@@ -130,7 +131,7 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
    * - data are streamed and imported in chunks
    *
    * @private
-   * @param {number} [chunk=1000]
+   * @param {number} [chunk]
    * @returns {Promise<void>}
    * @memberof UploadPAQLinks
    */
@@ -141,7 +142,7 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
       const request = this.msPool.request();
       request.stream = true;
       request.query<LinkData>(
-        `SELECT Intake24UserID as user_id, SurveyUsername as username, PAQURL as url FROM ${schema.tables.paqLinks};`
+        `SELECT Intake24UserID as user_id, SurveyUsername as username, PAQURL as url FROM ${schema.tables.paqLinks};`,
       );
 
       request
@@ -171,7 +172,7 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
               reject(err);
             });
         })
-        .on('error', (err) => reject(err));
+        .on('error', err => reject(err));
     });
   }
 
@@ -184,7 +185,8 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
    */
   private async storeDataChunk(): Promise<void> {
     // Short-cut if no more data
-    if (!this.data.length) return;
+    if (!this.data.length)
+      return;
 
     const pgp = pgPromise({ capSQL: true });
     const columnSet = new pgp.helpers.ColumnSet(['user_id', 'username', 'url'], {

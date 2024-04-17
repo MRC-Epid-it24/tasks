@@ -19,7 +19,7 @@ import type { AxiosError } from 'axios';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import { format, startOfDay, subDays } from 'date-fns';
-import https from 'https';
+import https from 'node:https';
 
 import type { Config } from '@/config';
 import type { ExportSurveyTaskParams } from '@/tasks/export-survey-data';
@@ -62,14 +62,14 @@ export type SurveyEntry = {
 
 export type SubscribeCallback = (err?: AxiosError) => void;
 
-const it24v4 = (config: Config) => {
+function it24v4(config: Config) {
   let isRefreshing = false;
   let tokenSubscribers: SubscribeCallback[] = [];
 
   const subscribeTokenRefresh = (cb: SubscribeCallback) => tokenSubscribers.push(cb);
 
   const onTokenRefreshed = (errRefreshing?: AxiosError) =>
-    tokenSubscribers.map((cb) => cb(errRefreshing));
+    tokenSubscribers.map(cb => cb(errRefreshing));
 
   let accessToken = config.api.v4.token;
   let refreshToken = '';
@@ -81,16 +81,52 @@ const it24v4 = (config: Config) => {
     httpsAgent:
       config.app.env === 'development' ? new https.Agent({ rejectUnauthorized: false }) : undefined,
   });
-  axiosRetry(client, { retries: 5, retryDelay: (retryCount) => retryCount * 400 });
+  axiosRetry(client, { retries: 5, retryDelay: retryCount => retryCount * 400 });
 
   client.interceptors.request.use((request) => {
-    if (accessToken) request.headers.Authorization = `Bearer ${accessToken}`;
+    if (accessToken)
+      request.headers.Authorization = `Bearer ${accessToken}`;
 
     return request;
   });
 
+  const saveTokens = (token: string, cookie: any) => {
+    accessToken = token.replace('Bearer ', '');
+
+    if (Array.isArray(cookie)) {
+      cookie.forEach((item) => {
+        if (typeof item !== 'string')
+          return;
+
+        const match = item.match(/^it24a_refresh_token=(?<token>[^;]*);/);
+        const { token } = match?.groups || {};
+        if (token)
+          refreshToken = token;
+      });
+    }
+  };
+
+  const login = async () => {
+    const res = await client.post<{ accessToken: string }>('auth/login', {
+      email: config.api.v4.username,
+      password: config.api.v4.password,
+    });
+
+    saveTokens(res.data.accessToken, res.headers['set-cookie']);
+  };
+
+  const refresh = async () => {
+    const res = await client.post<{ accessToken: string }>(
+      'auth/refresh',
+      {},
+      { headers: { cookie: `it24a_refresh_token=${refreshToken}` } },
+    );
+
+    saveTokens(res.data.accessToken, res.headers['set-cookie']);
+  };
+
   client.interceptors.response.use(
-    (response) => response,
+    response => response,
     async (err: AxiosError) => {
       const { config, response: { status } = {} } = err;
 
@@ -118,46 +154,14 @@ const it24v4 = (config: Config) => {
 
       return new Promise((resolve, reject) => {
         subscribeTokenRefresh((errRefreshing) => {
-          if (errRefreshing) return reject(errRefreshing);
+          if (errRefreshing)
+            return reject(errRefreshing);
 
           return resolve(isRefreshRequest ? undefined : client(config));
         });
       });
-    }
+    },
   );
-
-  const saveTokens = (token: string, cookie: any) => {
-    accessToken = token.replace('Bearer ', '');
-
-    if (Array.isArray(cookie)) {
-      cookie.forEach((item) => {
-        if (typeof item !== 'string') return;
-
-        const match = item.match(/^it24a_refresh_token=(?<token>[^;]*);/);
-        const { token } = match?.groups || {};
-        if (token) refreshToken = token;
-      });
-    }
-  };
-
-  const login = async () => {
-    const res = await client.post<{ accessToken: string }>('auth/login', {
-      email: config.api.v4.username,
-      password: config.api.v4.password,
-    });
-
-    saveTokens(res.data.accessToken, res.headers['set-cookie']);
-  };
-
-  const refresh = async () => {
-    const res = await client.post<{ accessToken: string }>(
-      'auth/refresh',
-      {},
-      { headers: { cookie: `it24a_refresh_token=${refreshToken}` } }
-    );
-
-    saveTokens(res.data.accessToken, res.headers['set-cookie']);
-  };
 
   const getJob = async (jobId: string): Promise<JobEntry> => {
     const { data } = await client.get<JobEntry>(`user/jobs/${jobId}`);
@@ -171,7 +175,7 @@ const it24v4 = (config: Config) => {
 
   const requestDataExport = async (
     surveyId: string,
-    params: ExportSurveyDataParams
+    params: ExportSurveyDataParams,
   ): Promise<JobEntry> => {
     const { data } = await client.post<JobEntry>(`surveys/${surveyId}/tasks`, {
       type: 'SurveyDataExport',
@@ -186,8 +190,8 @@ const it24v4 = (config: Config) => {
     const match = res.headers['content-disposition'].match(/^.*filename=(?<name>.*)$/);
     const { name } = match?.groups || {};
 
-    const filename =
-      name && typeof name === 'string'
+    const filename
+      = name && typeof name === 'string'
         ? name
         : `intake24-export-${jobId}_${format(new Date(), 'yyyyMMdd-HHmmss')}.csv`;
 
@@ -196,7 +200,7 @@ const it24v4 = (config: Config) => {
 
   const prepareDataExportPayload = (
     params: ExportSurveyTaskParams,
-    surveyEntry: SurveyEntry
+    surveyEntry: SurveyEntry,
   ): ExportSurveyDataParams => {
     const { exportOffset } = params;
     const startDate = new Date(surveyEntry.startDate);
@@ -206,8 +210,10 @@ const it24v4 = (config: Config) => {
 
     if (exportOffset) {
       dateFrom = subDays(startOfDay(new Date()), exportOffset);
-      if (dateFrom > endDate) dateFrom = endDate;
-    } else {
+      if (dateFrom > endDate)
+        dateFrom = endDate;
+    }
+    else {
       dateFrom = startDate;
     }
 
@@ -217,7 +223,8 @@ const it24v4 = (config: Config) => {
   const fetchDataExportFile = async (params: ExportSurveyTaskParams): Promise<string> => {
     const { survey: surveyId } = params;
 
-    if (!accessToken) await login();
+    if (!accessToken)
+      await login();
 
     const survey = await getSurvey(surveyId);
     const exportParams = prepareDataExportPayload(params, survey);
@@ -231,23 +238,28 @@ const it24v4 = (config: Config) => {
 
       const { startedAt, completedAt, message, progress, stackTrace, successful } = job;
 
-      if ([startedAt, progress].some((value) => value === null)) {
+      if ([startedAt, progress].includes(null)) {
         logger.info(`IT24v4: Job ${job.id} pending.`);
-      } else if ([completedAt, message, stackTrace, successful].some((value) => value !== null)) {
+      }
+      else if ([completedAt, message, stackTrace, successful].some(value => value !== null)) {
         inProgress = false;
         logger.info(`IT24v4: Job ${job.id} done.`);
-      } else if (progress !== null) {
+      }
+      else if (progress !== null) {
         logger.info(`IT24v4: Job ${job.id} in progress (${Math.ceil(progress * 100)}%).`);
-      } else {
+      }
+      else {
         inProgress = false;
         console.log(job);
         logger.warn(`IT24v4: Job ${job.id} done with unknown outcome.`);
       }
 
-      if (inProgress) await sleep(2000);
+      if (inProgress)
+        await sleep(2000);
     }
 
-    if (!job.successful) throw new Error(`IT24v4: Job ${job.id} failed: ${job.message}`);
+    if (!job.successful)
+      throw new Error(`IT24v4: Job ${job.id} failed: ${job.message}`);
 
     return downloadExportFile(job.id);
   };
@@ -255,7 +267,7 @@ const it24v4 = (config: Config) => {
   return {
     fetchDataExportFile,
   };
-};
+}
 
 export default it24v4;
 

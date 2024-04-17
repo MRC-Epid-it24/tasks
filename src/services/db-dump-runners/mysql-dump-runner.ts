@@ -18,7 +18,7 @@
 
 import { format } from 'date-fns';
 import execa from 'execa';
-import path from 'path';
+import path from 'node:path';
 
 import type { DumpConfig } from '@/config/db';
 import type { FileInfo } from '@/types';
