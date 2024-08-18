@@ -14,9 +14,6 @@
   "rangeStrategy": "bump",
   "ignoreDeps": [
     // Manual
-    "node",
-
-    // Breaking changes
-    "execa" // ESM-only since 6.x.x
+    "node"
   ]
 }

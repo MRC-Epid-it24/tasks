@@ -3,12 +3,13 @@
   "type": "module",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@9.7.1",
   "description": "Intake24 Tasks Service",
   "author": "MRC Epidemiology Unit, University of Cambridge",
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://gitlab.mrc-epid.cam.ac.uk/intake24/tasks.git"
+    "url": "git+https://github.com/MRC-Epid-it24/tasks.git"
   },
   "engines": {
     "node": ">=20"
