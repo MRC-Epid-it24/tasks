@@ -21,11 +21,10 @@ import './bootstrap';
 import { Command } from 'commander';
 import process from 'node:process';
 
-import pkg from '@@/package.json';
-
-import config from './config';
-import runner from './runner';
-import { mailer } from './services';
+import pkg from '../package.json';
+import config from './config/index.js';
+import runner from './runner.js';
+import mailer from './services/mailer.js';
 
 async function run() {
   const program = new Command();

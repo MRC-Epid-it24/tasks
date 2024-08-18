@@ -16,7 +16,7 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-export * from './fields';
-export * from './import-json-submissions';
-export { default as IMPORT_JSON_SUBMISSIONS } from './import-json-submissions';
-export * from './submission';
+export * from './fields.js';
+export * from './import-json-submissions.js';
+export { default as IMPORT_JSON_SUBMISSIONS } from './import-json-submissions.js';
+export * from './submission.js';

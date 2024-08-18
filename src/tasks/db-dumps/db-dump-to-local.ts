@@ -21,12 +21,12 @@ import fs from 'fs-extra';
 import ms from 'ms';
 import path from 'node:path';
 
-import type { DatabaseBackupOptions, FileInfo } from '@/types';
-import dbConfig from '@/config/db';
-import { dumpRunners, logger } from '@/services';
+import type { DatabaseBackupOptions, FileInfo } from '@/types/index.js';
+import dbConfig from '@/config/db.js';
+import { dumpRunners, logger } from '@/services/index.js';
 
-import type { Task, TaskDefinition } from '..';
-import type { DbDumpBase } from './db-dump';
+import type { Task, TaskDefinition } from '../index.js';
+import type { DbDumpBase } from './db-dump.js';
 
 export interface DbDumpToLocalTaskParams extends DbDumpBase {
   basePath: string;
@@ -117,7 +117,7 @@ export default class DbDumpToLocal implements Task<DbDumpToLocalTaskParams> {
     const dirContent = await fs.readdir(destPath);
 
     for (const file of dirContent) {
-      const dateTimePattern = file.match(/[0-9]{8}-[0-9]{6}/gi);
+      const dateTimePattern = file.match(/\d{8}-\d{6}/g);
       if (!dateTimePattern || !dateTimePattern.length)
         continue;
 

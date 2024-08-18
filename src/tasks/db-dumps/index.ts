@@ -16,6 +16,6 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-export * from './db-dump';
-export { default as DB_DUMP_TO_LOCAL } from './db-dump-to-local';
-export { default as DB_DUMP_TO_SFTP } from './db-dump-to-sftp';
+export * from './db-dump.js';
+export { default as DB_DUMP_TO_LOCAL } from './db-dump-to-local.js';
+export { default as DB_DUMP_TO_SFTP } from './db-dump-to-sftp.js';

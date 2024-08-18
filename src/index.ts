@@ -20,9 +20,9 @@ import './bootstrap';
 
 import cron from 'node-schedule';
 
-import config from './config';
-import runner from './runner';
-import { logger, mailer } from './services';
+import config from './config/index.js';
+import runner from './runner.js';
+import { logger, mailer } from './services/index.js';
 
 mailer.init();
 

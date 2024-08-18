@@ -1,27 +1,15 @@
 {
+  "extends": "@tsconfig/node20/tsconfig.json",
   "compilerOptions": {
-    "target": "es2020",
     "baseUrl": ".",
-    "module": "commonjs",
-    "moduleResolution": "node",
     "paths": {
-      "@/*": ["src/*"],
-      "@@/*": ["./*"]
+      "@/*": ["src/*"]
     },
     "resolveJsonModule": true,
     "types": ["node"],
-    "strict": true,
-    "noImplicitThis": true,
-    // "preserveValueImports": true,
-    "importsNotUsedAsValues": "error",
-    "ignoreDeprecations": "5.0",
     "outDir": "dist",
     "sourceMap": true,
-    "allowSyntheticDefaultImports": true,
-    // "importHelpers": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["**/*.spec.ts", "**/*.test.ts"]

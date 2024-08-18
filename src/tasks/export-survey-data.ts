@@ -20,11 +20,11 @@ import fs from 'fs-extra';
 import sql from 'mssql';
 import path from 'node:path';
 
-import { api, logger } from '@/services';
-import { sleep } from '@/util';
+import { api, logger } from '@/services/index.js';
+import { sleep } from '@/util/index.js';
 
-import type { Task, TaskDefinition } from '.';
-import HasMsSqlPool from './has-mssql-pool';
+import type { Task, TaskDefinition } from './index.js';
+import HasMsSqlPool from './has-mssql-pool.js';
 
 export type ColumnInfo = Record<string, { name: string; type: string; nullable: boolean }>;
 

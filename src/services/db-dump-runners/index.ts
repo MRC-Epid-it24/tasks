@@ -16,8 +16,8 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import mysqlDumpRunner from './mysql-dump-runner';
-import pgDumpRunner from './pg-dump-runner';
+import mysqlDumpRunner from './mysql-dump-runner.js';
+import pgDumpRunner from './pg-dump-runner.js';
 
 export default {
   mariadb: mysqlDumpRunner,

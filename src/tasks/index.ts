@@ -19,14 +19,14 @@
 import type { config } from 'mssql';
 import type { SendMailOptions } from 'nodemailer';
 
-import type { Dictionary } from '@/types';
+import type { Dictionary } from '@/types/index.js';
 
-import { DB_DUMP_TO_LOCAL, DB_DUMP_TO_SFTP } from './db-dumps';
-import EXPORT_SURVEY_DATA from './export-survey-data';
-import EXPORT_SURVEY_SETTINGS from './export-survey-settings';
-import { IMPORT_JSON_SUBMISSIONS } from './import-json-submissions';
-import UPLOAD_DISPLAY_NAMES from './upload-display-names';
-import UPLOAD_PAQ_LINKS from './upload-paq-links';
+import { DB_DUMP_TO_LOCAL, DB_DUMP_TO_SFTP } from './db-dumps/index.js';
+import EXPORT_SURVEY_DATA from './export-survey-data.js';
+import EXPORT_SURVEY_SETTINGS from './export-survey-settings.js';
+import { IMPORT_JSON_SUBMISSIONS } from './import-json-submissions/index.js';
+import UPLOAD_DISPLAY_NAMES from './upload-display-names.js';
+import UPLOAD_PAQ_LINKS from './upload-paq-links.js';
 
 const tasks = {
   EXPORT_SURVEY_DATA,

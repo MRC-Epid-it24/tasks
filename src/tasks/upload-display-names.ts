@@ -19,11 +19,11 @@
 import type { PoolClient } from 'pg';
 import pgPromise from 'pg-promise';
 
-import schema from '@/config/schema';
-import { db, logger } from '@/services';
+import schema from '@/config/schema.js';
+import { db, logger } from '@/services/index.js';
 
-import type { Task, TaskDefinition } from '.';
-import HasMsSqlPool from './has-mssql-pool';
+import type { Task, TaskDefinition } from './index.js';
+import HasMsSqlPool from './has-mssql-pool.js';
 
 export type UploadDisplayNamesTaskParams = {
   dbVersion: 'v3' | 'v4';

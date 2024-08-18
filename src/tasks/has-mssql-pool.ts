@@ -19,9 +19,9 @@
 import type { ConnectionPool } from 'mssql';
 import sql from 'mssql';
 
-import globalDB from '@/config/db';
+import globalDB from '@/config/db.js';
 
-import type { TaskDBConfig, TaskDefinition } from '.';
+import type { TaskDBConfig, TaskDefinition } from './index.js';
 
 export default abstract class HasMsSqlPool {
   readonly dbConfig: TaskDBConfig;

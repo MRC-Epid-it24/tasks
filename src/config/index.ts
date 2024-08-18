@@ -16,13 +16,13 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import api from './api';
-import app from './app';
-import db from './db';
-import filesystem from './filesystem';
-import mail from './mail';
-import schema from './schema';
-import tasks from './tasks';
+import api from './api.js';
+import app from './app.js';
+import db from './db.js';
+import filesystem from './filesystem.js';
+import mail from './mail.js';
+import schema from './schema.js';
+import tasks from './tasks.js';
 
 export const config = {
   api,

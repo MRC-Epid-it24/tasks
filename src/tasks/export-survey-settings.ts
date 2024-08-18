@@ -22,10 +22,10 @@ import { format } from 'date-fns';
 import fs from 'fs-extra';
 import { resolve } from 'node:path';
 
-import fsConfig from '@/config/filesystem';
-import { db } from '@/services';
+import fsConfig from '@/config/filesystem.js';
+import { db } from '@/services/index.js';
 
-import type { Task, TaskDefinition } from '.';
+import type { Task, TaskDefinition } from './index.js';
 
 export type ExtractStudyDataParams = Record<string, never>;
 

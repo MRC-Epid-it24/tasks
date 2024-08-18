@@ -7,7 +7,6 @@ export default await antfu(
       semi: true,
     },
     markdown: false,
-    ignores: ['deployment'],
   },
   {
     plugins: {
@@ -16,8 +15,6 @@ export default await antfu(
     rules: {
       'import/order': 'off',
       'no-console': 'off',
-      // 'node/prefer-global/buffer': ['error', 'always'],
-      // 'node/prefer-global/process': ['error', 'always'],
       'unused-imports/no-unused-vars': [
         'error',
         {
@@ -45,11 +42,7 @@ export default await antfu(
         'error',
         { multiline: { delimiter: 'semi' }, singleline: { delimiter: 'semi' } },
       ],
-      'ts/ban-types': 'off',
-      'ts/consistent-type-imports': 'off',
       'ts/consistent-type-definitions': 'off',
-      'ts/no-explicit-any': 'off',
-      'ts/no-use-before-define': 'warn',
     },
   },
 );

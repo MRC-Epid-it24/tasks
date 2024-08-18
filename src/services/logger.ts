@@ -22,7 +22,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createLogger, format, transports } from 'winston';
 
-import fsConfig from '@/config/filesystem';
+import fsConfig from '@/config/filesystem.js';
 
 const { logs } = fsConfig;
 

@@ -17,16 +17,16 @@
 */
 
 import { format } from 'date-fns';
-import execa from 'execa';
+import { execaCommand } from 'execa';
 import path from 'node:path';
 
-import type { DumpConfig } from '@/config/db';
-import type { FileInfo } from '@/types';
-import fsConfig from '@/config/filesystem';
-import logger from '@/services/logger';
+import type { DumpConfig } from '@/config/db.js';
+import type { FileInfo } from '@/types/index.js';
+import fsConfig from '@/config/filesystem.js';
+import logger from '@/services/logger.js';
 
-import type { DumpRunnerOps } from './dump-runner';
-import DumpRunner from './dump-runner';
+import type { DumpRunnerOps } from './dump-runner.js';
+import DumpRunner from './dump-runner.js';
 
 export default class PgDumpRunner extends DumpRunner {
   readonly passEnv: string;
@@ -58,7 +58,7 @@ export default class PgDumpRunner extends DumpRunner {
     const fileName = `${instance}-${dbName}-${format(new Date(), 'yyyyMMdd-HHmmss')}.custom`;
     const filePath = path.resolve(fsConfig.tmp, fileName);
 
-    await execa.command(
+    await execaCommand(
       `${bin} --host=${host} --port=${port} --username=${user} --dbname=${dbName} --format=c --schema=public --no-owner --no-acl --file=${filePath}`,
       { env: { [this.passEnv]: password as string } },
     );

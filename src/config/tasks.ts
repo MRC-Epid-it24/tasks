@@ -17,10 +17,10 @@
 */
 
 import fs from 'fs-extra';
-import { parse } from 'json5';
+import json5 from 'json5';
 
-import type { TaskDefinition } from '@/tasks';
+import type { TaskDefinition } from '@/tasks/index.js';
 
-const tasks: TaskDefinition[] = parse(fs.readFileSync('tasks.json', 'utf8'));
+const tasks: TaskDefinition[] = json5.parse(fs.readFileSync('tasks.json', 'utf8'));
 
 export default tasks;

@@ -16,13 +16,13 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import execa from 'execa';
+import { execaCommand } from 'execa';
 import fs from 'fs-extra';
 import os from 'node:os';
 
-import type { Dialect, DumpConfig } from '@/config/db';
-import type { FileInfo } from '@/types';
-import logger from '@/services/logger';
+import type { Dialect, DumpConfig } from '@/config/db.js';
+import type { FileInfo } from '@/types/index.js';
+import logger from '@/services/logger.js';
 
 export type DumpRunnerOps = {
   instance: string;
@@ -53,14 +53,14 @@ export default abstract class DumpRunner {
 
   async writePass(): Promise<void> {
     await fs.writeFile(this.passPath, this.getPassContent());
-    await execa.command(`chmod 600 ${this.passFile}`, { cwd: this.homeDir });
+    await execaCommand(`chmod 600 ${this.passFile}`, { cwd: this.homeDir });
   }
 
   async removePass(): Promise<void> {
     try {
       await fs.unlink(this.passPath);
     }
-    catch (err) {
+    catch {
       logger.warn(`${this.constructor.name}|removePass: could not remove: ${this.passPath}`);
     }
   }

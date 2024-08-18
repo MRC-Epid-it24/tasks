@@ -17,18 +17,18 @@
 */
 
 import type { ConnectionConfig } from 'pg';
-import { Pool } from 'pg';
+import pg from 'pg';
 
-import dbConfig from '@/config/db';
+import dbConfig from '@/config/db.js';
 
 function pgPool(config: ConnectionConfig) {
-  let pool: Pool | null = null;
+  let pool: pg.Pool | null = null;
 
   const getPool = () => {
     if (pool)
       return pool;
 
-    pool = new Pool(config);
+    pool = new pg.Pool(config);
     return pool;
   };
 

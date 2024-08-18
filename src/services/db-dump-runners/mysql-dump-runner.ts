@@ -17,16 +17,16 @@
 */
 
 import { format } from 'date-fns';
-import execa from 'execa';
+import { execaCommand } from 'execa';
 import path from 'node:path';
 
-import type { DumpConfig } from '@/config/db';
-import type { FileInfo } from '@/types';
-import fsConfig from '@/config/filesystem';
-import logger from '@/services/logger';
+import type { DumpConfig } from '@/config/db.js';
+import type { FileInfo } from '@/types/index.js';
+import fsConfig from '@/config/filesystem.js';
+import logger from '@/services/logger.js';
 
-import type { DumpRunnerOps } from './dump-runner';
-import DumpRunner from './dump-runner';
+import type { DumpRunnerOps } from './dump-runner.js';
+import DumpRunner from './dump-runner.js';
 
 export default class MysqlDumpRunner extends DumpRunner {
   readonly passEnv: string;
@@ -59,7 +59,7 @@ export default class MysqlDumpRunner extends DumpRunner {
     const filePath = path.resolve(fsConfig.tmp, fileName);
 
     // --defaults-file=${this.passPath}
-    await execa.command(`${bin} --user=${user} --result-file=${filePath} --databases ${dbName}`, {
+    await execaCommand(`${bin} --user=${user} --result-file=${filePath} --databases ${dbName}`, {
       env: { [this.passEnv]: password as string },
     });
 

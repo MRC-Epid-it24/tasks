@@ -15,9 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-import type { TaskDefinition, TaskOutput } from './tasks';
-import { logger, mailer } from './services';
-import tasks from './tasks';
+import type { TaskDefinition, TaskOutput } from './tasks/index.js';
+import { logger, mailer } from './services/index.js';
+import tasks from './tasks/index.js';
 
 export default (task: TaskDefinition) => async () => {
   const {

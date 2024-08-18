@@ -16,8 +16,8 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import type { Dialect } from '@/config/db';
-import type { DatabaseBackupOptions } from '@/types';
+import type { Dialect } from '@/config/db.js';
+import type { DatabaseBackupOptions } from '@/types/index.js';
 
 export type DbDumpBase = {
   instance: string;

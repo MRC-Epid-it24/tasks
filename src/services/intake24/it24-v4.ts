@@ -21,12 +21,12 @@ import axiosRetry from 'axios-retry';
 import { format, startOfDay, subDays } from 'date-fns';
 import https from 'node:https';
 
-import type { Config } from '@/config';
-import type { ExportSurveyTaskParams } from '@/tasks/export-survey-data';
-import { logger } from '@/services';
-import { sleep } from '@/util';
+import type { Config } from '@/config/index.js';
+import type { ExportSurveyTaskParams } from '@/tasks/export-survey-data.js';
+import { logger } from '@/services/index.js';
+import { sleep } from '@/util/index.js';
 
-import storage from '../storage';
+import storage from '../storage.js';
 
 export type JobEntry = {
   completedAt: string | null;
@@ -179,7 +179,7 @@ function it24v4(config: Config) {
   ): Promise<JobEntry> => {
     const { data } = await client.post<JobEntry>(`surveys/${surveyId}/tasks`, {
       type: 'SurveyDataExport',
-      params,
+      params: { surveyId, ...params },
     });
     return data;
   };

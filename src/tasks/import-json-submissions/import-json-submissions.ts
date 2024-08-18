@@ -22,14 +22,14 @@ import fs from 'fs-extra';
 import mssql from 'mssql';
 import path from 'node:path';
 
-import { db } from '@/services/db';
-import logger from '@/services/logger';
+import { db } from '@/services/db.js';
+import logger from '@/services/logger.js';
 
-import type { Task, TaskDefinition } from '..';
-import type { SubmissionData } from './submission';
-import HasMsSqlPool from '../has-mssql-pool';
-import { fields, round } from './fields';
-import { MISSING_FOOD_CODE, NA } from './submission';
+import type { Task, TaskDefinition } from '../index.js';
+import type { SubmissionData } from './submission.js';
+import HasMsSqlPool from '../has-mssql-pool.js';
+import { fields, round } from './fields.js';
+import { MISSING_FOOD_CODE, NA } from './submission.js';
 
 export type ImportJsonSubmissionsData = {
   localeId: string;

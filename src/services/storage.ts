@@ -19,7 +19,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import fsConfig from '@/config/filesystem';
+import fsConfig from '@/config/filesystem.js';
 
 class Storage {
   public cwd: string;
