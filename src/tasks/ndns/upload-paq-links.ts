@@ -17,22 +17,23 @@
 */
 
 import type { PoolClient } from 'pg';
+import type { Task, TaskDefinition } from '../index.js';
+
 import pgPromise from 'pg-promise';
-
 import schema from '@/config/schema.js';
+
 import { db, logger } from '@/services/index.js';
+import HasMsSqlPool from '../has-mssql-pool.js';
 
-import type { Task, TaskDefinition } from './index.js';
-import HasMsSqlPool from './has-mssql-pool.js';
-
-export type UploadDisplayNamesTaskParams = {
+export type UploadPAQLinksTaskParams = {
   dbVersion: 'v3' | 'v4';
   survey: string;
 };
 
-export type NamesData = {
-  userId: number;
-  name: string;
+export type LinkData = {
+  user_id: string;
+  username: string;
+  url: string;
 };
 
 export type Stats = {
@@ -40,24 +41,24 @@ export type Stats = {
   removed: number;
 };
 
-export default class UploadDisplayNames
-  extends HasMsSqlPool
-  implements Task<UploadDisplayNamesTaskParams> {
+export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadPAQLinksTaskParams> {
   readonly name: string;
 
-  readonly params: UploadDisplayNamesTaskParams;
+  readonly params: UploadPAQLinksTaskParams;
 
   protected pgClient!: PoolClient;
 
-  private tempTable = 'it24_display_names';
-
-  private data: NamesData[];
+  private data: LinkData[];
 
   private stats: Stats;
 
+  private tempTable = 'it24_paq_links';
+
+  private customField = 'redirectUrl';
+
   public message = '';
 
-  constructor(taskDef: TaskDefinition<UploadDisplayNamesTaskParams>) {
+  constructor(taskDef: TaskDefinition<UploadPAQLinksTaskParams>) {
     super(taskDef);
 
     const { name, params } = taskDef;
@@ -78,8 +79,8 @@ export default class UploadDisplayNames
     try {
       await this.createTempTable();
       await this.importData();
-      await this.addNames();
-      // await this.removeNames();
+      await this.addDisplayLinks();
+      // await this.removeDisplayLinks();
 
       this.message = `Task ${this.name}: Number of links added: ${this.stats.added}. Number of links removed: ${this.stats.removed}.`;
     }
@@ -100,17 +101,18 @@ export default class UploadDisplayNames
    * Re-create temporary table
    *
    * @private
-   * @memberof UploadDisplayNames
+   * @memberof UploadPAQLinks
    */
   private async createTempTable() {
     await this.dropTempTable();
-
     const createTable = `
       CREATE TEMPORARY TABLE ${this.tempTable}(
           user_id int8 NOT NULL,
-          name varchar(256) NOT NULL,
-          CONSTRAINT ${this.tempTable}_pk PRIMARY KEY (user_id)
+          username varchar(256) NOT NULL,
+          url varchar(1024) NOT NULL,
+          CONSTRAINT ${this.tempTable}_pk PRIMARY KEY (user_id, username)
       );`;
+
     await this.pgClient.query(createTable);
   }
 
@@ -118,28 +120,29 @@ export default class UploadDisplayNames
    * Drop temporary table
    *
    * @private
-   * @memberof UploadDisplayNames
+   * @memberof UploadPAQLinks
    */
   private async dropTempTable() {
     await this.pgClient.query(`DROP TABLE IF EXISTS ${this.tempTable};`);
   }
 
   /**
-   * Import data to temporary table
+   * Import intake24-PAQ link data from MS SQL DB to intake24 DB (temp table)
+   * - data are streamed and imported in chunks
    *
    * @private
    * @param {number} [chunk]
    * @returns {Promise<void>}
-   * @memberof UploadDisplayNames
+   * @memberof UploadPAQLinks
    */
   private async importData(chunk = 1000): Promise<void> {
-    logger.debug(`Task ${this.name}: importNameData started.`);
+    logger.debug(`Task ${this.name}: importLinkData started.`);
 
     return new Promise((resolve, reject) => {
       const request = this.msPool.request();
       request.stream = true;
-      request.query(
-        `SELECT Intake24UserID as user_id, DisplayName as name FROM ${schema.tables.displayNames} WHERE DisplayName IS NOT NULL`,
+      request.query<LinkData>(
+        `SELECT Intake24UserID as user_id, SurveyUsername as username, PAQURL as url FROM ${schema.tables.paqLinks};`,
       );
 
       request
@@ -177,16 +180,18 @@ export default class UploadDisplayNames
    * Store data chunk
    *
    * @private
-   * @returns
-   * @memberof UploadDisplayNames
+   * @returns {Promise<void>}
+   * @memberof UploadPAQLinks
    */
-  private async storeDataChunk() {
+  private async storeDataChunk(): Promise<void> {
     // Short-cut if no more data
     if (!this.data.length)
       return;
 
     const pgp = pgPromise({ capSQL: true });
-    const columnSet = new pgp.helpers.ColumnSet(['user_id', 'name'], { table: this.tempTable });
+    const columnSet = new pgp.helpers.ColumnSet(['user_id', 'username', 'url'], {
+      table: this.tempTable,
+    });
     const inserts = pgp.helpers.insert(this.data, columnSet);
 
     await this.pgClient.query(inserts);
@@ -195,19 +200,52 @@ export default class UploadDisplayNames
   }
 
   /**
-   * Add display names where consent was given
+   * Add PAQ links where consent was given
    *
    * @private
-   * @memberof UploadDisplayNames
+   * @memberof UploadPAQLinks
    */
-  private async addNames() {
-    logger.debug(`Task ${this.name}: addNames started.`);
+  private async addDisplayLinks() {
+    logger.debug(`Task ${this.name}: addDisplayLinks started.`);
 
-    const updateQuery = `update users set name = temp.name from ${this.tempTable} temp where users.id = temp.user_id;`;
+    const insertQuery = `
+      insert into user_custom_fields (user_id, "name", value)
+      select usa.user_id, '${this.customField}' as "name", links.url as value
+      from ${this.tempTable} links
+      join user_survey_aliases usa on usa.user_id = links.user_id AND usa.username = links.username
+      left join user_custom_fields ucf on ucf.user_id = usa.user_id and ucf."name" = '${this.customField}'
+      where ucf.id is null
+      and usa.survey_id = '${this.params.survey}';
+    `;
 
-    const queryRes = await this.pgClient.query(updateQuery);
+    const queryRes = await this.pgClient.query(insertQuery);
     this.stats.added = queryRes.rowCount ?? 0;
 
-    logger.debug(`Task ${this.name}: addNames finished.`);
+    logger.debug(`Task ${this.name}: addDisplayLinks finished.`);
+  }
+
+  /**
+   * Remove PAQ links where consent was not given
+   *
+   * @private
+   * @memberof UploadPAQLinks
+   */
+  private async removeDisplayLinks() {
+    logger.debug(`Task ${this.name}: removeDisplayLinks started.`);
+
+    const removeQuery = `
+      delete from user_custom_fields ucf
+      using user_survey_aliases usa, ${this.tempTable} links
+      where ucf.user_id = usa.user_id
+      and usa.username = links.intake24_alias
+      and usa.survey_id = '${this.params.survey}'
+      and ucf."name" = '${this.customField}'
+      and links.display_link = 'no';
+    `;
+
+    const queryRes = await this.pgClient.query(removeQuery);
+    this.stats.removed = queryRes.rowCount ?? 0;
+
+    logger.debug(`Task ${this.name}: removeDisplayLinks finished.`);
   }
 }

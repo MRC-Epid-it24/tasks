@@ -17,6 +17,7 @@
 */
 
 import type { ConnectionConfig } from 'pg';
+import TYPES from 'mssql';
 import pg from 'pg';
 
 import dbConfig from '@/config/db.js';
@@ -38,4 +39,40 @@ function pgPool(config: ConnectionConfig) {
 export const db = {
   v3: { foods: pgPool(dbConfig.v3Foods), system: pgPool(dbConfig.v3System) },
   v4: { foods: pgPool(dbConfig.v4Foods), system: pgPool(dbConfig.v4System) },
+};
+
+export const msSqlTypes = {
+  varchar: TYPES.VarChar,
+  nvarchar: TYPES.NVarChar,
+  text: TYPES.Text,
+  int: TYPES.Int,
+  bigint: TYPES.BigInt,
+  tinyint: TYPES.TinyInt,
+  smallint: TYPES.SmallInt,
+  bit: TYPES.Bit,
+  float: TYPES.Float,
+  numeric: TYPES.Numeric,
+  decimal: TYPES.Decimal,
+  real: TYPES.Real,
+  date: TYPES.Date,
+  datetime: TYPES.DateTime,
+  datetime2: TYPES.DateTime2,
+  datetimeoffset: TYPES.DateTimeOffset,
+  smalldatetime: TYPES.SmallDateTime,
+  time: TYPES.Time,
+  uniqueidentifier: TYPES.UniqueIdentifier,
+  smallmoney: TYPES.SmallMoney,
+  money: TYPES.Money,
+  binary: TYPES.Binary,
+  varbinary: TYPES.VarBinary,
+  image: TYPES.Image,
+  xml: TYPES.Xml,
+  char: TYPES.Char,
+  nchar: TYPES.NChar,
+  ntext: TYPES.NText,
+  tvp: TYPES.TVP,
+  udt: TYPES.UDT,
+  geography: TYPES.Geography,
+  geometry: TYPES.Geometry,
+  variant: TYPES.Variant,
 };

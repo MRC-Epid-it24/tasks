@@ -16,12 +16,14 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+/* eslint-disable perfectionist/sort-imports */
 import './bootstrap';
 
-import { Command } from 'commander';
 import process from 'node:process';
 
+import { Command } from 'commander';
 import pkg from '../package.json';
+
 import config from './config/index.js';
 import runner from './runner.js';
 import mailer from './services/mailer.js';

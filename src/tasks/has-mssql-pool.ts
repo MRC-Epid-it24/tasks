@@ -17,11 +17,19 @@
 */
 
 import type { ConnectionPool } from 'mssql';
+import type { TaskDBConfig, TaskDefinition } from './index.js';
+
 import sql from 'mssql';
 
 import globalDB from '@/config/db.js';
 
-import type { TaskDBConfig, TaskDefinition } from './index.js';
+import { msSqlTypes } from '@/services/db.js';
+
+export type ColumnInfo = Record<string, {
+  name: string;
+  type: keyof typeof msSqlTypes;
+  nullable: boolean;
+}>;
 
 export default abstract class HasMsSqlPool {
   readonly dbConfig: TaskDBConfig;
@@ -39,10 +47,10 @@ export default abstract class HasMsSqlPool {
    * Open DB connection pool
    *
    * @protected
-   * @returns {Promise<void>}
+   * @returns
    * @memberof HasMsSqlPool
    */
-  protected async initMSPool(): Promise<void> {
+  protected async initMSPool() {
     const { tables, ...rest } = this.dbConfig;
 
     this.msPool = new sql.ConnectionPool(rest);
@@ -53,10 +61,47 @@ export default abstract class HasMsSqlPool {
    * lose DB connection pool
    *
    * @protected
-   * @returns {Promise<void>}
+   * @returns
    * @memberof HasMsSqlPool
    */
-  protected async closeMSPool(): Promise<void> {
+  protected async closeMSPool() {
     await this.msPool.close();
+  }
+
+  protected async readTableSchema() {
+    const result = await this.msPool
+      .request()
+      .input('table', sql.VarChar, this.dbConfig.tables.data)
+      .query(`SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = @table;`);
+
+    return result.recordset.reduce<ColumnInfo>((acc, cur) => {
+      acc[cur.COLUMN_NAME] = {
+        name: cur.COLUMN_NAME,
+        type: cur.DATA_TYPE,
+        nullable: cur.IS_NULLABLE === 'YES',
+      };
+      return acc;
+    }, {});
+  }
+
+  protected async prepareTable(headers: string[]) {
+    const columnInfo = await this.readTableSchema();
+    const table = new sql.Table(this.dbConfig.tables.data);
+    const missingColumns: string[] = [];
+
+    headers.forEach((column) => {
+      const info = columnInfo[column];
+      if (!info) {
+        missingColumns.push(column);
+        return;
+      }
+
+      table.columns.add(column, msSqlTypes[info.type], { nullable: info.nullable });
+    });
+
+    if (missingColumns.length)
+      throw new Error(`Missing columns in the import table: ${missingColumns.join(', ')}`);
+
+    return table;
   }
 }

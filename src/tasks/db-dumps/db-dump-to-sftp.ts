@@ -16,16 +16,16 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import fs from 'fs-extra';
-import { trimEnd } from 'lodash-es';
-import Sftp from 'ssh2-sftp-client';
-
-import type { DatabaseBackupOptions, FileInfo } from '@/types/index.js';
-import dbConfig from '@/config/db.js';
-import { dumpRunners, logger } from '@/services/index.js';
-
 import type { Task, TaskDefinition } from '../index.js';
 import type { DbDumpBase } from './db-dump.js';
+import fs from 'fs-extra';
+
+import { trimEnd } from 'lodash-es';
+import Sftp from 'ssh2-sftp-client';
+import dbConfig from '@/config/db.js';
+
+import { dumpRunners, logger } from '@/services/index.js';
+import type { DatabaseBackupOptions, FileInfo } from '@/types/index.js';
 
 export interface DbDumpToSftpTaskParams extends DbDumpBase {
   sftp: {

@@ -16,16 +16,16 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { format } from 'date-fns';
-import { execaCommand } from 'execa';
+import type { DumpRunnerOps } from './dump-runner.js';
 import path from 'node:path';
+import { format } from 'date-fns';
 
+import { execaCommand } from 'execa';
 import type { DumpConfig } from '@/config/db.js';
-import type { FileInfo } from '@/types/index.js';
 import fsConfig from '@/config/filesystem.js';
 import logger from '@/services/logger.js';
 
-import type { DumpRunnerOps } from './dump-runner.js';
+import type { FileInfo } from '@/types/index.js';
 import DumpRunner from './dump-runner.js';
 
 export default class MysqlDumpRunner extends DumpRunner {

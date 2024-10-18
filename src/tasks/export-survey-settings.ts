@@ -17,15 +17,15 @@
 */
 
 import type { PoolClient } from 'pg';
+import type { Task, TaskDefinition } from './index.js';
+import { resolve } from 'node:path';
 import { AsyncParser } from '@json2csv/node';
 import { format } from 'date-fns';
+
 import fs from 'fs-extra';
-import { resolve } from 'node:path';
-
 import fsConfig from '@/config/filesystem.js';
-import { db } from '@/services/index.js';
 
-import type { Task, TaskDefinition } from './index.js';
+import { db } from '@/services/index.js';
 
 export type ExtractStudyDataParams = Record<string, never>;
 

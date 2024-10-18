@@ -25,15 +25,19 @@ import { DB_DUMP_TO_LOCAL, DB_DUMP_TO_SFTP } from './db-dumps/index.js';
 import EXPORT_SURVEY_DATA from './export-survey-data.js';
 import EXPORT_SURVEY_SETTINGS from './export-survey-settings.js';
 import { IMPORT_JSON_SUBMISSIONS } from './import-json-submissions/index.js';
-import UPLOAD_DISPLAY_NAMES from './upload-display-names.js';
-import UPLOAD_PAQ_LINKS from './upload-paq-links.js';
+import {
+  IMPORT_NATCEN_DATA,
+  UPLOAD_DISPLAY_NAMES,
+  UPLOAD_PAQ_LINKS,
+} from './ndns/index.js';
 
 const tasks = {
+  DB_DUMP_TO_LOCAL,
+  DB_DUMP_TO_SFTP,
   EXPORT_SURVEY_DATA,
   EXPORT_SURVEY_SETTINGS,
   IMPORT_JSON_SUBMISSIONS,
-  DB_DUMP_TO_LOCAL,
-  DB_DUMP_TO_SFTP,
+  IMPORT_NATCEN_DATA,
   UPLOAD_DISPLAY_NAMES,
   UPLOAD_PAQ_LINKS,
 };

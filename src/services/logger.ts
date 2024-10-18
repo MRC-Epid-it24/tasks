@@ -16,13 +16,13 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import 'winston-daily-rotate-file';
-
 import fs from 'node:fs';
+
 import path from 'node:path';
 import { createLogger, format, transports } from 'winston';
-
 import fsConfig from '@/config/filesystem.js';
+
+import 'winston-daily-rotate-file';
 
 const { logs } = fsConfig;
 

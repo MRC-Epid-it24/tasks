@@ -16,31 +16,6 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-/* eslint-disable perfectionist/sort-imports */
-import './bootstrap';
-
-import cron from 'node-schedule';
-
-import config from './config/index.js';
-
-import runner from './runner.js';
-import { logger, mailer } from './services/index.js';
-
-mailer.init();
-
-for (const task of config.tasks) {
-  if (!task.cron)
-    continue;
-
-  const job = cron.scheduleJob(task.cron, runner(task));
-
-  job.on('error', (err) => {
-    if (err instanceof Error) {
-      const { message, name, stack } = err;
-      logger.error(stack ?? `${name}: ${message}`);
-    }
-    else {
-      console.error(err);
-    }
-  });
-}
+export { default as IMPORT_NATCEN_DATA } from './import-natcen-data.js';
+export { default as UPLOAD_DISPLAY_NAMES } from './upload-display-names.js';
+export { default as UPLOAD_PAQ_LINKS } from './upload-paq-links.js';

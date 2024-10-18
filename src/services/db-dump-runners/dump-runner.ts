@@ -16,13 +16,13 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+import os from 'node:os';
 import { execaCommand } from 'execa';
 import fs from 'fs-extra';
-import os from 'node:os';
 
 import type { Dialect, DumpConfig } from '@/config/db.js';
-import type { FileInfo } from '@/types/index.js';
 import logger from '@/services/logger.js';
+import type { FileInfo } from '@/types/index.js';
 
 export type DumpRunnerOps = {
   instance: string;

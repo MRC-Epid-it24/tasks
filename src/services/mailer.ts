@@ -20,8 +20,8 @@ import type { SendMailOptions, Transporter } from 'nodemailer';
 import process from 'node:process';
 import nodemailer from 'nodemailer';
 
-import type { MailerType } from '@/config/mail.js';
 import appConfig from '@/config/app.js';
+import type { MailerType } from '@/config/mail.js';
 import config from '@/config/mail.js';
 import logger from '@/services/logger.js';
 

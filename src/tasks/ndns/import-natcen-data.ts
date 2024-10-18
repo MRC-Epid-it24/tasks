@@ -16,29 +16,34 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import type { Task, TaskDefinition } from './index.js';
+import type { Task, TaskDefinition } from '../index.js';
 import path from 'node:path';
 
-import { parse } from 'fast-csv';
+import { parse as parseCSV } from 'fast-csv';
 import fs from 'fs-extra';
 
 import sql from 'mssql';
-import { api, logger } from '@/services/index.js';
+import Sftp from 'ssh2-sftp-client';
 
+import fsConfig from '@/config/filesystem.js';
+import { logger } from '@/services/index.js';
 import { sleep } from '@/util/index.js';
-import HasMsSqlPool from './has-mssql-pool.js';
+import HasMsSqlPool from '../has-mssql-pool.js';
 
-export type ExportSurveyTaskParams = {
-  apiVersion: 'v3' | 'v4';
-  survey: string;
-  exportOffset?: number | null;
-  exportVersion?: string;
+export type NDNSStudyDataParams = {
+  sftp: {
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    file: string;
+  };
 };
 
-export default class ExportSurveyData extends HasMsSqlPool implements Task<ExportSurveyTaskParams> {
+export default class NDNSStudyData extends HasMsSqlPool implements Task<NDNSStudyDataParams> {
   readonly name: string;
 
-  readonly params: ExportSurveyTaskParams;
+  readonly params: NDNSStudyDataParams;
 
   private headers: string[];
 
@@ -52,7 +57,7 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
 
   public message = '';
 
-  constructor(taskDef: TaskDefinition<ExportSurveyTaskParams>) {
+  constructor(taskDef: TaskDefinition<NDNSStudyDataParams>) {
     super(taskDef);
 
     const { name, params } = taskDef;
@@ -111,7 +116,22 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
    * @memberof ExportSurveyData
    */
   private async fetchData() {
-    this.filename = await api[this.params.apiVersion].fetchDataExportFile(this.params);
+    const { file, ...sftpConnection } = this.params.sftp;
+
+    const sftp = new Sftp();
+    try {
+      await sftp.connect(sftpConnection);
+
+      const filename = path.resolve(fsConfig.tmp, path.basename(file));
+      const stream = fs.createWriteStream(filename);
+
+      await sftp.get(file, stream);
+      await sftp.end();
+      this.filename = filename;
+    }
+    finally {
+      await sftp.end();
+    }
   }
 
   /**
@@ -126,7 +146,8 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
     logger.info(`Task ${this.name}: Starting data import.`);
 
     return new Promise((resolve, reject) => {
-      const stream = fs.createReadStream(this.filename).pipe(parse({ headers: false }));
+      const stream = fs.createReadStream(this.filename)
+        .pipe(parseCSV({ headers: false }));
       stream
         .on('data', (row) => {
           this.data.push(row);
@@ -180,7 +201,20 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
     const table = await this.prepareTable(this.headers);
 
     this.data.forEach((data) => {
-      table.rows.add(...data.map(value => value || null));
+      table.rows.add(...data.map((value) => {
+        if (value === '')
+          return null;
+
+        const isDate = value.match(/^(?<day>\d{2})\/(?<month>\d{2})\/(?<year>\d{4})$/);
+        if (!isDate)
+          return value;
+
+        const { day, month, year } = isDate.groups || {};
+        if (!day || !month || !year)
+          return value;
+
+        return `${year}-${month}-${day}`;
+      }));
     });
 
     const request = this.msPool.request();
@@ -212,7 +246,7 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
     this.message = `File processed: ${path.basename(this.filename)}, Rows imported: ${this.records}`;
 
     await ps.execute({
-      ImportType: 'Intake24AutoStep1',
+      ImportType: 'NatCenAutoStep1',
       ImportFileName: path.basename(this.filename),
       ImportStatus: 'Completed',
       ImportMessage: this.message,
