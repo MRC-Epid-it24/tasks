@@ -1,5 +1,4 @@
 import antfu from '@antfu/eslint-config';
-import simpleImportSort from 'eslint-plugin-simple-import-sort';
 
 export default await antfu(
   {
@@ -7,11 +6,9 @@ export default await antfu(
       semi: true,
     },
     markdown: false,
+    formatters: true,
   },
   {
-    plugins: {
-      'simple-import-sort': simpleImportSort,
-    },
     rules: {
       'import/order': 'off',
       'no-console': 'off',
@@ -24,19 +21,24 @@ export default await antfu(
         },
       ],
       'jsdoc/require-returns-description': 'off',
-      'simple-import-sort/imports': [
-        'error',
-        {
-          groups: [
-            ['^\\u0000'],
-            ['^@?\\w.*\\u0000$', '^@?\\w'],
-            ['(?<=\\u0000)$', '^'],
-            ['^\\..*\\u0000$', '^\\.'],
-          ],
-        },
-      ],
-      'simple-import-sort/exports': 'error',
-      'sort-imports': 'off',
+      'perfectionist/sort-imports': ['error', {
+        groups: [
+          'type',
+          ['parent-type', 'sibling-type', 'index-type'],
+
+          'builtin',
+          'external',
+          ['internal', 'internal-type'],
+          ['parent', 'sibling', 'index'],
+          'side-effect',
+          'object',
+          'unknown',
+        ],
+        internalPattern: ['@/**'],
+        newlinesBetween: 'ignore',
+        order: 'asc',
+        type: 'natural',
+      }],
       'style/quote-props': ['error', 'as-needed'],
       'style/member-delimiter-style': [
         'error',
