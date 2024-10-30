@@ -54,7 +54,7 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
 
   private tempTable = 'it24_paq_links';
 
-  private customField = 'redirectUrl';
+  private customField = 'PAQUrl';
 
   public message = '';
 
@@ -80,7 +80,6 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
       await this.createTempTable();
       await this.importData();
       await this.addDisplayLinks();
-      // await this.removeDisplayLinks();
 
       this.message = `Task ${this.name}: Number of links added: ${this.stats.added}. Number of links removed: ${this.stats.removed}.`;
     }
@@ -222,30 +221,5 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
     this.stats.added = queryRes.rowCount ?? 0;
 
     logger.debug(`Task ${this.name}: addDisplayLinks finished.`);
-  }
-
-  /**
-   * Remove PAQ links where consent was not given
-   *
-   * @private
-   * @memberof UploadPAQLinks
-   */
-  private async removeDisplayLinks() {
-    logger.debug(`Task ${this.name}: removeDisplayLinks started.`);
-
-    const removeQuery = `
-      delete from user_custom_fields ucf
-      using user_survey_aliases usa, ${this.tempTable} links
-      where ucf.user_id = usa.user_id
-      and usa.username = links.intake24_alias
-      and usa.survey_id = '${this.params.survey}'
-      and ucf."name" = '${this.customField}'
-      and links.display_link = 'no';
-    `;
-
-    const queryRes = await this.pgClient.query(removeQuery);
-    this.stats.removed = queryRes.rowCount ?? 0;
-
-    logger.debug(`Task ${this.name}: removeDisplayLinks finished.`);
   }
 }
