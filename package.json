@@ -47,7 +47,7 @@
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^3.8.0",
+    "@antfu/eslint-config": "^4.2.0",
     "@tsconfig/node20": "^20.1.4",
     "@types/fs-extra": "^11.0.4",
     "@types/lodash-es": "^4.17.12",
