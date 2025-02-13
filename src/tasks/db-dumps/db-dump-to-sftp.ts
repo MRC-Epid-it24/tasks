@@ -55,8 +55,8 @@ export default class DbDumpToSftp implements Task<DbDumpToSftpTaskParams> {
 
     const databases: DatabaseBackupOptions[] = Array.isArray(this.params.database)
       ? this.params.database.map(database =>
-        typeof database === 'string' ? { name: database } : database,
-      )
+          typeof database === 'string' ? { name: database } : database,
+        )
       : [{ name: this.params.database }];
 
     for (const database of databases) {

@@ -16,6 +16,7 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+import type { StringValue } from 'ms';
 import type { Dialect } from '@/config/db.js';
 import type { DatabaseBackupOptions } from '@/types/index.js';
 
@@ -23,5 +24,5 @@ export type DbDumpBase = {
   instance: string;
   dialect: Dialect;
   database: string | string[] | DatabaseBackupOptions[];
-  maxAge?: string;
+  maxAge?: StringValue;
 };

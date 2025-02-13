@@ -1,3 +1,5 @@
+import type { StringValue } from 'ms';
+
 export type Dictionary<T = any> = { [key: string]: T };
 
 export type FileInfo = {
@@ -9,5 +11,5 @@ export type Intake24Database = 'system' | 'foods';
 
 export type DatabaseBackupOptions = {
   name: string;
-  maxAge?: string;
+  maxAge?: StringValue;
 };

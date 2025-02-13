@@ -34,7 +34,7 @@ export default await antfu(
           'object',
           'unknown',
         ],
-        internalPattern: ['@/**'],
+        internalPattern: ['^@/.*'],
         newlinesBetween: 'ignore',
         order: 'asc',
         type: 'natural',
