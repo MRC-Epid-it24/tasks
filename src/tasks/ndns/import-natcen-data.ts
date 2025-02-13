@@ -147,7 +147,7 @@ export default class NDNSStudyData extends HasMsSqlPool implements Task<NDNSStud
 
     return new Promise((resolve, reject) => {
       const stream = fs.createReadStream(this.filename)
-        .pipe(parseCSV({ headers: false }));
+        .pipe(parseCSV({ headers: false, ignoreEmpty: true }));
       stream
         .on('data', (row) => {
           this.data.push(row);
