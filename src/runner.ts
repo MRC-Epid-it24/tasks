@@ -28,7 +28,8 @@ export default (task: TaskDefinition) => async () => {
   logger.info(`Task ${name} started.`);
 
   let output: TaskOutput;
-  let result;
+  let result: 'SUCCESS' | 'ERROR';
+  let stack: string | undefined;
 
   try {
     // TODO: fix the type
@@ -37,12 +38,22 @@ export default (task: TaskDefinition) => async () => {
 
     logger.info(`Task ${name} successfully processed.`);
   }
-  catch (err: any) {
-    output = { message: err.message };
-    result = 'ERROR';
+  catch (err) {
+    if (err instanceof Error) {
+      output = { message: err.message };
+      result = 'ERROR';
+      stack = err.stack;
 
-    logger.error(`Task ${name} failed with: ${err.message}`);
-    logger.error(err.stack);
+      logger.error(`Task ${name} failed with: ${err.message}`);
+      logger.error(err.stack);
+    }
+    else {
+      output = { message: 'Unknown error' };
+      result = 'ERROR';
+
+      logger.error(`Task ${name} failed with an unknown error.`);
+      logger.error(err);
+    }
   }
 
   // Notifications
@@ -58,6 +69,7 @@ export default (task: TaskDefinition) => async () => {
     survey ? `Survey: ${survey}\n` : null,
     `Result: ${result}`,
     `Message: ${message}`,
+    stack ? `\nStack: ${stack}` : null,
   ]
     .filter(Boolean)
     .join('\n');
