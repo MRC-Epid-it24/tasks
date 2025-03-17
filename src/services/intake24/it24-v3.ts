@@ -54,7 +54,7 @@ function it24v3(config: Config) {
   let accessToken = '';
   let refreshToken = '';
 
-  const client = axios.create({ baseURL: config.api.v3.url });
+  const client = axios.create({ baseURL: config.api.v3.url, timeout: 90000 });
   axiosRetry(client, { retries: 5, retryDelay: retryCount => retryCount * 400 });
 
   /**

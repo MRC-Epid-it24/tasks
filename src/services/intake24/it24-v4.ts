@@ -80,6 +80,7 @@ function it24v4(config: Config) {
     withCredentials: true,
     httpsAgent:
       config.app.env === 'development' ? new https.Agent({ rejectUnauthorized: false }) : undefined,
+    timeout: 90000,
   });
   axiosRetry(client, { retries: 5, retryDelay: retryCount => retryCount * 400 });
 
