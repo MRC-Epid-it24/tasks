@@ -3,7 +3,7 @@
   "type": "module",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@9.7.1",
+  "packageManager": "pnpm@10.12.1",
   "description": "Intake24 Tasks Service",
   "author": "MRC Epidemiology Unit, University of Cambridge",
   "license": "GPL-3.0",
