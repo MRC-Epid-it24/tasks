@@ -1,0 +1,15 @@
+{
+  "env": {
+    "directory": "/opt/intake24-tasks",
+    "user": "intake24-tasks",
+    "group": "intake24"
+  },
+  "files": {
+    "env": "../instances/{{ instance }}/tasks/.env",
+    "tasks": "../instances/{{ instance }}/tasks/tasks.json"
+  },
+  "git": {
+    "repository": "https://github.com/MRC-Epid-it24/tasks.git",
+    "branch": "main"
+  }
+}

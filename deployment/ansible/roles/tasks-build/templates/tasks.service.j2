@@ -4,11 +4,11 @@ After=network.target
 
 [Service]
 Type=simple
-User=intake24-tasks
-Group=intake24
+User={{ env.user }}
+Group={{ env.group }}
 Restart=on-failure
 KillSignal=SIGQUIT
-WorkingDirectory=/opt/intake24-tasks
+WorkingDirectory={{ env.directory }}
 ExecStart=/usr/bin/node dist/index.js
 
 [Install]
