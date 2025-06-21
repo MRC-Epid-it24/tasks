@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [22.x]
 
     steps:
       - name: Repository checkout
@@ -35,6 +35,9 @@ jobs:
 
       - name: Lint
         run: pnpm lint
+
+      - name: Type check
+        run: pnpm type-check
 
       - name: Build
         run: pnpm build

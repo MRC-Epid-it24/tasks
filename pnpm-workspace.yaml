@@ -1,0 +1,7 @@
+ignoredBuiltDependencies:
+  - cpu-features
+  - esbuild
+  - ssh2
+
+onlyBuiltDependencies:
+  - simple-git-hooks
