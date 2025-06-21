@@ -31,7 +31,7 @@ export type ColumnInfo = Record<string, {
   nullable: boolean;
 }>;
 
-export default abstract class HasMsSqlPool {
+export abstract class HasMsSqlPool {
   readonly dbConfig: TaskDBConfig;
 
   protected msPool!: ConnectionPool;

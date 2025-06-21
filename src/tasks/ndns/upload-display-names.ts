@@ -18,33 +18,28 @@
 
 import type { PoolClient } from 'pg';
 import type { Task, TaskDefinition } from '../index.js';
-
 import pgPromise from 'pg-promise';
 import schema from '@/config/schema.js';
-
 import { db, logger } from '@/services/index.js';
-import HasMsSqlPool from '../has-mssql-pool.js';
+import { HasMsSqlPool } from '../has-mssql-pool.js';
 
 export type UploadDisplayNamesTaskParams = {
   dbVersion: 'v3' | 'v4';
   survey: string;
 };
 
-export type NamesData = {
+type NamesData = {
   userId: number;
   name: string;
 };
 
-export type Stats = {
+type Stats = {
   added: number;
   removed: number;
 };
 
-export default class UploadDisplayNames
-  extends HasMsSqlPool
-  implements Task<UploadDisplayNamesTaskParams> {
-  readonly name: string;
-
+export class UploadDisplayNames extends HasMsSqlPool implements Task<'UploadDisplayNames'> {
+  readonly name = 'UploadDisplayNames';
   readonly params: UploadDisplayNamesTaskParams;
 
   protected pgClient!: PoolClient;
@@ -55,14 +50,12 @@ export default class UploadDisplayNames
 
   private stats: Stats;
 
-  public message = '';
+  public output = { message: '' };
 
-  constructor(taskDef: TaskDefinition<UploadDisplayNamesTaskParams>) {
+  constructor(taskDef: TaskDefinition<'UploadDisplayNames'>) {
     super(taskDef);
 
-    const { name, params } = taskDef;
-    this.name = name;
-    this.params = params;
+    this.params = taskDef.params;
 
     this.data = [];
     this.stats = {
@@ -81,7 +74,7 @@ export default class UploadDisplayNames
       await this.addNames();
       // await this.removeNames();
 
-      this.message = `Task ${this.name}: Number of links added: ${this.stats.added}. Number of links removed: ${this.stats.removed}.`;
+      this.output.message = `Task ${this.name}: Number of links added: ${this.stats.added}. Number of links removed: ${this.stats.removed}.`;
     }
     finally {
       await this.dropTempTable();
@@ -90,10 +83,9 @@ export default class UploadDisplayNames
       await this.closeMSPool();
     }
 
-    const { message } = this;
-    logger.info(message);
+    logger.info(this.output.message);
 
-    return { message };
+    return this.output;
   }
 
   /**

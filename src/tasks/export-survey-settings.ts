@@ -21,13 +21,11 @@ import type { Task, TaskDefinition } from './index.js';
 import { resolve } from 'node:path';
 import { AsyncParser } from '@json2csv/node';
 import { format } from 'date-fns';
-
 import fs from 'fs-extra';
 import fsConfig from '@/config/filesystem.js';
-
 import { db } from '@/services/index.js';
 
-export type ExtractStudyDataParams = Record<string, never>;
+export type ExportSurveySettingsParams = Record<string, never>;
 
 export type SurveyRow = {
   id: string;
@@ -35,19 +33,16 @@ export type SurveyRow = {
   end_date: Date;
 };
 
-export default class ExtractStudyData implements Task<ExtractStudyDataParams> {
-  readonly name: string;
-
-  readonly params: ExtractStudyDataParams;
+export class ExportSurveySettings implements Task<'ExportSurveySettings'> {
+  readonly name = 'ExportSurveySettings';
+  readonly params: ExportSurveySettingsParams;
 
   protected pgClient!: PoolClient;
 
-  public message = '';
+  public output = { message: '' };
 
-  constructor(taskDef: TaskDefinition<ExtractStudyDataParams>) {
-    const { name, params } = taskDef;
-    this.name = name;
-    this.params = params;
+  constructor(taskDef: TaskDefinition<'ExportSurveySettings'>) {
+    this.params = taskDef.params;
   }
 
   async run() {

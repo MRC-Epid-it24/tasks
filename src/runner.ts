@@ -15,19 +15,16 @@
     You should have received a copy of the GNU General Public License
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-import type { TaskDefinition, TaskOutput } from './tasks/index.js';
+import type { TaskDefinition, TaskIOParams } from './tasks/index.js';
 import { logger, mailer } from './services/index.js';
 import tasks from './tasks/index.js';
 
-export default (task: TaskDefinition) => async () => {
-  const {
-    name,
-    params: { survey },
-  } = task;
+export default <T extends keyof TaskIOParams>(task: TaskDefinition<T>) => async () => {
+  const { name, params } = task;
 
   logger.info(`Task ${name} started.`);
 
-  let output: TaskOutput;
+  let output: TaskIOParams[T]['output'];
   let result: 'SUCCESS' | 'ERROR';
   let stack: string | undefined;
 
@@ -66,8 +63,9 @@ export default (task: TaskDefinition) => async () => {
   const subject = `🚀 ${name} | ${result}`;
   const text = [
     `Task: ${name}`,
-    survey ? `Survey: ${survey}\n` : null,
-    `Result: ${result}`,
+    'survey' in params ? `Survey ID: ${params.survey}` : null,
+    'surveyCode' in output ? `Survey Code: ${output.surveyCode}` : null,
+    `Result: ${result} ${result === 'SUCCESS' ? '✅' : '❌'}`,
     `Message: ${message}`,
     stack ? `\nStack: ${stack}` : null,
   ]
@@ -82,10 +80,10 @@ export default (task: TaskDefinition) => async () => {
   if (!Array.isArray(notify)) {
     const { success, error } = notify;
 
-    if (success && success.length && result === 'SUCCESS')
+    if (success?.length && result === 'SUCCESS')
       await mailer.sendMail({ to: success, subject, text, attachments });
 
-    if (error && error.length && result === 'ERROR')
+    if (error?.length && result === 'ERROR')
       await mailer.sendMail({ to: error, subject, text, attachments });
   }
 };

@@ -18,15 +18,12 @@
 
 import type { Task, TaskDefinition } from './index.js';
 import path from 'node:path';
-
 import { parse } from 'fast-csv';
 import fs from 'fs-extra';
-
 import sql from 'mssql';
 import { api, logger } from '@/services/index.js';
-
 import { sleep } from '@/util/index.js';
-import HasMsSqlPool from './has-mssql-pool.js';
+import { HasMsSqlPool } from './has-mssql-pool.js';
 
 export type ExportSurveyTaskParams = {
   apiVersion: 'v3' | 'v4';
@@ -35,9 +32,8 @@ export type ExportSurveyTaskParams = {
   exportVersion?: string;
 };
 
-export default class ExportSurveyData extends HasMsSqlPool implements Task<ExportSurveyTaskParams> {
-  readonly name: string;
-
+export class ExportSurveyData extends HasMsSqlPool implements Task<'ExportSurveyData'> {
+  readonly name = 'ExportSurveyData';
   readonly params: ExportSurveyTaskParams;
 
   private headers: string[];
@@ -50,14 +46,15 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
 
   private filename!: string;
 
-  public message = '';
+  public output = {
+    message: '',
+    surveyCode: '',
+  };
 
-  constructor(taskDef: TaskDefinition<ExportSurveyTaskParams>) {
+  constructor(taskDef: TaskDefinition<'ExportSurveyData'>) {
     super(taskDef);
 
-    const { name, params } = taskDef;
-    this.name = name;
-    this.params = params;
+    this.params = taskDef.params;
 
     this.headers = [];
     this.data = [];
@@ -87,10 +84,9 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
 
     await this.closeMSPool();
 
-    const { message } = this;
-    logger.info(message);
+    logger.info(this.output.message);
 
-    return { message };
+    return this.output;
   }
 
   /**
@@ -111,7 +107,10 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
    * @memberof ExportSurveyData
    */
   private async fetchData() {
-    this.filename = await api[this.params.apiVersion].fetchDataExportFile(this.params);
+    const [surveyCode, filename] = await api[this.params.apiVersion].fetchDataExportFile(this.params);
+
+    this.filename = filename;
+    this.output.surveyCode = surveyCode;
   }
 
   /**
@@ -209,13 +208,13 @@ export default class ExportSurveyData extends HasMsSqlPool implements Task<Expor
       `INSERT INTO ${this.dbConfig.tables.log} (ImportType, ImportFileName, ImportStatus, ImportMessage) VALUES (@ImportType, @ImportFileName, @ImportStatus, @ImportMessage)`,
     );
 
-    this.message = `File processed: ${path.basename(this.filename)}, Rows imported: ${this.records}`;
+    this.output.message = `File processed: ${path.basename(this.filename)}, Rows imported: ${this.records}`;
 
     await ps.execute({
       ImportType: 'Intake24AutoStep1',
       ImportFileName: path.basename(this.filename),
       ImportStatus: 'Completed',
-      ImportMessage: this.message,
+      ImportMessage: this.output.message,
     });
     await ps.unprepare();
   }

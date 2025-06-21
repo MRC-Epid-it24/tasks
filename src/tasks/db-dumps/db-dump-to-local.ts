@@ -33,15 +33,13 @@ export interface DbDumpToLocalTaskParams extends DbDumpBase {
   appendPath?: string;
 }
 
-export default class DbDumpToLocal implements Task<DbDumpToLocalTaskParams> {
-  readonly name: string;
-
+export class DbDumpToLocal implements Task<'DbDumpToLocal'> {
+  readonly name = 'DbDumpToLocal';
   readonly params: DbDumpToLocalTaskParams;
 
-  public message = '';
+  public output = { message: '' };
 
-  constructor({ name, params }: TaskDefinition<DbDumpToLocalTaskParams>) {
-    this.name = name;
+  constructor({ params }: TaskDefinition<'DbDumpToLocal'>) {
     this.params = params;
   }
 
@@ -67,11 +65,10 @@ export default class DbDumpToLocal implements Task<DbDumpToLocalTaskParams> {
         await this.cleanOldBackups(dbName, ms(maxAge));
     }
 
-    this.message = `Task ${this.name}: Database backup successful.`;
-    const { message } = this;
-    logger.info(message);
+    this.output.message = `Task ${this.name}: Database backup successful.`;
+    logger.info(this.output.message);
 
-    return { message };
+    return this.output;
   }
 
   /**

@@ -37,15 +37,13 @@ export interface DbDumpToSftpTaskParams extends DbDumpBase {
   };
 }
 
-export default class DbDumpToSftp implements Task<DbDumpToSftpTaskParams> {
-  readonly name: string;
-
+export class DbDumpToSftp implements Task<'DbDumpToSftp'> {
+  readonly name = 'DbDumpToSftp';
   readonly params: DbDumpToSftpTaskParams;
 
-  public message = '';
+  public output = { message: '' };
 
-  constructor({ name, params }: TaskDefinition<DbDumpToSftpTaskParams>) {
-    this.name = name;
+  constructor({ params }: TaskDefinition<'DbDumpToSftp'>) {
     this.params = params;
   }
 
@@ -69,11 +67,10 @@ export default class DbDumpToSftp implements Task<DbDumpToSftpTaskParams> {
       await this.copyToSftp(backup);
     }
 
-    this.message = `Task ${this.name}: Database backup successful.`;
-    const { message } = this;
-    logger.info(message);
+    this.output.message = `Task ${this.name}: Database backup successful.`;
+    logger.info(this.output.message);
 
-    return { message };
+    return this.output;
   }
 
   /**

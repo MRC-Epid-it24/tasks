@@ -1,6 +1,6 @@
 [
   {
-    "name": "EXPORT_SURVEY_DATA",
+    "name": "ExportSurveyData",
     "cron": "* * * * *",
     "params": {
       "survey": "demo",
@@ -20,7 +20,7 @@
     }
   },
   {
-    "name": "IMPORT_JSON_SUBMISSIONS",
+    "name": "ImportJsonSubmissions",
     "cron": false,
     "params": {
       "localeId": "en_GB",
@@ -33,7 +33,7 @@
     }
   },
   {
-    "name": "UPLOAD_DISPLAY_NAMES",
+    "name": "UploadDisplayNames",
     "cron": "* * * * *",
     "params": {
       "dbVersion": "v3 | v4",
@@ -48,7 +48,7 @@
     }
   },
   {
-    "name": "UPLOAD_PAQ_LINKS",
+    "name": "UploadPAQLinks",
     "cron": "* * * * *",
     "params": {
       "dbVersion": "v3 | v4",

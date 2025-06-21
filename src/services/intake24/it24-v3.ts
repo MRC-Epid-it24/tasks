@@ -237,7 +237,7 @@ function it24v3(config: Config) {
     return { dateFrom, dateTo, forceBOM: '1', format: exportVersion ?? 'v2' };
   };
 
-  const fetchDataExportFile = async (params: ExportSurveyTaskParams): Promise<string> => {
+  const fetchDataExportFile = async (params: ExportSurveyTaskParams): Promise<[surveyCode: string, filename: string]> => {
     const { survey } = params;
     await login();
     const surveyInfo = await getSurvey(survey);
@@ -308,7 +308,7 @@ function it24v3(config: Config) {
     if (!filename)
       throw new Error(`Missing file: ${filename}`);
 
-    return filename;
+    return [survey, filename];
   };
 
   return {

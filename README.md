@@ -70,13 +70,13 @@ Edit `tasks.json` file and set up task definitions as needed.
 
 Currently implemented tasks are:
 
-### EXPORT_SURVEY_DATA
+### ExportSurveyData
 
 - Export Intake24 survey data and imports data into external database (MSSQL engine)
 
 ```json
 {
-    "name": "EXPORT_SURVEY_DATA",
+    "name": "ExportSurveyData",
     "cron": "* * * * *",
     "params": {
         "apiVersion": "v3" | "v4",
@@ -98,13 +98,13 @@ Currently implemented tasks are:
 },
 ```
 
-### EXPORT_SURVEY_SETTINGS
+### ExportSurveySettings
 
 - Export Intake24 survey stats
 
 ```json
 {
-    "name": "EXPORT_SURVEY_SETTINGS",
+    "name": "ExportSurveySettings",
     "cron": "* * * * *",
     "params": {},
     "notify": {
@@ -114,14 +114,14 @@ Currently implemented tasks are:
 },
 ```
 
-### IMPORT_JSON_SUBMISSIONS
+### ImportJsonSubmissions
 
 - read contents of folder with files contains intake24 submission in JSON format
 - output either to `csv` or `database`
 
 ```json
 {
-    "name": "IMPORT_JSON_SUBMISSIONS",
+    "name": "ImportJsonSubmissions",
     "cron": false,
     "params": {
         "localeId": "en_GB",
@@ -142,14 +142,14 @@ Currently implemented tasks are:
 },
 ```
 
-### DB_DUMP_TO_LOCAL
+### DbDumpToLocal
 
 - Run pg_dump for `system` or `foods` database and transfer to local / network location.
 - Make sure you got pg_dump binaries installed, e.g. for ubuntu: `apt-get install postgresql-client`.
 
 ```json
 {
-    "name": "DB_DUMP_TO_LOCAL",
+    "name": "DbDumpToLocal",
     "cron": "* * * * *",
     "params": {
         "instance": "instance-name",
@@ -166,14 +166,14 @@ Currently implemented tasks are:
 }
 ```
 
-### DB_DUMP_TO_SFTP
+### DbDumpToSftp
 
 - Run pg_dump for `system` or `foods` database and upload to sftp.
 - Make sure you got pg_dump binaries installed, e.g. for ubuntu: `apt-get install postgresql-client`.
 
 ```json
 {
-    "name": "DB_DUMP_TO_SFTP",
+    "name": "DbDumpToSftp",
     "cron": "* * * * *",
     "params": {
         "instance": "instance-name",
@@ -195,13 +195,13 @@ Currently implemented tasks are:
 }
 ```
 
-### UPLOAD_DISPLAY_NAMES
+### UploadDisplayNames
 
 - First (display) name synchronization from external database (MSSQL) into Intake24 instance
 
 ```json
 {
-    "name": "UPLOAD_DISPLAY_NAMES",
+    "name": "UploadDisplayNames",
     "cron": "* * * * *",
     "params": {
         "dbVersion": "v3 | v4",
@@ -217,13 +217,13 @@ Currently implemented tasks are:
 },
 ```
 
-### UPLOAD_PAQ_LINKS
+### UploadPAQLinks
 
 - Upload external questionnaire URLs from external database (MSSQL) into the Intake24
 
 ```json
 {
-  "name": "UPLOAD_PAQ_LINKS",
+  "name": "UploadPAQLinks",
   "cron": "* * * * *",
   "params": {
     "dbVersion": "v3 | v4",

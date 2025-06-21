@@ -28,9 +28,9 @@ import Sftp from 'ssh2-sftp-client';
 import fsConfig from '@/config/filesystem.js';
 import { logger } from '@/services/index.js';
 import { sleep } from '@/util/index.js';
-import HasMsSqlPool from '../has-mssql-pool.js';
+import { HasMsSqlPool } from '../has-mssql-pool.js';
 
-export type NDNSStudyDataParams = {
+export type ImportNatCenDataParams = {
   sftp: {
     host: string;
     port: number;
@@ -40,10 +40,9 @@ export type NDNSStudyDataParams = {
   };
 };
 
-export default class NDNSStudyData extends HasMsSqlPool implements Task<NDNSStudyDataParams> {
-  readonly name: string;
-
-  readonly params: NDNSStudyDataParams;
+export class ImportNatCenData extends HasMsSqlPool implements Task<'ImportNatCenData'> {
+  readonly name = 'ImportNatCenData';
+  readonly params: ImportNatCenDataParams;
 
   private headers: string[];
 
@@ -55,14 +54,12 @@ export default class NDNSStudyData extends HasMsSqlPool implements Task<NDNSStud
 
   private filename!: string;
 
-  public message = '';
+  public output = { message: '' };
 
-  constructor(taskDef: TaskDefinition<NDNSStudyDataParams>) {
+  constructor(taskDef: TaskDefinition<'ImportNatCenData'>) {
     super(taskDef);
 
-    const { name, params } = taskDef;
-    this.name = name;
-    this.params = params;
+    this.params = taskDef.params;
 
     this.headers = [];
     this.data = [];
@@ -92,10 +89,9 @@ export default class NDNSStudyData extends HasMsSqlPool implements Task<NDNSStud
 
     await this.closeMSPool();
 
-    const { message } = this;
-    logger.info(message);
+    logger.info(this.output.message);
 
-    return { message };
+    return this.output;
   }
 
   /**
@@ -243,13 +239,13 @@ export default class NDNSStudyData extends HasMsSqlPool implements Task<NDNSStud
       `INSERT INTO ${this.dbConfig.tables.log} (ImportType, ImportFileName, ImportStatus, ImportMessage) VALUES (@ImportType, @ImportFileName, @ImportStatus, @ImportMessage)`,
     );
 
-    this.message = `File processed: ${path.basename(this.filename)}, Rows imported: ${this.records}`;
+    this.output.message = `File processed: ${path.basename(this.filename)}, Rows imported: ${this.records}`;
 
     await ps.execute({
       ImportType: 'NatCenAutoStep1',
       ImportFileName: path.basename(this.filename),
       ImportStatus: 'Completed',
-      ImportMessage: this.message,
+      ImportMessage: this.output.message,
     });
     await ps.unprepare();
   }

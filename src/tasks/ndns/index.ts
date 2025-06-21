@@ -16,6 +16,6 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-export { default as IMPORT_NATCEN_DATA } from './import-natcen-data.js';
-export { default as UPLOAD_DISPLAY_NAMES } from './upload-display-names.js';
-export { default as UPLOAD_PAQ_LINKS } from './upload-paq-links.js';
+export * from './import-natcen-data.js';
+export * from './upload-display-names.js';
+export * from './upload-paq-links.js';

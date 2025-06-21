@@ -18,43 +18,80 @@
 
 import type { config } from 'mssql';
 import type { SendMailOptions } from 'nodemailer';
-
-import type { Dictionary } from '@/types/index.js';
-
-import { DB_DUMP_TO_LOCAL, DB_DUMP_TO_SFTP } from './db-dumps/index.js';
-import EXPORT_SURVEY_DATA from './export-survey-data.js';
-import EXPORT_SURVEY_SETTINGS from './export-survey-settings.js';
-import { IMPORT_JSON_SUBMISSIONS } from './import-json-submissions/index.js';
+import type {
+  DbDumpToLocalTaskParams,
+  DbDumpToSftpTaskParams,
+} from './db-dumps/index.js';
+import type { ExportSurveyTaskParams } from './export-survey-data.js';
+import type { ExportSurveySettingsParams } from './export-survey-settings.js';
+import type {
+  ImportJsonSubmissionsData,
+} from './import-json-submissions/index.js';
+import type {
+  ImportNatCenDataParams,
+  UploadDisplayNamesTaskParams,
+  UploadPAQLinksTaskParams,
+} from './ndns/index.js';
+import { DbDumpToLocal, DbDumpToSftp } from './db-dumps/index.js';
+import { ExportSurveyData } from './export-survey-data.js';
+import { ExportSurveySettings } from './export-survey-settings.js';
+import { ImportJsonSubmissions } from './import-json-submissions/index.js';
 import {
-  IMPORT_NATCEN_DATA,
-  UPLOAD_DISPLAY_NAMES,
-  UPLOAD_PAQ_LINKS,
+  ImportNatCenData,
+  UploadDisplayNames,
+  UploadPAQLinks,
 } from './ndns/index.js';
 
-const tasks = {
-  DB_DUMP_TO_LOCAL,
-  DB_DUMP_TO_SFTP,
-  EXPORT_SURVEY_DATA,
-  EXPORT_SURVEY_SETTINGS,
-  IMPORT_JSON_SUBMISSIONS,
-  IMPORT_NATCEN_DATA,
-  UPLOAD_DISPLAY_NAMES,
-  UPLOAD_PAQ_LINKS,
-};
-
-export type TaskType = keyof typeof tasks;
+export type TaskParams = ExportSurveyTaskParams
+  | DbDumpToLocalTaskParams
+  | DbDumpToSftpTaskParams
+  | ExportSurveySettingsParams
+  | ImportJsonSubmissionsData
+  | ImportNatCenDataParams
+  | UploadDisplayNamesTaskParams
+  | UploadPAQLinksTaskParams;
 
 export type TaskOutput = {
   message: string;
   attachments?: SendMailOptions['attachments'];
 };
 
-export interface Task<T = Dictionary> {
-  readonly name: string;
-  readonly params: T;
-  message: string;
-  run: () => Promise<TaskOutput>;
-}
+export type TaskIOParams = {
+  DbDumpToLocal: {
+    input: DbDumpToLocalTaskParams;
+    output: TaskOutput;
+  };
+  DbDumpToSftp: {
+    input: DbDumpToSftpTaskParams;
+    output: TaskOutput;
+  };
+  ExportSurveyData: {
+    input: ExportSurveyTaskParams;
+    output: TaskOutput & { surveyCode: string };
+  };
+  ExportSurveySettings: {
+    input: ExportSurveySettingsParams;
+    output: TaskOutput;
+  };
+  ImportJsonSubmissions: {
+    input: ImportJsonSubmissionsData;
+    output: TaskOutput;
+  };
+  ImportNatCenData: {
+    input: ImportNatCenDataParams;
+    output: TaskOutput;
+  };
+  UploadDisplayNames: {
+    input: UploadDisplayNamesTaskParams;
+    output: TaskOutput;
+  };
+  UploadPAQLinks: {
+    input: UploadPAQLinksTaskParams;
+    output: TaskOutput;
+  };
+};
+
+export type TaskType = keyof TaskIOParams;
 
 export interface TaskDBConfig extends config {
   tables: {
@@ -63,10 +100,10 @@ export interface TaskDBConfig extends config {
   };
 }
 
-export type TaskDefinition<T = Dictionary> = {
-  name: TaskType;
+export type TaskDefinition<T extends keyof TaskIOParams = keyof TaskIOParams> = {
+  name: T;
   cron: string | false;
-  params: T;
+  params: TaskIOParams[T]['input'];
   db?: TaskDBConfig;
   notify?:
     | false
@@ -77,8 +114,26 @@ export type TaskDefinition<T = Dictionary> = {
     | string[];
 };
 
+export interface Task<T extends keyof TaskIOParams> {
+  readonly name: T;
+  readonly params: TaskIOParams[T]['input'];
+  output: TaskIOParams[T]['output'];
+  run: () => Promise<TaskIOParams[T]['output']>;
+}
+
+const tasks = {
+  DbDumpToLocal,
+  DbDumpToSftp,
+  ExportSurveyData,
+  ExportSurveySettings,
+  ImportJsonSubmissions,
+  ImportNatCenData,
+  UploadDisplayNames,
+  UploadPAQLinks,
+};
+
 export type Tasks = {
-  [P in TaskType]: new (taskDef: TaskDefinition) => (typeof tasks)[P];
+  [T in TaskType]: new (taskDef: TaskDefinition<T>) => (typeof tasks)[T];
 };
 
 export default tasks;

@@ -18,12 +18,9 @@
 
 /* eslint-disable perfectionist/sort-imports */
 import './bootstrap';
-
 import process from 'node:process';
-
 import { Command } from 'commander';
-import pkg from '../package.json';
-
+import pkg from '../package.json' with { type: 'json' };
 import config from './config/index.js';
 import runner from './runner.js';
 import mailer from './services/mailer.js';

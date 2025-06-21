@@ -18,32 +18,29 @@
 
 import type { PoolClient } from 'pg';
 import type { Task, TaskDefinition } from '../index.js';
-
 import pgPromise from 'pg-promise';
 import schema from '@/config/schema.js';
-
 import { db, logger } from '@/services/index.js';
-import HasMsSqlPool from '../has-mssql-pool.js';
+import { HasMsSqlPool } from '../has-mssql-pool.js';
 
 export type UploadPAQLinksTaskParams = {
   dbVersion: 'v3' | 'v4';
   survey: string;
 };
 
-export type LinkData = {
+type LinkData = {
   user_id: string;
   username: string;
   url: string;
 };
 
-export type Stats = {
+type Stats = {
   added: number;
   removed: number;
 };
 
-export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadPAQLinksTaskParams> {
-  readonly name: string;
-
+export class UploadPAQLinks extends HasMsSqlPool implements Task<'UploadPAQLinks'> {
+  readonly name = 'UploadPAQLinks';
   readonly params: UploadPAQLinksTaskParams;
 
   protected pgClient!: PoolClient;
@@ -56,14 +53,12 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
 
   private customField = 'PAQUrl';
 
-  public message = '';
+  public output = { message: '' };
 
-  constructor(taskDef: TaskDefinition<UploadPAQLinksTaskParams>) {
+  constructor(taskDef: TaskDefinition<'UploadPAQLinks'>) {
     super(taskDef);
 
-    const { name, params } = taskDef;
-    this.name = name;
-    this.params = params;
+    this.params = taskDef.params;
 
     this.data = [];
     this.stats = {
@@ -81,7 +76,7 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
       await this.importData();
       await this.addDisplayLinks();
 
-      this.message = `Task ${this.name}: Number of links added: ${this.stats.added}. Number of links removed: ${this.stats.removed}.`;
+      this.output.message = `Task ${this.name}: Number of links added: ${this.stats.added}. Number of links removed: ${this.stats.removed}.`;
     }
     finally {
       await this.dropTempTable();
@@ -90,10 +85,9 @@ export default class UploadPAQLinks extends HasMsSqlPool implements Task<UploadP
       await this.closeMSPool();
     }
 
-    const { message } = this;
-    logger.info(message);
+    logger.info(this.output.message);
 
-    return { message };
+    return this.output;
   }
 
   /**

@@ -56,6 +56,8 @@ export type ExportSurveyDataParams = {
 
 export type SurveyEntry = {
   id: string;
+  slug: string;
+  name: string;
   startDate: string;
   endDate: string;
 };
@@ -221,7 +223,7 @@ function it24v4(config: Config) {
     return { startDate: format(dateFrom, 'yyyy-MM-dd'), endDate: surveyEntry.endDate };
   };
 
-  const fetchDataExportFile = async (params: ExportSurveyTaskParams): Promise<string> => {
+  const fetchDataExportFile = async (params: ExportSurveyTaskParams): Promise<[surveyCode: string, filename: string]> => {
     const { survey: surveyId } = params;
 
     if (!accessToken)
@@ -262,7 +264,8 @@ function it24v4(config: Config) {
     if (!job.successful)
       throw new Error(`IT24v4: Job ${job.id} failed: ${job.message}`);
 
-    return downloadExportFile(job.id);
+    const filename = await downloadExportFile(job.id);
+    return [survey.slug, filename];
   };
 
   return {

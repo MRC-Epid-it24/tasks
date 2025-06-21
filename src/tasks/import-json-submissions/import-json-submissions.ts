@@ -21,13 +21,11 @@ import type { Task, TaskDefinition } from '../index.js';
 import type { SubmissionData } from './submission.js';
 import path from 'node:path';
 import { AsyncParser } from '@json2csv/node';
-
 import fs from 'fs-extra';
 import mssql from 'mssql';
-
 import { db } from '@/services/db.js';
 import logger from '@/services/logger.js';
-import HasMsSqlPool from '../has-mssql-pool.js';
+import { HasMsSqlPool } from '../has-mssql-pool.js';
 import { fields, round } from './fields.js';
 import { MISSING_FOOD_CODE, NA } from './submission.js';
 
@@ -45,11 +43,8 @@ export type FoodGroups = Record<string, FoodGroup>;
 
 export type Row = Record<string, any>;
 
-export default class ImportJsonSubmissions
-  extends HasMsSqlPool
-  implements Task<ImportJsonSubmissionsData> {
-  readonly name: string;
-
+export class ImportJsonSubmissions extends HasMsSqlPool implements Task<'ImportJsonSubmissions'> {
+  readonly name = 'ImportJsonSubmissions';
   readonly params: ImportJsonSubmissionsData;
 
   protected pgClients!: Record<'foods' | 'system', PoolClient>;
@@ -60,14 +55,12 @@ export default class ImportJsonSubmissions
 
   protected fields = fields;
 
-  public message = '';
+  public output = { message: '' };
 
-  constructor(taskDef: TaskDefinition<ImportJsonSubmissionsData>) {
+  constructor(taskDef: TaskDefinition<'ImportJsonSubmissions'>) {
     super(taskDef);
 
-    const { name, params } = taskDef;
-    this.name = name;
-    this.params = params;
+    this.params = taskDef.params;
 
     this.foodGroups = {};
     this.nutrients = {};
@@ -133,10 +126,9 @@ export default class ImportJsonSubmissions
       await this.closeMSPool();
     }
 
-    const { message } = this;
-    logger.info(message);
+    logger.info(this.output.message);
 
-    return { message };
+    return this.output;
   }
 
   /**

@@ -18,5 +18,4 @@
 
 export * from './fields.js';
 export * from './import-json-submissions.js';
-export { default as IMPORT_JSON_SUBMISSIONS } from './import-json-submissions.js';
 export * from './submission.js';
