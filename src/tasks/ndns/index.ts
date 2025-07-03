@@ -16,6 +16,7 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+export * from './export-view-to-csv.js';
 export * from './import-natcen-data.js';
 export * from './upload-display-names.js';
 export * from './upload-paq-links.js';

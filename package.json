@@ -24,6 +24,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@json2csv/formatters": "^7.0.6",
     "@json2csv/node": "^7.0.6",
     "axios": "^1.10.0",
     "axios-retry": "^4.5.0",

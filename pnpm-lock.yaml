@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@json2csv/formatters':
+        specifier: ^7.0.6
+        version: 7.0.6
       '@json2csv/node':
         specifier: ^7.0.6
         version: 7.0.6

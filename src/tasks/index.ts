@@ -15,7 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-
 import type { config } from 'mssql';
 import type { SendMailOptions } from 'nodemailer';
 import type {
@@ -28,6 +27,7 @@ import type {
   ImportJsonSubmissionsData,
 } from './import-json-submissions/index.js';
 import type {
+  ExportViewToCSVParams,
   ImportNatCenDataParams,
   UploadDisplayNamesTaskParams,
   UploadPAQLinksTaskParams,
@@ -37,6 +37,7 @@ import { ExportSurveyData } from './export-survey-data.js';
 import { ExportSurveySettings } from './export-survey-settings.js';
 import { ImportJsonSubmissions } from './import-json-submissions/index.js';
 import {
+  ExportViewToCSV,
   ImportNatCenData,
   UploadDisplayNames,
   UploadPAQLinks,
@@ -71,6 +72,10 @@ export type TaskIOParams = {
   };
   ExportSurveySettings: {
     input: ExportSurveySettingsParams;
+    output: TaskOutput;
+  };
+  ExportViewToCSV: {
+    input: ExportViewToCSVParams;
     output: TaskOutput;
   };
   ImportJsonSubmissions: {
@@ -126,6 +131,7 @@ const tasks = {
   DbDumpToSftp,
   ExportSurveyData,
   ExportSurveySettings,
+  ExportViewToCSV,
   ImportJsonSubmissions,
   ImportNatCenData,
   UploadDisplayNames,
