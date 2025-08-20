@@ -57,7 +57,7 @@
     "@types/mssql": "^9.1.7",
     "@types/node": "^24.1.0",
     "@types/node-schedule": "^2.1.8",
-    "@types/nodemailer": "^6.4.17",
+    "@types/nodemailer": "^7.0.1",
     "@types/pg": "^8.15.4",
     "@types/ssh2-sftp-client": "^9.0.5",
     "eslint": "^9.31.0",
